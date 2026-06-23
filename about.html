@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Learn about BEM On The Rock — our history, mission, and vision."
+    />
+    <title>About Us — BEM On The Rock</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="index.html" class="logo">
+          <div class="logo-mark">B</div>
+          <div class="logo-text">
+            BEM On The Rock
+            <span>Church</span>
+          </div>
+        </a>
+
+        <nav>
+          <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html" class="active">About Us</a></li>
+            <li><a href="admin.html">Admin</a></li>
+          </ul>
+        </nav>
+
+        <div class="header-actions">
+          <button
+            class="btn btn-ghost btn-icon"
+            data-theme-toggle
+            aria-label="Toggle dark or light mode"
+            title="Toggle theme"
+          >
+            <span data-theme-icon>🌙</span>
+          </button>
+          <button
+            class="mobile-menu-btn"
+            data-mobile-menu
+            aria-label="Open menu"
+          >
+            ☰
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-hero">
+        <div class="container">
+          <h1>About BEM On The Rock</h1>
+          <p>Our story, mission, and the heart behind our church family.</p>
+        </div>
+      </section>
+
+      <section class="container">
+        <div id="about-content">
+          <div class="loading">Loading church information…</div>
+        </div>
+
+        <div class="contact-bar" id="contact-bar">
+          <div>
+            <h2>Visit Us</h2>
+            <p id="contact-note" style="font-size: 0.9rem; margin-top: 0.35rem; opacity: 0.85;">
+              We welcome visitors and newcomers.
+            </p>
+          </div>
+          <div class="contact-details">
+            <span id="contact-address"></span>
+            <span id="contact-phone"></span>
+            <span id="contact-email"></span>
+            <span id="contact-service"></span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <a href="index.html" class="logo">
+              <div class="logo-mark">B</div>
+              <div class="logo-text">
+                BEM On The Rock
+                <span>Church</span>
+              </div>
+            </a>
+            <p>Building lives on the solid foundation of Christ.</p>
+          </div>
+          <div class="footer-links">
+            <div class="footer-col">
+              <h4>Pages</h4>
+              <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="admin.html">Admin</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© <span id="year"></span> BEM On The Rock. All rights reserved.</span>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="js/about.js"></script>
+  </body>
+</html>

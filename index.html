@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="BEM On The Rock — News, updates, and Sunday service livestreams."
+    />
+    <title>BEM On The Rock</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="index.html" class="logo">
+          <div class="logo-mark">B</div>
+          <div class="logo-text">
+            BEM On The Rock
+            <span>Church</span>
+          </div>
+        </a>
+
+        <nav>
+          <ul class="nav-links">
+            <li><a href="index.html" class="active">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="admin.html">Admin</a></li>
+          </ul>
+        </nav>
+
+        <div class="header-actions">
+          <button
+            class="btn btn-ghost btn-icon"
+            data-theme-toggle
+            aria-label="Toggle dark or light mode"
+            title="Toggle theme"
+          >
+            <span data-theme-icon>🌙</span>
+          </button>
+          <button
+            class="mobile-menu-btn"
+            data-mobile-menu
+            aria-label="Open menu"
+          >
+            ☰
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-content">
+          <span class="hero-badge">Welcome</span>
+          <h1 id="hero-title">BEM On The <em>Rock</em></h1>
+          <p id="hero-tagline">
+            Building lives on the solid foundation of Christ
+          </p>
+          <div class="hero-actions">
+            <a href="about.html" class="btn btn-primary">About Our Church</a>
+            <a
+              id="hero-youtube-btn"
+              href="#"
+              class="btn btn-outline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ▶ Watch on YouTube
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section livestream-section" id="livestream">
+        <div class="container">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Sunday Service</h2>
+              <p class="section-subtitle">
+                Join us live or catch up on our YouTube channel
+              </p>
+            </div>
+          </div>
+
+          <div class="livestream-card">
+            <div class="livestream-header">
+              <span class="live-badge">Live Stream</span>
+              <span id="service-times" class="section-subtitle"></span>
+            </div>
+            <div class="livestream-embed" id="livestream-embed">
+              <div class="livestream-placeholder">
+                <span class="icon">▶</span>
+                <p>Sunday service livestream</p>
+                <a id="livestream-link" href="#" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                  Watch Live on YouTube
+                </a>
+              </div>
+            </div>
+            <div class="livestream-footer">
+              <p id="livestream-note" style="color: var(--text-muted); font-size: 0.9rem;">
+                Stream opens on our YouTube channel during service times.
+              </p>
+              <a
+                id="channel-link"
+                href="#"
+                class="btn btn-outline btn-sm"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Visit YouTube Channel
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="updates">
+        <div class="container">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Current Updates</h2>
+              <p class="section-subtitle">
+                Announcements and ongoing activities at the church
+              </p>
+            </div>
+          </div>
+          <div id="updates-list" class="updates-list">
+            <div class="loading">Loading updates…</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="news" style="background: var(--bg-elevated); border-top: 1px solid var(--border);">
+        <div class="container">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">News</h2>
+              <p class="section-subtitle">
+                Latest news and stories from BEM On The Rock
+              </p>
+            </div>
+          </div>
+          <div id="news-grid" class="cards-grid">
+            <div class="loading">Loading news…</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <a href="index.html" class="logo">
+              <div class="logo-mark">B</div>
+              <div class="logo-text">
+                BEM On The Rock
+                <span>Church</span>
+              </div>
+            </a>
+            <p id="footer-tagline">
+              Building lives on the solid foundation of Christ.
+            </p>
+          </div>
+          <div class="footer-links">
+            <div class="footer-col">
+              <h4>Pages</h4>
+              <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="admin.html">Admin</a></li>
+              </ul>
+            </div>
+            <div class="footer-col">
+              <h4>Connect</h4>
+              <ul>
+                <li>
+                  <a id="footer-youtube" href="#" target="_blank" rel="noopener noreferrer">YouTube</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© <span id="year"></span> BEM On The Rock. All rights reserved.</span>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="js/index.js"></script>
+  </body>
+</html>
