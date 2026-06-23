@@ -15,6 +15,6 @@ export const firebaseConfig = {
 
 /** Default YouTube links — admins can override these in the dashboard */
 export const defaultYouTube = {
-  channelUrl: "https://www.youtube.com/@BEMOnTheRock",
-  liveUrl: "https://www.youtube.com/@BEMOnTheRock/live",
+  channelUrl: "https://www.youtube.com/@bem_ontherock",
+  liveUrl: "https://www.youtube.com/@bem_ontherock/live",
 };
