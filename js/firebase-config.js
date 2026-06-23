@@ -5,12 +5,12 @@
  * from the Firebase Console: Project Settings → General → Your apps
  */
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyCeUIxa5qBUuxDuTEa04IaBefFpWDHHMZM",
+  authDomain: "website-bem-on-the-rock.firebaseapp.com",
+  projectId: "website-bem-on-the-rock",
+  storageBucket: "website-bem-on-the-rock.firebasestorage.app",
+  messagingSenderId: "1022431655269",
+  appId: "1:1022431655269:web:d45142f2e39526f5c21d8c"
 };
 
 /** Default YouTube links — admins can override these in the dashboard */
