@@ -6,6 +6,7 @@ import {
   formatDate,
 } from "./firebase-service.js";
 import { defaultYouTube } from "./firebase-config.js";
+import { getImageUrl } from "./image-service.js";
 
 document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -18,6 +19,30 @@ function escapeHtml(text) {
 function setLink(id, url) {
   const el = document.getElementById(id);
   if (el && url) el.href = url;
+}
+
+async function renderHero(settings) {
+  const title = document.getElementById("hero-title");
+  const tagline = document.getElementById("hero-tagline");
+  const footerTagline = document.getElementById("footer-tagline");
+  const hero = document.getElementById("hero");
+
+  if (title && settings.churchName) {
+    const parts = settings.churchName.split(" ");
+    const last = parts.pop();
+    title.innerHTML = `${escapeHtml(parts.join(" "))} <em>${escapeHtml(last)}</em>`;
+  }
+
+  if (tagline && settings.tagline) tagline.textContent = settings.tagline;
+  if (footerTagline && settings.tagline) footerTagline.textContent = settings.tagline;
+
+  if (hero && settings.heroImageId) {
+    const url = await getImageUrl(settings.heroImageId);
+    if (url) {
+      hero.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.45)), url("${url}")`;
+      hero.classList.add("hero--has-bg");
+    }
+  }
 }
 
 function renderLivestream(settings) {
@@ -48,7 +73,7 @@ function renderLivestream(settings) {
   }
 }
 
-function renderUpdates(updates) {
+async function renderUpdates(updates) {
   const container = document.getElementById("updates-list");
   if (!container) return;
 
@@ -61,10 +86,22 @@ function renderUpdates(updates) {
     return;
   }
 
-  container.innerHTML = updates
+  const items = await Promise.all(
+    updates.map(async (item) => ({
+      ...item,
+      imageUrl: item.imageId ? await getImageUrl(item.imageId) : null,
+    }))
+  );
+
+  container.innerHTML = items
     .map(
       (item) => `
     <article class="update-item ${item.priority === "high" ? "high" : ""}">
+      ${
+        item.imageUrl
+          ? `<div class="update-thumb"><img src="${item.imageUrl}" alt="" loading="lazy" /></div>`
+          : ""
+      }
       <time class="update-date">${escapeHtml(formatDate(item.date))}</time>
       <div class="update-content">
         <h3>${escapeHtml(item.title)}</h3>
@@ -75,7 +112,7 @@ function renderUpdates(updates) {
     .join("");
 }
 
-function renderNews(news) {
+async function renderNews(news) {
   const container = document.getElementById("news-grid");
   if (!container) return;
 
@@ -88,31 +125,30 @@ function renderNews(news) {
     return;
   }
 
-  container.innerHTML = news
+  const items = await Promise.all(
+    news.map(async (item) => ({
+      ...item,
+      imageUrl: item.imageId ? await getImageUrl(item.imageId) : null,
+    }))
+  );
+
+  container.innerHTML = items
     .map(
       (item) => `
-    <article class="card">
-      <time class="card-date">${escapeHtml(formatDate(item.date))}</time>
-      <h3 class="card-title">${escapeHtml(item.title)}</h3>
-      <p class="card-body">${escapeHtml(item.content)}</p>
+    <article class="card card--with-image">
+      ${
+        item.imageUrl
+          ? `<div class="card-image"><img src="${item.imageUrl}" alt="${escapeHtml(item.title)}" loading="lazy" /></div>`
+          : ""
+      }
+      <div class="card-content">
+        <time class="card-date">${escapeHtml(formatDate(item.date))}</time>
+        <h3 class="card-title">${escapeHtml(item.title)}</h3>
+        <p class="card-body">${escapeHtml(item.content)}</p>
+      </div>
     </article>`
     )
     .join("");
-}
-
-function renderHero(settings) {
-  const title = document.getElementById("hero-title");
-  const tagline = document.getElementById("hero-tagline");
-  const footerTagline = document.getElementById("footer-tagline");
-
-  if (title && settings.churchName) {
-    const parts = settings.churchName.split(" ");
-    const last = parts.pop();
-    title.innerHTML = `${escapeHtml(parts.join(" "))} <em>${escapeHtml(last)}</em>`;
-  }
-
-  if (tagline && settings.tagline) tagline.textContent = settings.tagline;
-  if (footerTagline && settings.tagline) footerTagline.textContent = settings.tagline;
 }
 
 async function loadPage() {
@@ -123,10 +159,10 @@ async function loadPage() {
       getUpdates(),
     ]);
 
-    renderHero(settings);
+    await renderHero(settings);
     renderLivestream(settings);
-    renderUpdates(updates);
-    renderNews(news);
+    await renderUpdates(updates);
+    await renderNews(news);
   } catch (err) {
     console.error("Failed to load page content:", err);
     document.querySelectorAll(".loading").forEach((el) => {

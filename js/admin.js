@@ -19,8 +19,13 @@ import {
   createUpdate,
   updateUpdate,
   deleteUpdate,
+  getHistory,
+  createHistory,
+  updateHistory,
+  deleteHistory,
   formatDate,
 } from "./firebase-service.js";
+import { bindImageUpload, deleteImage } from "./image-service.js";
 
 const authScreen = document.getElementById("auth-screen");
 const dashboard = document.getElementById("admin-dashboard");
@@ -33,6 +38,11 @@ const crudForm = document.getElementById("crud-form");
 
 let newsData = [];
 let updatesData = [];
+let historyData = [];
+
+let crudImageUpload = null;
+let settingsHeroUpload = null;
+let aboutUploads = {};
 
 function escapeHtml(text) {
   const div = document.createElement("div");
@@ -44,6 +54,40 @@ function toInputDate(value) {
   if (!value) return new Date().toISOString().slice(0, 10);
   if (value.toDate) return value.toDate().toISOString().slice(0, 10);
   return new Date(value).toISOString().slice(0, 10);
+}
+
+function initImageUploads() {
+  crudImageUpload = bindImageUpload(document.getElementById("crud-image-upload"), {
+    inputId: "crud-image-input",
+    label: "Article Image",
+  });
+
+  settingsHeroUpload = bindImageUpload(
+    document.getElementById("settings-hero-image-upload"),
+    {
+      inputId: "settings-hero-image-input",
+      label: "Home Hero Background Image",
+    }
+  );
+
+  aboutUploads = {
+    hero: bindImageUpload(document.getElementById("about-hero-image-upload"), {
+      inputId: "about-hero-image-input",
+      label: "About Page Hero Background",
+    }),
+    mission: bindImageUpload(document.getElementById("about-mission-image-upload"), {
+      inputId: "about-mission-image-input",
+      label: "Mission Section Image",
+    }),
+    vision: bindImageUpload(document.getElementById("about-vision-image-upload"), {
+      inputId: "about-vision-image-input",
+      label: "Vision Section Image",
+    }),
+    values: bindImageUpload(document.getElementById("about-values-image-upload"), {
+      inputId: "about-values-image-input",
+      label: "Values Section Image",
+    }),
+  };
 }
 
 function showDashboard(user) {
@@ -100,7 +144,14 @@ document.querySelectorAll("[data-panel]").forEach((btn) => {
 });
 
 async function loadAllData() {
-  await Promise.all([loadNewsTable(), loadUpdatesTable(), loadAboutForm(), loadSettingsForm()]);
+  if (!settingsHeroUpload) initImageUploads();
+  await Promise.all([
+    loadNewsTable(),
+    loadUpdatesTable(),
+    loadHistoryTable(),
+    loadAboutForm(),
+    loadSettingsForm(),
+  ]);
 }
 
 async function loadNewsTable() {
@@ -118,7 +169,7 @@ async function loadNewsTable() {
       .map(
         (item) => `
       <tr>
-        <td>${escapeHtml(item.title)}</td>
+        <td>${escapeHtml(item.title)}${item.imageId ? " 🖼" : ""}</td>
         <td>${escapeHtml(formatDate(item.date))}</td>
         <td>
           <div class="table-actions">
@@ -130,12 +181,7 @@ async function loadNewsTable() {
       )
       .join("");
 
-    tbody.querySelectorAll("[data-edit-news]").forEach((btn) => {
-      btn.addEventListener("click", () => openModal("news", btn.dataset.editNews));
-    });
-    tbody.querySelectorAll("[data-delete-news]").forEach((btn) => {
-      btn.addEventListener("click", () => handleDelete("news", btn.dataset.deleteNews));
-    });
+    bindTableActions(tbody, "news");
   } catch (err) {
     tbody.innerHTML = `<tr><td colspan="3">Failed to load news.</td></tr>`;
     console.error(err);
@@ -157,7 +203,7 @@ async function loadUpdatesTable() {
       .map(
         (item) => `
       <tr>
-        <td>${escapeHtml(item.title)}</td>
+        <td>${escapeHtml(item.title)}${item.imageId ? " 🖼" : ""}</td>
         <td>${escapeHtml(formatDate(item.date))}</td>
         <td>${escapeHtml(item.priority || "normal")}</td>
         <td>
@@ -170,25 +216,72 @@ async function loadUpdatesTable() {
       )
       .join("");
 
-    tbody.querySelectorAll("[data-edit-update]").forEach((btn) => {
-      btn.addEventListener("click", () => openModal("updates", btn.dataset.editUpdate));
-    });
-    tbody.querySelectorAll("[data-delete-update]").forEach((btn) => {
-      btn.addEventListener("click", () => handleDelete("updates", btn.dataset.deleteUpdate));
-    });
+    bindTableActions(tbody, "updates");
   } catch (err) {
     tbody.innerHTML = `<tr><td colspan="4">Failed to load updates.</td></tr>`;
     console.error(err);
   }
 }
 
+async function loadHistoryTable() {
+  const tbody = document.getElementById("history-table-body");
+  try {
+    historyData = await getHistory();
+    document.getElementById("history-count").textContent = `${historyData.length} article(s)`;
+
+    if (!historyData.length) {
+      tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No history articles yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = historyData
+      .map(
+        (item) => `
+      <tr>
+        <td>${escapeHtml(item.title)}</td>
+        <td>${escapeHtml(formatDate(item.date))}</td>
+        <td>${item.imageId ? "Yes" : "—"}</td>
+        <td>
+          <div class="table-actions">
+            <button class="btn btn-outline btn-sm" data-edit-history="${item.id}">Edit</button>
+            <button class="btn btn-danger btn-sm" data-delete-history="${item.id}">Delete</button>
+          </div>
+        </td>
+      </tr>`
+      )
+      .join("");
+
+    bindTableActions(tbody, "history");
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="4">Failed to load history.</td></tr>`;
+    console.error(err);
+  }
+}
+
+function bindTableActions(tbody, type) {
+  tbody.querySelectorAll(`[data-edit-${type}]`).forEach((btn) => {
+    btn.addEventListener("click", () =>
+      openModal(type, btn.getAttribute(`data-edit-${type}`))
+    );
+  });
+  tbody.querySelectorAll(`[data-delete-${type}]`).forEach((btn) => {
+    btn.addEventListener("click", () =>
+      handleDelete(type, btn.getAttribute(`data-delete-${type}`))
+    );
+  });
+}
+
 async function loadAboutForm() {
   const about = await getAboutContent();
-  document.getElementById("about-history").value = about.history || "";
   document.getElementById("about-mission").value = about.mission || "";
   document.getElementById("about-vision").value = about.vision || "";
   document.getElementById("about-values").value = about.values || "";
   document.getElementById("about-contact-note").value = about.contactNote || "";
+
+  aboutUploads.hero?.setImageId(about.heroImageId);
+  aboutUploads.mission?.setImageId(about.missionImageId);
+  aboutUploads.vision?.setImageId(about.visionImageId);
+  aboutUploads.values?.setImageId(about.valuesImageId);
 }
 
 async function loadSettingsForm() {
@@ -202,36 +295,45 @@ async function loadSettingsForm() {
   document.getElementById("settings-address").value = settings.address || "";
   document.getElementById("settings-phone").value = settings.phone || "";
   document.getElementById("settings-email").value = settings.email || "";
+  settingsHeroUpload?.setImageId(settings.heroImageId);
 }
 
 document.getElementById("add-news-btn").addEventListener("click", () => openModal("news"));
 document.getElementById("add-update-btn").addEventListener("click", () => openModal("updates"));
+document.getElementById("add-history-btn").addEventListener("click", () => openModal("history"));
+
+const MODAL_LABELS = { news: "News", updates: "Update", history: "History Article" };
+
+function getDataForType(type) {
+  if (type === "news") return newsData;
+  if (type === "updates") return updatesData;
+  return historyData;
+}
 
 function openModal(type, id = null) {
-  const isUpdate = type === "updates";
-  const data = id
-    ? (isUpdate ? updatesData : newsData).find((item) => item.id === id)
-    : null;
+  const data = id ? getDataForType(type).find((item) => item.id === id) : null;
+  const label = MODAL_LABELS[type] || "Item";
 
-  document.getElementById("modal-title").textContent = id
-    ? `Edit ${isUpdate ? "Update" : "News"}`
-    : `Add ${isUpdate ? "Update" : "News"}`;
+  document.getElementById("modal-title").textContent = id ? `Edit ${label}` : `Add ${label}`;
   document.getElementById("crud-id").value = id || "";
   document.getElementById("crud-type").value = type;
   document.getElementById("crud-title").value = data?.title || "";
   document.getElementById("crud-content").value = data?.content || "";
   document.getElementById("crud-date").value = toInputDate(data?.date);
-  document.getElementById("crud-priority-group").style.display = isUpdate ? "block" : "none";
-  if (isUpdate) {
+  document.getElementById("crud-priority-group").style.display = type === "updates" ? "block" : "none";
+
+  if (type === "updates") {
     document.getElementById("crud-priority").value = data?.priority || "normal";
   }
 
+  crudImageUpload?.setImageId(data?.imageId || null);
   modal.classList.add("open");
 }
 
 function closeModal() {
   modal.classList.remove("open");
   crudForm.reset();
+  crudImageUpload?.setImageId(null);
 }
 
 document.getElementById("modal-close").addEventListener("click", closeModal);
@@ -244,10 +346,13 @@ crudForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const id = document.getElementById("crud-id").value;
   const type = document.getElementById("crud-type").value;
+  const imageId = crudImageUpload?.getImageId() || null;
+
   const payload = {
     title: document.getElementById("crud-title").value.trim(),
     content: document.getElementById("crud-content").value.trim(),
     date: document.getElementById("crud-date").value,
+    imageId,
   };
 
   if (type === "updates") {
@@ -259,10 +364,14 @@ crudForm.addEventListener("submit", async (e) => {
       if (id) await updateNews(id, payload);
       else await createNews(payload);
       await loadNewsTable();
-    } else {
+    } else if (type === "updates") {
       if (id) await updateUpdate(id, payload);
       else await createUpdate(payload);
       await loadUpdatesTable();
+    } else if (type === "history") {
+      if (id) await updateHistory(id, payload);
+      else await createHistory(payload);
+      await loadHistoryTable();
     }
     closeModal();
     showAlert(adminAlert, "Saved successfully.", "success");
@@ -273,17 +382,31 @@ crudForm.addEventListener("submit", async (e) => {
 });
 
 async function handleDelete(type, id) {
-  const label = type === "news" ? "news article" : "update";
-  if (!confirm(`Delete this ${label}? This cannot be undone.`)) return;
+  const labels = { news: "news article", updates: "update", history: "history article" };
+  if (!confirm(`Delete this ${labels[type]}? This cannot be undone.`)) return;
+
+  const data = getDataForType(type).find((item) => item.id === id);
 
   try {
     if (type === "news") {
       await deleteNews(id);
       await loadNewsTable();
-    } else {
+    } else if (type === "updates") {
       await deleteUpdate(id);
       await loadUpdatesTable();
+    } else if (type === "history") {
+      await deleteHistory(id);
+      await loadHistoryTable();
     }
+
+    if (data?.imageId) {
+      try {
+        await deleteImage(data.imageId);
+      } catch {
+        /* orphaned media is non-critical */
+      }
+    }
+
     showAlert(adminAlert, "Deleted successfully.", "success");
   } catch (err) {
     showAlert(adminAlert, "Failed to delete. Check your permissions.");
@@ -294,11 +417,14 @@ async function handleDelete(type, id) {
 document.getElementById("about-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const data = {
-    history: document.getElementById("about-history").value.trim(),
     mission: document.getElementById("about-mission").value.trim(),
     vision: document.getElementById("about-vision").value.trim(),
     values: document.getElementById("about-values").value.trim(),
     contactNote: document.getElementById("about-contact-note").value.trim(),
+    heroImageId: aboutUploads.hero?.getImageId() || null,
+    missionImageId: aboutUploads.mission?.getImageId() || null,
+    visionImageId: aboutUploads.vision?.getImageId() || null,
+    valuesImageId: aboutUploads.values?.getImageId() || null,
   };
 
   try {
@@ -322,6 +448,7 @@ document.getElementById("settings-form").addEventListener("submit", async (e) =>
     address: document.getElementById("settings-address").value.trim(),
     phone: document.getElementById("settings-phone").value.trim(),
     email: document.getElementById("settings-email").value.trim(),
+    heroImageId: settingsHeroUpload?.getImageId() || null,
   };
 
   try {

@@ -31,6 +31,7 @@ export async function getSiteSettings() {
     phone: "",
     email: "",
     serviceTimes: "Sundays at 10:00 AM",
+    heroImageId: null,
   };
 }
 
@@ -48,16 +49,17 @@ export async function getAboutContent() {
     return { id: snap.id, ...snap.data() };
   }
   return {
-    history:
-      "BEM On The Rock was founded with a vision to build lives on the unshakeable foundation of Jesus Christ. Our congregation gathers to worship, grow, and serve our community together.",
     mission:
       "To lead people into a growing relationship with Jesus Christ through worship, discipleship, and community outreach.",
     vision:
       "A church family rooted in faith, reaching the lost, and transforming lives for the glory of God.",
-    values:
-      "Faith · Love · Integrity · Community · Service",
+    values: "Faith · Love · Integrity · Community · Service",
     contactNote:
       "We welcome visitors and newcomers. Come as you are — you belong here.",
+    heroImageId: null,
+    missionImageId: null,
+    visionImageId: null,
+    valuesImageId: null,
   };
 }
 
@@ -67,6 +69,31 @@ export async function saveAboutContent(data) {
     { ...data, updatedAt: serverTimestamp() },
     { merge: true }
   );
+}
+
+export async function getHistory() {
+  const q = query(collection(db, "history"), orderBy("date", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function createHistory(data) {
+  const ref = await addDoc(collection(db, "history"), {
+    ...data,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateHistory(id, data) {
+  await updateDoc(doc(db, "history", id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteHistory(id) {
+  await deleteDoc(doc(db, "history", id));
 }
 
 export async function getNews() {

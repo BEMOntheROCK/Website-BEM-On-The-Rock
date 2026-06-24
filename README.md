@@ -7,7 +7,8 @@ A static church website for **BEM On The Rock** with Firebase-powered content ma
 | Page | URL | Description |
 |------|-----|-------------|
 | Home | `index.html` | Livestream, updates, and news |
-| About | `about.html` | Church history, mission, vision (editable) |
+| About | `about.html` | Mission, vision, values (editable) |
+| History | `history.html` | Church history articles with images |
 | Admin | `admin.html` | Staff login and CRUD dashboard |
 
 ## File Structure
@@ -17,7 +18,8 @@ css/styles.css          — Single stylesheet (marigold theme + dark/light mode)
 js/firebase-config.js   — Firebase API keys and project credentials
 js/firebase-init.js     — Firebase app initialization
 js/firebase-service.js  — Firestore CRUD operations
-js/theme.js             — Dark/light mode toggle
+js/image-compress.js  — Client-side compression (8 MB → ~800 KB)
+js/image-service.js   — Upload/retrieve images in Firestore media collection
 js/common.js            — Shared utilities
 js/index.js             — Home page logic
 js/about.js             — About page logic
@@ -62,14 +64,21 @@ npx serve .
 
 Then open `http://localhost:3000`.
 
+## Images
+
+Admins can upload images (max **8 MB**) for news, updates, history articles, hero backgrounds, and about sections. Images are compressed client-side to ~**800 KB** before being stored in the Firestore `media` collection (Spark-plan friendly).
+
+Logo and favicon are hard-coded in the site files and are not managed via admin.
+
 ## Admin Usage
 
 1. Go to `/admin.html` and sign in with your Firebase admin account.
 2. Use the sidebar to manage:
-   - **News** — Articles on the home page
-   - **Updates** — Announcements and ongoing activities
-   - **About Page** — History, mission, vision, values
-   - **Site Settings** — Church name, YouTube links, contact info, service times
+   - **News** — Articles on the home page (with optional image)
+   - **Updates** — Announcements (with optional image)
+   - **History** — Timeline articles on the History page (with optional image)
+   - **About Page** — Mission, vision, values, and section images
+   - **Site Settings** — Church name, YouTube links, contact info, hero background
 
 ## YouTube Livestream
 

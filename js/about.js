@@ -3,6 +3,7 @@ import {
   getSiteSettings,
   getAboutContent,
 } from "./firebase-service.js";
+import { getImageUrl } from "./image-service.js";
 
 document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -13,29 +14,51 @@ function escapeHtml(text) {
 }
 
 const SECTIONS = [
-  { key: "history", title: "Our History" },
-  { key: "mission", title: "Our Mission" },
-  { key: "vision", title: "Our Vision" },
-  { key: "values", title: "Core Values" },
+  { key: "mission", title: "Our Mission", imageKey: "missionImageId" },
+  { key: "vision", title: "Our Vision", imageKey: "visionImageId" },
+  { key: "values", title: "Core Values", imageKey: "valuesImageId" },
 ];
 
-function renderAbout(about) {
+async function renderAbout(about) {
   const container = document.getElementById("about-content");
   if (!container) return;
 
+  const sections = await Promise.all(
+    SECTIONS.map(async (s) => ({
+      ...s,
+      imageUrl: about[s.imageKey] ? await getImageUrl(about[s.imageKey]) : null,
+    }))
+  );
+
   container.innerHTML = `
     <div class="about-grid">
-      ${SECTIONS.map(
-        (s) => `
+      ${sections
+        .map(
+          (s) => `
         <div class="about-block">
+          ${
+            s.imageUrl
+              ? `<div class="about-block-image"><img src="${s.imageUrl}" alt="${s.title}" loading="lazy" /></div>`
+              : ""
+          }
           <h2>${s.title}</h2>
           <p>${escapeHtml(about[s.key] || "")}</p>
         </div>`
-      ).join("")}
+        )
+        .join("")}
     </div>`;
 
   const note = document.getElementById("contact-note");
   if (note) note.textContent = about.contactNote || "";
+
+  const hero = document.getElementById("about-hero");
+  if (hero && about.heroImageId) {
+    const url = await getImageUrl(about.heroImageId);
+    if (url) {
+      hero.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.45)), url("${url}")`;
+      hero.classList.add("page-hero--has-bg");
+    }
+  }
 }
 
 function renderContact(settings) {
@@ -56,7 +79,7 @@ async function loadPage() {
       getAboutContent(),
       getSiteSettings(),
     ]);
-    renderAbout(about);
+    await renderAbout(about);
     renderContact(settings);
   } catch (err) {
     console.error("Failed to load about page:", err);

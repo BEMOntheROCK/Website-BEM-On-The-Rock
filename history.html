@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Learn about BEM On The Rock — our history, mission, and vision."
+      content="Explore the history of BEM On The Rock — milestones and stories of our church."
     />
-    <title>About Us — BEM On The Rock</title>
+    <title>Our History — BEM On The Rock</title>
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
@@ -24,8 +24,8 @@
         <nav>
           <ul class="nav-links">
             <li><a href="index.html">Home</a></li>
-            <li><a href="about.html" class="active">About Us</a></li>
-            <li><a href="history.html">History</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="history.html" class="active">History</a></li>
             <li><a href="admin.html">Admin</a></li>
           </ul>
         </nav>
@@ -51,32 +51,16 @@
     </header>
 
     <main>
-      <section class="page-hero" id="about-hero">
+      <section class="page-hero page-hero--history" id="history-hero">
         <div class="container">
-          <h1>About BEM On The Rock</h1>
-          <p>Our mission, vision, and the heart behind our church family.</p>
-          <a href="history.html" class="btn btn-primary" style="margin-top: 1.25rem;">Read Our History</a>
+          <h1>Our History</h1>
+          <p>Milestones and stories that shaped BEM On The Rock.</p>
         </div>
       </section>
 
-      <section class="container">
-        <div id="about-content">
-          <div class="loading">Loading church information…</div>
-        </div>
-
-        <div class="contact-bar" id="contact-bar">
-          <div>
-            <h2>Visit Us</h2>
-            <p id="contact-note" style="font-size: 0.9rem; margin-top: 0.35rem; opacity: 0.85;">
-              We welcome visitors and newcomers.
-            </p>
-          </div>
-          <div class="contact-details">
-            <span id="contact-address"></span>
-            <span id="contact-phone"></span>
-            <span id="contact-email"></span>
-            <span id="contact-service"></span>
-          </div>
+      <section class="container section">
+        <div id="history-list" class="history-grid">
+          <div class="loading">Loading history…</div>
         </div>
       </section>
     </main>
@@ -112,6 +96,6 @@
       </div>
     </footer>
 
-    <script type="module" src="js/about.js"></script>
+    <script type="module" src="js/history.js"></script>
   </body>
 </html>
