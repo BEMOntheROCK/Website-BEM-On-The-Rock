@@ -2,304 +2,145 @@ import {
   collection,
   doc,
   getDoc,
-  getDocs,
-  setDoc,
   addDoc,
-  updateDoc,
   deleteDoc,
-  query,
-  orderBy,
   serverTimestamp,
-  writeBatch,
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { db } from "./firebase-init.js";
-import { defaultYouTube } from "./firebase-config.js";
+import { compressImageForFirestore, toDataUrl } from "./image-compress.js";
 
-const SITE_SETTINGS_DOC = doc(db, "siteSettings", "main");
-const ABOUT_DOC = doc(db, "about", "main");
-const ORG_DOC = doc(db, "organisation", "main");
-
-export async function getSiteSettings() {
-  const snap = await getDoc(SITE_SETTINGS_DOC);
-  if (snap.exists()) {
-    return { id: snap.id, ...snap.data() };
-  }
-  return {
-    churchName: "BEM On The Rock",
-    tagline: "Building lives on the solid foundation of Christ",
-    youtubeChannelUrl: defaultYouTube.channelUrl,
-    youtubeLiveUrl: defaultYouTube.liveUrl,
-    address: "",
-    phone: "",
-    email: "",
-    serviceTimes: "Sundays at 10:00 AM",
-  };
-}
-
-export async function saveSiteSettings(data) {
-  await setDoc(
-    SITE_SETTINGS_DOC,
-    { ...data, updatedAt: serverTimestamp() },
-    { merge: true }
-  );
-}
-
-const DEFAULT_ABOUT = {
-  fullName: "BEM On The Rock",
-  denomination: "",
-  registrationNumber: "",
-  officeHours: "",
-  whatsapp: "",
-  officePhone: "",
-  officePhoneLink: "",
-  instagram: "",
-  facebook: "",
-  emailAdmin: "",
-  emailAccount: "",
-  youtubeSocial: "",
-  founderName: "",
-  founderBio: "",
-  founderImageId: null,
-  mission:
-    "To lead people into a growing relationship with Jesus Christ through worship, discipleship, and community outreach.",
-  vision:
-    "A church family rooted in faith, reaching the lost, and transforming lives for the glory of God.",
-  values: "Faith · Love · Integrity · Community · Service",
-  contactNote:
-    "We welcome visitors and newcomers. Come as you are — you belong here.",
-  heroImageId: null,
-  missionImageId: null,
-  visionImageId: null,
-  valuesImageId: null,
-};
-
-export async function getAboutContent() {
-  const snap = await getDoc(ABOUT_DOC);
-  if (snap.exists()) {
-    return { ...DEFAULT_ABOUT, id: snap.id, ...snap.data() };
-  }
-  return { ...DEFAULT_ABOUT };
-}
-
-export async function saveAboutContent(data) {
-  await setDoc(
-    ABOUT_DOC,
-    { ...data, updatedAt: serverTimestamp() },
-    { merge: true }
-  );
-}
-
-export async function getOrgStructure() {
-  const snap = await getDoc(ORG_DOC);
-  if (snap.exists()) {
-    return { id: snap.id, ...snap.data() };
-  }
-  return { chartImageId: null };
-}
-
-export async function saveOrgStructure(data) {
-  await setDoc(
-    ORG_DOC,
-    { ...data, updatedAt: serverTimestamp() },
-    { merge: true }
-  );
-}
-
-// ── Categories ──
-
-export async function getCategories() {
-  const snap = await getDocs(
-    query(collection(db, "categories"), orderBy("order", "asc"))
-  );
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-}
-
-export async function createCategory(data) {
-  return addDoc(collection(db, "categories"), {
-    ...data,
-    createdAt: serverTimestamp(),
-  });
-}
-
-export async function updateCategory(id, data) {
-  return updateDoc(doc(db, "categories", id), data);
-}
-
-export async function deleteCategory(id) {
-  return deleteDoc(doc(db, "categories", id));
-}
+const mediaCache = new Map();
 
 /**
- * Persist a full reordered categories array in a single batch write.
- * Each item must have { id, ...fields }.
+ * Upload a compressed image to Firestore media collection.
+ * @returns {Promise<string>} media document ID
  */
-export async function saveCategories(categories) {
-  const batch = writeBatch(db);
-  categories.forEach((cat, i) => {
-    batch.update(doc(db, "categories", cat.id), { order: i });
-  });
-  return batch.commit();
-}
-
-// ── Leaders ──
-
-export async function getLeaders() {
-  const q = query(collection(db, "leaders"), orderBy("order", "asc"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-}
-
-export async function createLeader(data) {
-  const ref = await addDoc(collection(db, "leaders"), {
-    ...data,
+export async function uploadImage(file) {
+  const compressed = await compressImageForFirestore(file);
+  const ref = await addDoc(collection(db, "media"), {
+    ...compressed,
     createdAt: serverTimestamp(),
   });
+  mediaCache.set(ref.id, compressed);
   return ref.id;
 }
 
-export async function updateLeader(id, data) {
-  await updateDoc(doc(db, "leaders", id), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
-}
-
-export async function deleteLeader(id) {
-  await deleteDoc(doc(db, "leaders", id));
-}
-
-/** Derive a numeric sort key from free-text or ISO dates */
-export function parseSortKey(value) {
-  if (!value) return 0;
-  if (value.toDate) return value.toDate().getTime();
-  if (typeof value === "number") return value;
-
-  const text = String(value).trim();
-  const parsed = Date.parse(text);
-  if (!Number.isNaN(parsed)) return parsed;
-
-  const yearMatch = text.match(/\b(19|20)\d{2}\b/);
-  if (yearMatch) return parseInt(yearMatch[0], 10) * 1e10;
-
-  return 0;
-}
-
-export function sortHistoryItems(items, direction = "desc") {
-  const dir = direction === "asc" ? 1 : -1;
-  return [...items].sort((a, b) => {
-    const keyA = a.sortKey ?? parseSortKey(a.date);
-    const keyB = b.sortKey ?? parseSortKey(b.date);
-    if (keyA !== keyB) return (keyA - keyB) * dir;
-
-    const createdA = a.createdAt?.seconds ?? 0;
-    const createdB = b.createdAt?.seconds ?? 0;
-    return (createdA - createdB) * dir;
-  });
-}
-
-export async function getHistory(direction = "desc") {
-  const snap = await getDocs(collection(db, "history"));
-  const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  return sortHistoryItems(items, direction);
-}
-
-export async function createHistory(data) {
-  const date = data.date?.trim() ?? "";
-  const ref = await addDoc(collection(db, "history"), {
-    ...data,
-    date,
-    sortKey: parseSortKey(date),
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
-}
-
-export async function updateHistory(id, data) {
-  const date = data.date?.trim() ?? "";
-  await updateDoc(doc(db, "history", id), {
-    ...data,
-    date,
-    sortKey: parseSortKey(date),
-    updatedAt: serverTimestamp(),
-  });
-}
-
-export async function deleteHistory(id) {
-  await deleteDoc(doc(db, "history", id));
-}
-
-export async function getNews() {
-  const q = query(collection(db, "news"), orderBy("date", "desc"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-}
-
-export async function createNews(data) {
-  const ref = await addDoc(collection(db, "news"), {
-    ...data,
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
-}
-
-export async function updateNews(id, data) {
-  await updateDoc(doc(db, "news", id), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
-}
-
-export async function deleteNews(id) {
-  await deleteDoc(doc(db, "news", id));
-}
-
-export async function getUpdates() {
-  const q = query(collection(db, "updates"), orderBy("date", "desc"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-}
-
-export async function createUpdate(data) {
-  const ref = await addDoc(collection(db, "updates"), {
-    ...data,
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
-}
-
-export async function updateUpdate(id, data) {
-  await updateDoc(doc(db, "updates", id), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
-}
-
-export async function deleteUpdate(id) {
-  await deleteDoc(doc(db, "updates", id));
-}
-
-/** Format Firestore timestamp or ISO string for display */
-export function formatDate(value) {
-  if (!value) return "";
-  let date;
-  if (value.toDate) {
-    date = value.toDate();
-  } else {
-    date = new Date(value);
+export async function getImage(imageId) {
+  if (!imageId) return null;
+  if (mediaCache.has(imageId)) {
+    const cached = mediaCache.get(imageId);
+    return { id: imageId, ...cached, url: toDataUrl(cached.mimeType, cached.data) };
   }
-  if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const snap = await getDoc(doc(db, "media", imageId));
+  if (!snap.exists()) return null;
+  const data = { id: snap.id, ...snap.data() };
+  data.url = toDataUrl(data.mimeType, data.data);
+  mediaCache.set(imageId, data);
+  return data;
 }
 
-/** Display history date — plain text or formatted ISO */
-export function displayHistoryDate(value) {
-  if (!value) return "";
-  if (typeof value === "string" && Number.isNaN(Date.parse(value))) {
-    return value;
+export async function getImageUrl(imageId) {
+  const img = await getImage(imageId);
+  return img?.url || null;
+}
+
+export async function deleteImage(imageId) {
+  if (!imageId) return;
+  await deleteDoc(doc(db, "media", imageId));
+  mediaCache.delete(imageId);
+}
+
+/** Bind an image upload widget to a container element */
+export function bindImageUpload(container, options = {}) {
+  const {
+    inputId = `img-input-${Math.random().toString(36).slice(2)}`,
+    label = "Image",
+    hint = "Max 8 MB upload — compressed to ~800 KB for storage.",
+    currentImageId = null,
+    onImageIdChange = () => {},
+  } = options;
+
+  let pendingImageId = currentImageId;
+  let previewUrl = null;
+
+  container.innerHTML = `
+    <div class="image-upload" data-image-upload>
+      <label for="${inputId}">${label}</label>
+      <p class="image-upload-hint">${hint}</p>
+      <div class="image-upload-preview" data-preview>
+        <span class="image-upload-placeholder">No image selected</span>
+      </div>
+      <div class="image-upload-actions">
+        <input type="file" id="${inputId}" accept="image/*" class="sr-only" />
+        <label for="${inputId}" class="btn btn-outline btn-sm">Choose Image</label>
+        <button type="button" class="btn btn-ghost btn-sm" data-remove-image style="display:none;">Remove</button>
+        <span class="image-upload-status" data-status></span>
+      </div>
+      <input type="hidden" data-image-id value="${currentImageId || ""}" />
+    </div>`;
+
+  const input = container.querySelector(`#${inputId}`);
+  const preview = container.querySelector("[data-preview]");
+  const status = container.querySelector("[data-status]");
+  const hidden = container.querySelector("[data-image-id]");
+  const removeBtn = container.querySelector("[data-remove-image]");
+
+  async function showPreview(imageId) {
+    if (!imageId) {
+      preview.innerHTML = `<span class="image-upload-placeholder">No image selected</span>`;
+      removeBtn.style.display = "none";
+      return;
+    }
+    const url = previewUrl || (await getImageUrl(imageId));
+    if (url) {
+      preview.innerHTML = `<img src="${url}" alt="Preview" />`;
+      removeBtn.style.display = "inline-flex";
+    }
   }
-  return formatDate(value);
+
+  showPreview(currentImageId);
+
+  input.addEventListener("change", async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+
+    status.textContent = "Compressing…";
+    status.className = "image-upload-status loading-text";
+
+    try {
+      const oldId = pendingImageId;
+      const newId = await uploadImage(file);
+      pendingImageId = newId;
+      hidden.value = newId;
+      previewUrl = null;
+      await showPreview(newId);
+      onImageIdChange(newId, oldId);
+      status.textContent = "Image ready";
+      status.className = "image-upload-status success-text";
+    } catch (err) {
+      status.textContent = err.message || "Upload failed";
+      status.className = "image-upload-status error-text";
+      input.value = "";
+    }
+  });
+
+  removeBtn.addEventListener("click", () => {
+    pendingImageId = null;
+    hidden.value = "";
+    previewUrl = null;
+    input.value = "";
+    preview.innerHTML = `<span class="image-upload-placeholder">No image selected</span>`;
+    removeBtn.style.display = "none";
+    status.textContent = "";
+    onImageIdChange(null);
+  });
+
+  return {
+    getImageId: () => hidden.value || null,
+    setImageId: (id) => {
+      pendingImageId = id;
+      hidden.value = id || "";
+      showPreview(id);
+    },
+  };
 }

@@ -5,7 +5,7 @@ import { getImageUrl } from "./image-service.js";
 document.getElementById("year").textContent = new Date().getFullYear();
 
 let allArticles = [];
-let sortDirection = "asc";
+let sortDirection = "desc";
 
 function escapeHtml(text) {
   const div = document.createElement("div");
@@ -60,12 +60,12 @@ async function applySort(direction) {
 
 async function loadPage() {
   try {
-    allArticles = await getHistory("asc");
+    allArticles = await getHistory("desc");
     await renderHistory(allArticles);
 
     const sortSelect = document.getElementById("history-sort");
     if (sortSelect) {
-      sortSelect.value = "asc";
+      sortSelect.value = "desc";
       sortSelect.addEventListener("change", (e) => {
         applySort(e.target.value);
       });

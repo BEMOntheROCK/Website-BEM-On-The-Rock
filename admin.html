@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
     <title>Admin — BEM On The Rock</title>
-    <link rel="icon" type="image/png" href="assets/favicon.png" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
@@ -14,7 +13,7 @@
         <a href="index.html" class="logo">
           <div class="logo-mark">B</div>
           <div class="logo-text">
-            <span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The Rock</span>
+            BEM On The Rock
             <span>Admin</span>
           </div>
         </a>
@@ -276,8 +275,7 @@
         <!-- Organisation panel -->
         <section id="panel-organisation" class="admin-panel">
           <h2>Organisation Structure</h2>
-          <p>Manage the organisation chart, leader categories, and leadership list.</p>
-
+          <p>Manage the organisation chart and leadership list.</p>
           <form id="org-chart-form">
             <div id="org-chart-image-upload"></div>
             <div class="form-actions">
@@ -287,39 +285,22 @@
 
           <hr class="admin-divider" />
 
-          <!-- Categories section -->
-          <h3 class="admin-subheading" style="border-top: none; margin-top: 0; padding-top: 0;">Leader Categories</h3>
-          <p class="admin-hint">Add categories and drag to reorder them. Each leader must belong to a category.</p>
-          <div class="admin-toolbar">
-            <span id="categories-count"></span>
-            <button type="button" class="btn btn-primary btn-sm" id="add-category-btn">+ Add Category</button>
-          </div>
-          <div id="categories-list" class="category-list">
-            <div class="loading">Loading categories…</div>
-          </div>
-
-          <hr class="admin-divider" />
-
-          <!-- Leaders section -->
           <div class="admin-toolbar">
             <span id="leaders-count"></span>
             <button type="button" class="btn btn-primary btn-sm" id="add-leader-btn">+ Add Leader</button>
           </div>
-          <p class="admin-hint">Drag the ⠿ handle to reorder leaders within the table.</p>
           <div class="data-table-wrap">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th style="width: 40px;"></th>
                   <th>Name</th>
                   <th>Title</th>
-                  <th>Category</th>
                   <th>Image</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="leaders-table-body">
-                <tr><td colspan="6" class="loading">Loading…</td></tr>
+                <tr><td colspan="4" class="loading">Loading…</td></tr>
               </tbody>
             </table>
           </div>
@@ -385,7 +366,7 @@
       </div>
     </div>
 
-    <!-- Modal for News / Updates / History CRUD -->
+    <!-- Modal for News / Updates CRUD -->
     <div id="crud-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="modal">
         <div class="modal-header">
@@ -445,39 +426,10 @@
               <label for="leader-title">Title</label>
               <input type="text" id="leader-title" required placeholder="e.g. Senior Pastor" />
             </div>
-            <div class="form-group">
-              <label for="leader-category">Category</label>
-              <select id="leader-category" required>
-                <option value="">— Select a category —</option>
-              </select>
-            </div>
             <div id="leader-image-upload"></div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary">Save</button>
               <button type="button" class="btn btn-outline" id="leader-modal-cancel">Cancel</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Category modal -->
-    <div id="category-modal" class="modal-overlay" role="dialog" aria-modal="true">
-      <div class="modal">
-        <div class="modal-header">
-          <h3 id="category-modal-title">Add Category</h3>
-          <button type="button" class="modal-close" id="category-modal-close" aria-label="Close">×</button>
-        </div>
-        <div class="modal-body">
-          <form id="category-form">
-            <input type="hidden" id="category-id" />
-            <div class="form-group">
-              <label for="category-name">Category Name</label>
-              <input type="text" id="category-name" required placeholder="e.g. Pastoral Team" />
-            </div>
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Save</button>
-              <button type="button" class="btn btn-outline" id="category-modal-cancel">Cancel</button>
             </div>
           </form>
         </div>

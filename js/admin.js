@@ -17,11 +17,6 @@ import {
   createLeader,
   updateLeader,
   deleteLeader,
-  getCategories,
-  createCategory,
-  updateCategory,
-  deleteCategory,
-  saveCategories,
   getNews,
   createNews,
   updateNews,
@@ -49,22 +44,16 @@ const modal = document.getElementById("crud-modal");
 const crudForm = document.getElementById("crud-form");
 const leaderModal = document.getElementById("leader-modal");
 const leaderForm = document.getElementById("leader-form");
-const categoryModal = document.getElementById("category-modal");
-const categoryForm = document.getElementById("category-form");
 
 let newsData = [];
 let updatesData = [];
 let historyData = [];
 let leadersData = [];
-let categoriesData = [];
 
 let crudImageUpload = null;
 let leaderImageUpload = null;
 let orgChartUpload = null;
 let aboutUploads = {};
-
-// ── Drag state ──
-let dragSrcRow = null;
 
 function escapeHtml(text) {
   const div = document.createElement("div");
@@ -185,13 +174,11 @@ async function loadAllData() {
     loadHistoryTable(),
     loadAboutForm(),
     loadOrgForm(),
-    loadCategoriesList(),
     loadLeadersTable(),
     loadSettingsForm(),
   ]);
 }
 
-// ── News ──
 async function loadNewsTable() {
   const tbody = document.getElementById("news-table-body");
   try {
@@ -226,7 +213,6 @@ async function loadNewsTable() {
   }
 }
 
-// ── Updates ──
 async function loadUpdatesTable() {
   const tbody = document.getElementById("updates-table-body");
   try {
@@ -262,7 +248,6 @@ async function loadUpdatesTable() {
   }
 }
 
-// ── History ──
 async function loadHistoryTable() {
   const tbody = document.getElementById("history-table-body");
   try {
@@ -298,105 +283,6 @@ async function loadHistoryTable() {
   }
 }
 
-// ── Categories ──
-async function loadCategoriesList() {
-  const container = document.getElementById("categories-list");
-  try {
-    categoriesData = await getCategories();
-    document.getElementById("categories-count").textContent = `${categoriesData.length} category(s)`;
-    renderCategoriesList();
-  } catch (err) {
-    container.innerHTML = `<p style="color: var(--text-muted);">Failed to load categories.</p>`;
-    console.error(err);
-  }
-}
-
-function renderCategoriesList() {
-  const container = document.getElementById("categories-list");
-
-  if (!categoriesData.length) {
-    container.innerHTML = `<p class="admin-hint">No categories yet. Add one to get started.</p>`;
-    return;
-  }
-
-  container.innerHTML = categoriesData
-    .map(
-      (cat) => `
-    <div class="category-item" draggable="true" data-category-id="${cat.id}">
-      <span class="drag-handle" title="Drag to reorder">⠿</span>
-      <span class="category-item-name">${escapeHtml(cat.name)}</span>
-      <div class="category-item-actions">
-        <button class="btn btn-outline btn-sm" data-edit-category="${cat.id}">Edit</button>
-        <button class="btn btn-danger btn-sm" data-delete-category="${cat.id}">Delete</button>
-      </div>
-    </div>`
-    )
-    .join("");
-
-  // Bind edit/delete
-  container.querySelectorAll("[data-edit-category]").forEach((btn) => {
-    btn.addEventListener("click", () => openCategoryModal(btn.getAttribute("data-edit-category")));
-  });
-  container.querySelectorAll("[data-delete-category]").forEach((btn) => {
-    btn.addEventListener("click", () => handleDeleteCategory(btn.getAttribute("data-delete-category")));
-  });
-
-  // Drag-and-drop for categories
-  bindCategoryDrag(container);
-}
-
-function bindCategoryDrag(container) {
-  let dragSrc = null;
-
-  container.querySelectorAll(".category-item").forEach((item) => {
-    item.addEventListener("dragstart", (e) => {
-      dragSrc = item;
-      e.dataTransfer.effectAllowed = "move";
-      item.style.opacity = "0.5";
-    });
-
-    item.addEventListener("dragend", () => {
-      item.style.opacity = "";
-      container.querySelectorAll(".category-item").forEach((i) => i.classList.remove("drag-over"));
-    });
-
-    item.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "move";
-      container.querySelectorAll(".category-item").forEach((i) => i.classList.remove("drag-over"));
-      if (item !== dragSrc) item.classList.add("drag-over");
-    });
-
-    item.addEventListener("drop", async (e) => {
-      e.preventDefault();
-      if (!dragSrc || dragSrc === item) return;
-
-      // Reorder in DOM and data array
-      const items = [...container.querySelectorAll(".category-item")];
-      const srcIdx = items.indexOf(dragSrc);
-      const tgtIdx = items.indexOf(item);
-
-      const reordered = [...categoriesData];
-      const [moved] = reordered.splice(srcIdx, 1);
-      reordered.splice(tgtIdx, 0, moved);
-
-      // Assign new order values
-      categoriesData = reordered.map((cat, i) => ({ ...cat, order: i }));
-
-      renderCategoriesList();
-
-      try {
-        await saveCategories(categoriesData);
-        showAlert(adminAlert, "Category order saved.", "success");
-      } catch (err) {
-        showAlert(adminAlert, "Failed to save category order.");
-        console.error(err);
-      }
-    });
-  });
-}
-
-// ── Leaders ──
 async function loadLeadersTable() {
   const tbody = document.getElementById("leaders-table-body");
   try {
@@ -404,21 +290,16 @@ async function loadLeadersTable() {
     document.getElementById("leaders-count").textContent = `${leadersData.length} leader(s)`;
 
     if (!leadersData.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No leaders yet.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No leaders yet.</td></tr>`;
       return;
     }
-
-    // Sort by order field
-    leadersData.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
     tbody.innerHTML = leadersData
       .map(
         (item) => `
-      <tr draggable="true" data-leader-id="${item.id}">
-        <td><span class="drag-handle" title="Drag to reorder">⠿</span></td>
+      <tr>
         <td>${escapeHtml(item.name)}</td>
         <td>${escapeHtml(item.title)}</td>
-        <td>${escapeHtml(getCategoryName(item.categoryId))}</td>
         <td>${item.imageId ? "Yes" : "—"}</td>
         <td>
           <div class="table-actions">
@@ -436,70 +317,10 @@ async function loadLeadersTable() {
     tbody.querySelectorAll("[data-delete-leader]").forEach((btn) => {
       btn.addEventListener("click", () => handleDeleteLeader(btn.getAttribute("data-delete-leader")));
     });
-
-    bindLeaderDrag(tbody);
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="6">Failed to load leaders.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4">Failed to load leaders.</td></tr>`;
     console.error(err);
   }
-}
-
-function getCategoryName(categoryId) {
-  if (!categoryId) return "—";
-  const cat = categoriesData.find((c) => c.id === categoryId);
-  return cat ? cat.name : "—";
-}
-
-function bindLeaderDrag(tbody) {
-  tbody.querySelectorAll("tr[data-leader-id]").forEach((row) => {
-    row.addEventListener("dragstart", (e) => {
-      dragSrcRow = row;
-      e.dataTransfer.effectAllowed = "move";
-      row.classList.add("dragging");
-    });
-
-    row.addEventListener("dragend", () => {
-      row.classList.remove("dragging");
-      tbody.querySelectorAll("tr").forEach((r) => r.classList.remove("drag-over"));
-      dragSrcRow = null;
-    });
-
-    row.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "move";
-      tbody.querySelectorAll("tr").forEach((r) => r.classList.remove("drag-over"));
-      if (row !== dragSrcRow) row.classList.add("drag-over");
-    });
-
-    row.addEventListener("drop", async (e) => {
-      e.preventDefault();
-      if (!dragSrcRow || dragSrcRow === row) return;
-
-      const rows = [...tbody.querySelectorAll("tr[data-leader-id]")];
-      const srcIdx = rows.indexOf(dragSrcRow);
-      const tgtIdx = rows.indexOf(row);
-
-      const reordered = [...leadersData];
-      const [moved] = reordered.splice(srcIdx, 1);
-      reordered.splice(tgtIdx, 0, moved);
-
-      // Assign new order values and persist each
-      leadersData = reordered.map((l, i) => ({ ...l, order: i }));
-
-      // Re-render table immediately for responsiveness
-      await loadLeadersTable();
-
-      try {
-        await Promise.all(
-          leadersData.map((l) => updateLeader(l.id, { order: l.order }))
-        );
-        showAlert(adminAlert, "Leader order saved.", "success");
-      } catch (err) {
-        showAlert(adminAlert, "Failed to save leader order.");
-        console.error(err);
-      }
-    });
-  });
 }
 
 function bindTableActions(tbody, type) {
@@ -515,7 +336,6 @@ function bindTableActions(tbody, type) {
   });
 }
 
-// ── About form ──
 async function loadAboutForm() {
   const about = await getAboutContent();
   document.getElementById("about-full-name").value = about.fullName || "";
@@ -562,12 +382,10 @@ async function loadSettingsForm() {
   document.getElementById("settings-email").value = settings.email || "";
 }
 
-// ── CRUD modal (News / Updates / History) ──
 document.getElementById("add-news-btn").addEventListener("click", () => openModal("news"));
 document.getElementById("add-update-btn").addEventListener("click", () => openModal("updates"));
 document.getElementById("add-history-btn").addEventListener("click", () => openModal("history"));
 document.getElementById("add-leader-btn").addEventListener("click", () => openLeaderModal());
-document.getElementById("add-category-btn").addEventListener("click", () => openCategoryModal());
 
 const MODAL_LABELS = { news: "News", updates: "Update", history: "History Article" };
 
@@ -665,85 +483,12 @@ crudForm.addEventListener("submit", async (e) => {
   }
 });
 
-// ── Category modal ──
-function openCategoryModal(id = null) {
-  const data = id ? categoriesData.find((c) => c.id === id) : null;
-  document.getElementById("category-modal-title").textContent = id ? "Edit Category" : "Add Category";
-  document.getElementById("category-id").value = id || "";
-  document.getElementById("category-name").value = data?.name || "";
-  categoryModal.classList.add("open");
-}
-
-function closeCategoryModal() {
-  categoryModal.classList.remove("open");
-  categoryForm.reset();
-}
-
-document.getElementById("category-modal-close").addEventListener("click", closeCategoryModal);
-document.getElementById("category-modal-cancel").addEventListener("click", closeCategoryModal);
-categoryModal.addEventListener("click", (e) => {
-  if (e.target === categoryModal) closeCategoryModal();
-});
-
-categoryForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const id = document.getElementById("category-id").value;
-  const name = document.getElementById("category-name").value.trim();
-
-  try {
-    if (id) {
-      await updateCategory(id, { name });
-    } else {
-      await createCategory({ name, order: categoriesData.length });
-    }
-    await loadCategoriesList();
-    closeCategoryModal();
-    showAlert(adminAlert, "Category saved.", "success");
-  } catch (err) {
-    showAlert(adminAlert, "Failed to save category.");
-    console.error(err);
-  }
-});
-
-async function handleDeleteCategory(id) {
-  // Check if any leader uses this category
-  const inUse = leadersData.some((l) => l.categoryId === id);
-  if (inUse) {
-    showAlert(adminAlert, "Cannot delete: some leaders are assigned to this category. Reassign them first.");
-    return;
-  }
-  if (!confirm("Delete this category? This cannot be undone.")) return;
-
-  try {
-    await deleteCategory(id);
-    await loadCategoriesList();
-    showAlert(adminAlert, "Category deleted.", "success");
-  } catch (err) {
-    showAlert(adminAlert, "Failed to delete category.");
-    console.error(err);
-  }
-}
-
-// ── Leader modal ──
-function populateCategorySelect(selectedId = "") {
-  const select = document.getElementById("leader-category");
-  select.innerHTML = `<option value="">— Select a category —</option>`;
-  categoriesData.forEach((cat) => {
-    const opt = document.createElement("option");
-    opt.value = cat.id;
-    opt.textContent = cat.name;
-    if (cat.id === selectedId) opt.selected = true;
-    select.appendChild(opt);
-  });
-}
-
 function openLeaderModal(id = null) {
   const data = id ? leadersData.find((item) => item.id === id) : null;
   document.getElementById("leader-modal-title").textContent = id ? "Edit Leader" : "Add Leader";
   document.getElementById("leader-id").value = id || "";
   document.getElementById("leader-name").value = data?.name || "";
   document.getElementById("leader-title").value = data?.title || "";
-  populateCategorySelect(data?.categoryId || "");
   leaderImageUpload?.setImageId(data?.imageId || null);
   leaderModal.classList.add("open");
 }
@@ -763,21 +508,13 @@ leaderModal.addEventListener("click", (e) => {
 leaderForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const id = document.getElementById("leader-id").value;
-  const categoryId = document.getElementById("leader-category").value;
-
-  if (!categoryId) {
-    showAlert(adminAlert, "Please select a category for this leader.");
-    return;
-  }
-
   const payload = {
     name: document.getElementById("leader-name").value.trim(),
     title: document.getElementById("leader-title").value.trim(),
-    categoryId,
     imageId: leaderImageUpload?.getImageId() || null,
     order: id
       ? leadersData.find((l) => l.id === id)?.order ?? leadersData.length
-      : leadersData.length,
+      : leadersData.length + 1,
   };
 
   try {
@@ -846,7 +583,6 @@ async function handleDelete(type, id) {
   }
 }
 
-// ── About form submit ──
 document.getElementById("about-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const data = {
@@ -884,7 +620,6 @@ document.getElementById("about-form").addEventListener("submit", async (e) => {
   }
 });
 
-// ── Org chart form submit ──
 document.getElementById("org-chart-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   try {
@@ -898,7 +633,6 @@ document.getElementById("org-chart-form").addEventListener("submit", async (e) =
   }
 });
 
-// ── Settings form submit ──
 document.getElementById("settings-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const data = {
