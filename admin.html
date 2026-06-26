@@ -23,6 +23,7 @@
             <li><a href="index.html">Home</a></li>
             <li><a href="about.html">About Us</a></li>
             <li><a href="history.html">History</a></li>
+            <li><a href="organisation-structure.html">Organisation</a></li>
             <li><a href="admin.html" class="active">Admin</a></li>
           </ul>
         </nav>
@@ -83,6 +84,7 @@
           <li><button type="button" data-panel="updates">Updates</button></li>
           <li><button type="button" data-panel="history">History</button></li>
           <li><button type="button" data-panel="about">About Page</button></li>
+          <li><button type="button" data-panel="organisation">Organisation</button></li>
           <li><button type="button" data-panel="settings">Site Settings</button></li>
         </ul>
       </aside>
@@ -167,8 +169,83 @@
         <!-- About panel -->
         <section id="panel-about" class="admin-panel">
           <h2>About Page Content</h2>
-          <p>Edit mission, vision, values, visitor information, and section images.</p>
+          <p>Edit general information, founder biography, mission, vision, values, and section images.</p>
           <form id="about-form">
+            <h3 class="admin-subheading">General Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="about-full-name">Church Full Name</label>
+                <input type="text" id="about-full-name" />
+              </div>
+              <div class="form-group">
+                <label for="about-denomination">Denomination</label>
+                <input type="text" id="about-denomination" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="about-registration">Registration Number</label>
+                <input type="text" id="about-registration" />
+              </div>
+              <div class="form-group">
+                <label for="about-office-hours">Office Hours</label>
+                <input type="text" id="about-office-hours" placeholder="Mon–Fri, 9:00 AM – 5:00 PM" />
+              </div>
+            </div>
+
+            <h3 class="admin-subheading">Social Links</h3>
+            <p class="admin-hint">Enter a URL or contact value. Users can click the icon on the About page to open the link.</p>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="about-whatsapp">WhatsApp Link</label>
+                <input type="url" id="about-whatsapp" placeholder="https://wa.me/..." />
+              </div>
+              <div class="form-group">
+                <label for="about-office-phone">Office Number (display)</label>
+                <input type="text" id="about-office-phone" placeholder="+60 12-345 6789" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="about-office-phone-link">Office Phone Link (optional)</label>
+              <input type="text" id="about-office-phone-link" placeholder="tel:+60123456789" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="about-instagram">Instagram URL</label>
+                <input type="url" id="about-instagram" />
+              </div>
+              <div class="form-group">
+                <label for="about-facebook">Facebook URL</label>
+                <input type="url" id="about-facebook" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="about-email-admin">Email (Admin)</label>
+                <input type="email" id="about-email-admin" />
+              </div>
+              <div class="form-group">
+                <label for="about-email-account">Email (Account)</label>
+                <input type="email" id="about-email-account" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="about-youtube-social">YouTube URL</label>
+              <input type="url" id="about-youtube-social" />
+            </div>
+
+            <h3 class="admin-subheading">Founder Biography</h3>
+            <div class="form-group">
+              <label for="about-founder-name">Founder Name</label>
+              <input type="text" id="about-founder-name" />
+            </div>
+            <div id="about-founder-image-upload"></div>
+            <div class="form-group">
+              <label for="about-founder-bio">Founder Biography</label>
+              <textarea id="about-founder-bio" rows="10"></textarea>
+            </div>
+
+            <h3 class="admin-subheading">Mission, Vision & Values</h3>
             <div id="about-hero-image-upload"></div>
             <div class="form-group">
               <label for="about-mission">Mission</label>
@@ -193,6 +270,40 @@
               <button type="submit" class="btn btn-primary">Save About Page</button>
             </div>
           </form>
+        </section>
+
+        <!-- Organisation panel -->
+        <section id="panel-organisation" class="admin-panel">
+          <h2>Organisation Structure</h2>
+          <p>Manage the organisation chart and leadership list.</p>
+          <form id="org-chart-form">
+            <div id="org-chart-image-upload"></div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save Chart Image</button>
+            </div>
+          </form>
+
+          <hr class="admin-divider" />
+
+          <div class="admin-toolbar">
+            <span id="leaders-count"></span>
+            <button type="button" class="btn btn-primary btn-sm" id="add-leader-btn">+ Add Leader</button>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Title</th>
+                  <th>Image</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="leaders-table-body">
+                <tr><td colspan="4" class="loading">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <!-- Settings panel -->
@@ -247,7 +358,6 @@
                 <input type="email" id="settings-email" />
               </div>
             </div>
-            <div id="settings-hero-image-upload"></div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary">Save Settings</button>
             </div>
@@ -278,7 +388,7 @@
             <div id="crud-image-upload"></div>
             <div class="form-row">
               <div class="form-group">
-                <label for="crud-date">Date</label>
+                <label for="crud-date" id="crud-date-label">Date</label>
                 <input type="date" id="crud-date" required />
               </div>
               <div class="form-group" id="crud-priority-group" style="display: none;">
@@ -292,6 +402,34 @@
             <div class="form-actions">
               <button type="submit" class="btn btn-primary">Save</button>
               <button type="button" class="btn btn-outline" id="modal-cancel">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leader modal -->
+    <div id="leader-modal" class="modal-overlay" role="dialog" aria-modal="true">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="leader-modal-title">Add Leader</h3>
+          <button type="button" class="modal-close" id="leader-modal-close" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="leader-form">
+            <input type="hidden" id="leader-id" />
+            <div class="form-group">
+              <label for="leader-name">Name</label>
+              <input type="text" id="leader-name" required />
+            </div>
+            <div class="form-group">
+              <label for="leader-title">Title</label>
+              <input type="text" id="leader-title" required placeholder="e.g. Senior Pastor" />
+            </div>
+            <div id="leader-image-upload"></div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="button" class="btn btn-outline" id="leader-modal-cancel">Cancel</button>
             </div>
           </form>
         </div>

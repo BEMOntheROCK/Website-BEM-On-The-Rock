@@ -25,7 +25,6 @@ async function renderHero(settings) {
   const title = document.getElementById("hero-title");
   const tagline = document.getElementById("hero-tagline");
   const footerTagline = document.getElementById("footer-tagline");
-  const hero = document.getElementById("hero");
 
   if (title && settings.churchName) {
     const parts = settings.churchName.split(" ");
@@ -35,14 +34,6 @@ async function renderHero(settings) {
 
   if (tagline && settings.tagline) tagline.textContent = settings.tagline;
   if (footerTagline && settings.tagline) footerTagline.textContent = settings.tagline;
-
-  if (hero && settings.heroImageId) {
-    const url = await getImageUrl(settings.heroImageId);
-    if (url) {
-      hero.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.45)), url("${url}")`;
-      hero.classList.add("hero--has-bg");
-    }
-  }
 }
 
 function renderLivestream(settings) {

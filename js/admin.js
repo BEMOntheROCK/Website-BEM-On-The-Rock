@@ -11,6 +11,12 @@ import {
   saveSiteSettings,
   getAboutContent,
   saveAboutContent,
+  getOrgStructure,
+  saveOrgStructure,
+  getLeaders,
+  createLeader,
+  updateLeader,
+  deleteLeader,
   getNews,
   createNews,
   updateNews,
@@ -24,6 +30,7 @@ import {
   updateHistory,
   deleteHistory,
   formatDate,
+  displayHistoryDate,
 } from "./firebase-service.js";
 import { bindImageUpload, deleteImage } from "./image-service.js";
 
@@ -35,13 +42,17 @@ const adminAlert = document.getElementById("admin-alert");
 
 const modal = document.getElementById("crud-modal");
 const crudForm = document.getElementById("crud-form");
+const leaderModal = document.getElementById("leader-modal");
+const leaderForm = document.getElementById("leader-form");
 
 let newsData = [];
 let updatesData = [];
 let historyData = [];
+let leadersData = [];
 
 let crudImageUpload = null;
-let settingsHeroUpload = null;
+let leaderImageUpload = null;
+let orgChartUpload = null;
 let aboutUploads = {};
 
 function escapeHtml(text) {
@@ -56,24 +67,36 @@ function toInputDate(value) {
   return new Date(value).toISOString().slice(0, 10);
 }
 
+function toHistoryDateText(value) {
+  if (!value) return "";
+  if (typeof value === "string" && Number.isNaN(Date.parse(value))) return value;
+  return displayHistoryDate(value);
+}
+
 function initImageUploads() {
   crudImageUpload = bindImageUpload(document.getElementById("crud-image-upload"), {
     inputId: "crud-image-input",
     label: "Article Image",
   });
 
-  settingsHeroUpload = bindImageUpload(
-    document.getElementById("settings-hero-image-upload"),
-    {
-      inputId: "settings-hero-image-input",
-      label: "Home Hero Background Image",
-    }
-  );
+  leaderImageUpload = bindImageUpload(document.getElementById("leader-image-upload"), {
+    inputId: "leader-image-input",
+    label: "Leader Photo",
+  });
+
+  orgChartUpload = bindImageUpload(document.getElementById("org-chart-image-upload"), {
+    inputId: "org-chart-image-input",
+    label: "Organisation Chart Image",
+  });
 
   aboutUploads = {
     hero: bindImageUpload(document.getElementById("about-hero-image-upload"), {
       inputId: "about-hero-image-input",
       label: "About Page Hero Background",
+    }),
+    founder: bindImageUpload(document.getElementById("about-founder-image-upload"), {
+      inputId: "about-founder-image-input",
+      label: "Founder Photo",
     }),
     mission: bindImageUpload(document.getElementById("about-mission-image-upload"), {
       inputId: "about-mission-image-input",
@@ -144,12 +167,14 @@ document.querySelectorAll("[data-panel]").forEach((btn) => {
 });
 
 async function loadAllData() {
-  if (!settingsHeroUpload) initImageUploads();
+  if (!crudImageUpload) initImageUploads();
   await Promise.all([
     loadNewsTable(),
     loadUpdatesTable(),
     loadHistoryTable(),
     loadAboutForm(),
+    loadOrgForm(),
+    loadLeadersTable(),
     loadSettingsForm(),
   ]);
 }
@@ -226,7 +251,7 @@ async function loadUpdatesTable() {
 async function loadHistoryTable() {
   const tbody = document.getElementById("history-table-body");
   try {
-    historyData = await getHistory();
+    historyData = await getHistory("desc");
     document.getElementById("history-count").textContent = `${historyData.length} article(s)`;
 
     if (!historyData.length) {
@@ -239,7 +264,7 @@ async function loadHistoryTable() {
         (item) => `
       <tr>
         <td>${escapeHtml(item.title)}</td>
-        <td>${escapeHtml(formatDate(item.date))}</td>
+        <td>${escapeHtml(displayHistoryDate(item.date))}</td>
         <td>${item.imageId ? "Yes" : "—"}</td>
         <td>
           <div class="table-actions">
@@ -254,6 +279,46 @@ async function loadHistoryTable() {
     bindTableActions(tbody, "history");
   } catch (err) {
     tbody.innerHTML = `<tr><td colspan="4">Failed to load history.</td></tr>`;
+    console.error(err);
+  }
+}
+
+async function loadLeadersTable() {
+  const tbody = document.getElementById("leaders-table-body");
+  try {
+    leadersData = await getLeaders();
+    document.getElementById("leaders-count").textContent = `${leadersData.length} leader(s)`;
+
+    if (!leadersData.length) {
+      tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No leaders yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = leadersData
+      .map(
+        (item) => `
+      <tr>
+        <td>${escapeHtml(item.name)}</td>
+        <td>${escapeHtml(item.title)}</td>
+        <td>${item.imageId ? "Yes" : "—"}</td>
+        <td>
+          <div class="table-actions">
+            <button class="btn btn-outline btn-sm" data-edit-leader="${item.id}">Edit</button>
+            <button class="btn btn-danger btn-sm" data-delete-leader="${item.id}">Delete</button>
+          </div>
+        </td>
+      </tr>`
+      )
+      .join("");
+
+    tbody.querySelectorAll("[data-edit-leader]").forEach((btn) => {
+      btn.addEventListener("click", () => openLeaderModal(btn.getAttribute("data-edit-leader")));
+    });
+    tbody.querySelectorAll("[data-delete-leader]").forEach((btn) => {
+      btn.addEventListener("click", () => handleDeleteLeader(btn.getAttribute("data-delete-leader")));
+    });
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="4">Failed to load leaders.</td></tr>`;
     console.error(err);
   }
 }
@@ -273,15 +338,35 @@ function bindTableActions(tbody, type) {
 
 async function loadAboutForm() {
   const about = await getAboutContent();
+  document.getElementById("about-full-name").value = about.fullName || "";
+  document.getElementById("about-denomination").value = about.denomination || "";
+  document.getElementById("about-registration").value = about.registrationNumber || "";
+  document.getElementById("about-office-hours").value = about.officeHours || "";
+  document.getElementById("about-whatsapp").value = about.whatsapp || "";
+  document.getElementById("about-office-phone").value = about.officePhone || "";
+  document.getElementById("about-office-phone-link").value = about.officePhoneLink || "";
+  document.getElementById("about-instagram").value = about.instagram || "";
+  document.getElementById("about-facebook").value = about.facebook || "";
+  document.getElementById("about-email-admin").value = about.emailAdmin || "";
+  document.getElementById("about-email-account").value = about.emailAccount || "";
+  document.getElementById("about-youtube-social").value = about.youtubeSocial || "";
+  document.getElementById("about-founder-name").value = about.founderName || "";
+  document.getElementById("about-founder-bio").value = about.founderBio || "";
   document.getElementById("about-mission").value = about.mission || "";
   document.getElementById("about-vision").value = about.vision || "";
   document.getElementById("about-values").value = about.values || "";
   document.getElementById("about-contact-note").value = about.contactNote || "";
 
   aboutUploads.hero?.setImageId(about.heroImageId);
+  aboutUploads.founder?.setImageId(about.founderImageId);
   aboutUploads.mission?.setImageId(about.missionImageId);
   aboutUploads.vision?.setImageId(about.visionImageId);
   aboutUploads.values?.setImageId(about.valuesImageId);
+}
+
+async function loadOrgForm() {
+  const org = await getOrgStructure();
+  orgChartUpload?.setImageId(org.chartImageId);
 }
 
 async function loadSettingsForm() {
@@ -295,12 +380,12 @@ async function loadSettingsForm() {
   document.getElementById("settings-address").value = settings.address || "";
   document.getElementById("settings-phone").value = settings.phone || "";
   document.getElementById("settings-email").value = settings.email || "";
-  settingsHeroUpload?.setImageId(settings.heroImageId);
 }
 
 document.getElementById("add-news-btn").addEventListener("click", () => openModal("news"));
 document.getElementById("add-update-btn").addEventListener("click", () => openModal("updates"));
 document.getElementById("add-history-btn").addEventListener("click", () => openModal("history"));
+document.getElementById("add-leader-btn").addEventListener("click", () => openLeaderModal());
 
 const MODAL_LABELS = { news: "News", updates: "Update", history: "History Article" };
 
@@ -308,6 +393,23 @@ function getDataForType(type) {
   if (type === "news") return newsData;
   if (type === "updates") return updatesData;
   return historyData;
+}
+
+function configureDateField(type, data) {
+  const dateInput = document.getElementById("crud-date");
+  const dateLabel = document.getElementById("crud-date-label");
+
+  if (type === "history") {
+    dateInput.type = "text";
+    dateInput.placeholder = "e.g. 1998 or March 2005";
+    dateLabel.textContent = "Date / Period";
+    dateInput.value = toHistoryDateText(data?.date);
+  } else {
+    dateInput.type = "date";
+    dateInput.placeholder = "";
+    dateLabel.textContent = "Date";
+    dateInput.value = toInputDate(data?.date);
+  }
 }
 
 function openModal(type, id = null) {
@@ -319,7 +421,7 @@ function openModal(type, id = null) {
   document.getElementById("crud-type").value = type;
   document.getElementById("crud-title").value = data?.title || "";
   document.getElementById("crud-content").value = data?.content || "";
-  document.getElementById("crud-date").value = toInputDate(data?.date);
+  configureDateField(type, data);
   document.getElementById("crud-priority-group").style.display = type === "updates" ? "block" : "none";
 
   if (type === "updates") {
@@ -351,7 +453,7 @@ crudForm.addEventListener("submit", async (e) => {
   const payload = {
     title: document.getElementById("crud-title").value.trim(),
     content: document.getElementById("crud-content").value.trim(),
-    date: document.getElementById("crud-date").value,
+    date: document.getElementById("crud-date").value.trim(),
     imageId,
   };
 
@@ -380,6 +482,73 @@ crudForm.addEventListener("submit", async (e) => {
     console.error(err);
   }
 });
+
+function openLeaderModal(id = null) {
+  const data = id ? leadersData.find((item) => item.id === id) : null;
+  document.getElementById("leader-modal-title").textContent = id ? "Edit Leader" : "Add Leader";
+  document.getElementById("leader-id").value = id || "";
+  document.getElementById("leader-name").value = data?.name || "";
+  document.getElementById("leader-title").value = data?.title || "";
+  leaderImageUpload?.setImageId(data?.imageId || null);
+  leaderModal.classList.add("open");
+}
+
+function closeLeaderModal() {
+  leaderModal.classList.remove("open");
+  leaderForm.reset();
+  leaderImageUpload?.setImageId(null);
+}
+
+document.getElementById("leader-modal-close").addEventListener("click", closeLeaderModal);
+document.getElementById("leader-modal-cancel").addEventListener("click", closeLeaderModal);
+leaderModal.addEventListener("click", (e) => {
+  if (e.target === leaderModal) closeLeaderModal();
+});
+
+leaderForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = document.getElementById("leader-id").value;
+  const payload = {
+    name: document.getElementById("leader-name").value.trim(),
+    title: document.getElementById("leader-title").value.trim(),
+    imageId: leaderImageUpload?.getImageId() || null,
+    order: id
+      ? leadersData.find((l) => l.id === id)?.order ?? leadersData.length
+      : leadersData.length + 1,
+  };
+
+  try {
+    if (id) await updateLeader(id, payload);
+    else await createLeader(payload);
+    await loadLeadersTable();
+    closeLeaderModal();
+    showAlert(adminAlert, "Leader saved.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save leader.");
+    console.error(err);
+  }
+});
+
+async function handleDeleteLeader(id) {
+  if (!confirm("Delete this leader? This cannot be undone.")) return;
+  const data = leadersData.find((item) => item.id === id);
+
+  try {
+    await deleteLeader(id);
+    if (data?.imageId) {
+      try {
+        await deleteImage(data.imageId);
+      } catch {
+        /* non-critical */
+      }
+    }
+    await loadLeadersTable();
+    showAlert(adminAlert, "Leader deleted.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to delete leader.");
+    console.error(err);
+  }
+}
 
 async function handleDelete(type, id) {
   const labels = { news: "news article", updates: "update", history: "history article" };
@@ -417,6 +586,21 @@ async function handleDelete(type, id) {
 document.getElementById("about-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const data = {
+    fullName: document.getElementById("about-full-name").value.trim(),
+    denomination: document.getElementById("about-denomination").value.trim(),
+    registrationNumber: document.getElementById("about-registration").value.trim(),
+    officeHours: document.getElementById("about-office-hours").value.trim(),
+    whatsapp: document.getElementById("about-whatsapp").value.trim(),
+    officePhone: document.getElementById("about-office-phone").value.trim(),
+    officePhoneLink: document.getElementById("about-office-phone-link").value.trim(),
+    instagram: document.getElementById("about-instagram").value.trim(),
+    facebook: document.getElementById("about-facebook").value.trim(),
+    emailAdmin: document.getElementById("about-email-admin").value.trim(),
+    emailAccount: document.getElementById("about-email-account").value.trim(),
+    youtubeSocial: document.getElementById("about-youtube-social").value.trim(),
+    founderName: document.getElementById("about-founder-name").value.trim(),
+    founderBio: document.getElementById("about-founder-bio").value.trim(),
+    founderImageId: aboutUploads.founder?.getImageId() || null,
     mission: document.getElementById("about-mission").value.trim(),
     vision: document.getElementById("about-vision").value.trim(),
     values: document.getElementById("about-values").value.trim(),
@@ -436,6 +620,19 @@ document.getElementById("about-form").addEventListener("submit", async (e) => {
   }
 });
 
+document.getElementById("org-chart-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  try {
+    await saveOrgStructure({
+      chartImageId: orgChartUpload?.getImageId() || null,
+    });
+    showAlert(adminAlert, "Organisation chart saved.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save organisation chart.");
+    console.error(err);
+  }
+});
+
 document.getElementById("settings-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const data = {
@@ -448,7 +645,6 @@ document.getElementById("settings-form").addEventListener("submit", async (e) =>
     address: document.getElementById("settings-address").value.trim(),
     phone: document.getElementById("settings-phone").value.trim(),
     email: document.getElementById("settings-email").value.trim(),
-    heroImageId: settingsHeroUpload?.getImageId() || null,
   };
 
   try {

@@ -16,6 +16,7 @@ import { defaultYouTube } from "./firebase-config.js";
 
 const SITE_SETTINGS_DOC = doc(db, "siteSettings", "main");
 const ABOUT_DOC = doc(db, "about", "main");
+const ORG_DOC = doc(db, "organisation", "main");
 
 export async function getSiteSettings() {
   const snap = await getDoc(SITE_SETTINGS_DOC);
@@ -31,7 +32,6 @@ export async function getSiteSettings() {
     phone: "",
     email: "",
     serviceTimes: "Sundays at 10:00 AM",
-    heroImageId: null,
   };
 }
 
@@ -43,24 +43,41 @@ export async function saveSiteSettings(data) {
   );
 }
 
+const DEFAULT_ABOUT = {
+  fullName: "BEM On The Rock",
+  denomination: "",
+  registrationNumber: "",
+  officeHours: "",
+  whatsapp: "",
+  officePhone: "",
+  officePhoneLink: "",
+  instagram: "",
+  facebook: "",
+  emailAdmin: "",
+  emailAccount: "",
+  youtubeSocial: "",
+  founderName: "",
+  founderBio: "",
+  founderImageId: null,
+  mission:
+    "To lead people into a growing relationship with Jesus Christ through worship, discipleship, and community outreach.",
+  vision:
+    "A church family rooted in faith, reaching the lost, and transforming lives for the glory of God.",
+  values: "Faith · Love · Integrity · Community · Service",
+  contactNote:
+    "We welcome visitors and newcomers. Come as you are — you belong here.",
+  heroImageId: null,
+  missionImageId: null,
+  visionImageId: null,
+  valuesImageId: null,
+};
+
 export async function getAboutContent() {
   const snap = await getDoc(ABOUT_DOC);
   if (snap.exists()) {
-    return { id: snap.id, ...snap.data() };
+    return { ...DEFAULT_ABOUT, id: snap.id, ...snap.data() };
   }
-  return {
-    mission:
-      "To lead people into a growing relationship with Jesus Christ through worship, discipleship, and community outreach.",
-    vision:
-      "A church family rooted in faith, reaching the lost, and transforming lives for the glory of God.",
-    values: "Faith · Love · Integrity · Community · Service",
-    contactNote:
-      "We welcome visitors and newcomers. Come as you are — you belong here.",
-    heroImageId: null,
-    missionImageId: null,
-    visionImageId: null,
-    valuesImageId: null,
-  };
+  return { ...DEFAULT_ABOUT };
 }
 
 export async function saveAboutContent(data) {
@@ -71,23 +88,99 @@ export async function saveAboutContent(data) {
   );
 }
 
-export async function getHistory() {
-  const q = query(collection(db, "history"), orderBy("date", "desc"));
+export async function getOrgStructure() {
+  const snap = await getDoc(ORG_DOC);
+  if (snap.exists()) {
+    return { id: snap.id, ...snap.data() };
+  }
+  return { chartImageId: null };
+}
+
+export async function saveOrgStructure(data) {
+  await setDoc(
+    ORG_DOC,
+    { ...data, updatedAt: serverTimestamp() },
+    { merge: true }
+  );
+}
+
+export async function getLeaders() {
+  const q = query(collection(db, "leaders"), orderBy("order", "asc"));
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
-export async function createHistory(data) {
-  const ref = await addDoc(collection(db, "history"), {
+export async function createLeader(data) {
+  const ref = await addDoc(collection(db, "leaders"), {
     ...data,
     createdAt: serverTimestamp(),
   });
   return ref.id;
 }
 
+export async function updateLeader(id, data) {
+  await updateDoc(doc(db, "leaders", id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteLeader(id) {
+  await deleteDoc(doc(db, "leaders", id));
+}
+
+/** Derive a numeric sort key from free-text or ISO dates */
+export function parseSortKey(value) {
+  if (!value) return 0;
+  if (value.toDate) return value.toDate().getTime();
+  if (typeof value === "number") return value;
+
+  const text = String(value).trim();
+  const parsed = Date.parse(text);
+  if (!Number.isNaN(parsed)) return parsed;
+
+  const yearMatch = text.match(/\b(19|20)\d{2}\b/);
+  if (yearMatch) return parseInt(yearMatch[0], 10) * 1e10;
+
+  return 0;
+}
+
+export function sortHistoryItems(items, direction = "desc") {
+  const dir = direction === "asc" ? 1 : -1;
+  return [...items].sort((a, b) => {
+    const keyA = a.sortKey ?? parseSortKey(a.date);
+    const keyB = b.sortKey ?? parseSortKey(b.date);
+    if (keyA !== keyB) return (keyA - keyB) * dir;
+
+    const createdA = a.createdAt?.seconds ?? 0;
+    const createdB = b.createdAt?.seconds ?? 0;
+    return (createdA - createdB) * dir;
+  });
+}
+
+export async function getHistory(direction = "desc") {
+  const snap = await getDocs(collection(db, "history"));
+  const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return sortHistoryItems(items, direction);
+}
+
+export async function createHistory(data) {
+  const date = data.date?.trim() ?? "";
+  const ref = await addDoc(collection(db, "history"), {
+    ...data,
+    date,
+    sortKey: parseSortKey(date),
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
 export async function updateHistory(id, data) {
+  const date = data.date?.trim() ?? "";
   await updateDoc(doc(db, "history", id), {
     ...data,
+    date,
+    sortKey: parseSortKey(date),
     updatedAt: serverTimestamp(),
   });
 }
@@ -155,10 +248,19 @@ export function formatDate(value) {
   } else {
     date = new Date(value);
   }
-  if (Number.isNaN(date.getTime())) return "";
+  if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleDateString(undefined, {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
+}
+
+/** Display history date — plain text or formatted ISO */
+export function displayHistoryDate(value) {
+  if (!value) return "";
+  if (typeof value === "string" && Number.isNaN(Date.parse(value))) {
+    return value;
+  }
+  return formatDate(value);
 }

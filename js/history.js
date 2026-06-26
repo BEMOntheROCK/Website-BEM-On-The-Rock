@@ -1,8 +1,11 @@
 import "./common.js";
-import { getHistory, formatDate } from "./firebase-service.js";
+import { getHistory, displayHistoryDate, sortHistoryItems } from "./firebase-service.js";
 import { getImageUrl } from "./image-service.js";
 
 document.getElementById("year").textContent = new Date().getFullYear();
+
+let allArticles = [];
+let sortDirection = "desc";
 
 function escapeHtml(text) {
   const div = document.createElement("div");
@@ -40,7 +43,7 @@ async function renderHistory(articles) {
           : ""
       }
       <div class="history-card-body">
-        <time class="card-date">${escapeHtml(formatDate(item.date))}</time>
+        <time class="card-date">${escapeHtml(displayHistoryDate(item.date))}</time>
         <h2 class="card-title">${escapeHtml(item.title)}</h2>
         <p class="card-body">${escapeHtml(item.content)}</p>
       </div>
@@ -49,10 +52,24 @@ async function renderHistory(articles) {
     .join("");
 }
 
+async function applySort(direction) {
+  sortDirection = direction;
+  const sorted = sortHistoryItems(allArticles, direction);
+  await renderHistory(sorted);
+}
+
 async function loadPage() {
   try {
-    const articles = await getHistory();
-    await renderHistory(articles);
+    allArticles = await getHistory("desc");
+    await renderHistory(allArticles);
+
+    const sortSelect = document.getElementById("history-sort");
+    if (sortSelect) {
+      sortSelect.value = "desc";
+      sortSelect.addEventListener("change", (e) => {
+        applySort(e.target.value);
+      });
+    }
   } catch (err) {
     console.error("Failed to load history:", err);
     const container = document.getElementById("history-list");
