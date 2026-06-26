@@ -10,6 +10,7 @@ import {
   query,
   orderBy,
   serverTimestamp,
+  writeBatch,
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { db } from "./firebase-init.js";
 import { defaultYouTube } from "./firebase-config.js";
@@ -103,6 +104,44 @@ export async function saveOrgStructure(data) {
     { merge: true }
   );
 }
+
+// ── Categories ──
+
+export async function getCategories() {
+  const snap = await getDocs(
+    query(collection(db, "categories"), orderBy("order", "asc"))
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function createCategory(data) {
+  return addDoc(collection(db, "categories"), {
+    ...data,
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function updateCategory(id, data) {
+  return updateDoc(doc(db, "categories", id), data);
+}
+
+export async function deleteCategory(id) {
+  return deleteDoc(doc(db, "categories", id));
+}
+
+/**
+ * Persist a full reordered categories array in a single batch write.
+ * Each item must have { id, ...fields }.
+ */
+export async function saveCategories(categories) {
+  const batch = writeBatch(db);
+  categories.forEach((cat, i) => {
+    batch.update(doc(db, "categories", cat.id), { order: i });
+  });
+  return batch.commit();
+}
+
+// ── Leaders ──
 
 export async function getLeaders() {
   const q = query(collection(db, "leaders"), orderBy("order", "asc"));
