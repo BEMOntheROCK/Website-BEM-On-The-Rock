@@ -2,6 +2,23 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap");
 
+/* ── Custom church title fonts ── */
+@font-face {
+  font-family: "BritanicBold";
+  src: url("../assets/BRITANIC.TTF") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Forte";
+  src: url("../assets/FORTE.TTF") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --marigold: #faa61a;
   --marigold-light: #ffc04d;
@@ -10,6 +27,8 @@
 
   --font-display: "Cormorant Garamond", Georgia, serif;
   --font-body: "DM Sans", system-ui, sans-serif;
+  --font-bem: "BritanicBold", Georgia, serif;
+  --font-ontherock: "Forte", Georgia, serif;
 
   --radius-sm: 8px;
   --radius-md: 14px;
@@ -84,6 +103,17 @@ a:hover {
   margin-inline: auto;
 }
 
+/* ── Church title font styling ── */
+.church-title-bem {
+  font-family: var(--font-bem);
+  font-weight: normal;
+}
+
+.church-title-ontherock {
+  font-family: var(--font-ontherock);
+  font-weight: normal;
+}
+
 /* ── Header ── */
 .site-header {
   position: sticky;
@@ -124,6 +154,10 @@ a:hover {
   font-weight: 700;
   color: var(--secondary);
   flex-shrink: 0;
+}
+
+.logo-text {
+  line-height: 1.2;
 }
 
 .logo-text span {
@@ -1001,6 +1035,21 @@ a:hover {
   display: block;
 }
 
+/* Leaders: category sections on public page */
+.leaders-category {
+  margin-bottom: 2.5rem;
+}
+
+.leaders-category-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--marigold);
+  margin-bottom: 1.15rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--marigold);
+}
+
 .leaders-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -1403,6 +1452,61 @@ a:hover {
 .table-actions {
   display: flex;
   gap: 0.4rem;
+}
+
+/* ── Drag-and-drop ordering ── */
+.drag-handle {
+  cursor: grab;
+  color: var(--text-muted);
+  padding: 0 0.5rem;
+  font-size: 1.1rem;
+  user-select: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+tr.dragging {
+  opacity: 0.5;
+  background: var(--bg-muted);
+}
+
+tr.drag-over {
+  border-top: 2px solid var(--marigold);
+}
+
+/* ── Category management (admin) ── */
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.category-item .drag-handle {
+  flex-shrink: 0;
+}
+
+.category-item-name {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.category-item-actions {
+  display: flex;
+  gap: 0.35rem;
 }
 
 /* ── Modal ── */
