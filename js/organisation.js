@@ -1,5 +1,5 @@
 import "./common.js";
-import { getOrgStructure, getLeaders } from "./firebase-service.js";
+import { getOrgStructure, getLeaders, getCategories } from "./firebase-service.js";
 import { getImageUrl } from "./image-service.js";
 
 document.getElementById("year").textContent = new Date().getFullYear();
@@ -31,7 +31,7 @@ async function renderChart(org) {
   }
 }
 
-async function renderLeaders(leaders) {
+async function renderLeaders(leaders, categories) {
   const container = document.getElementById("leaders-list");
   if (!container) return;
 
@@ -50,37 +50,81 @@ async function renderLeaders(leaders) {
     }))
   );
 
-  container.innerHTML = `
-    <div class="leaders-grid">
-      ${withImages
-        .map(
-          (leader) => `
-        <article class="leader-card">
-          <div class="leader-photo">
-            ${
-              leader.imageUrl
-                ? `<img src="${leader.imageUrl}" alt="${escapeHtml(leader.name)}" loading="lazy" />`
-                : `<span class="leader-photo-placeholder">${escapeHtml((leader.name || "?")[0])}</span>`
-            }
-          </div>
-          <div class="leader-info">
-            <h3>${escapeHtml(leader.name)}</h3>
-            <p>${escapeHtml(leader.title)}</p>
-          </div>
-        </article>`
-        )
-        .join("")}
-    </div>`;
+  // If no categories, render flat grid
+  if (!categories || !categories.length) {
+    container.innerHTML = `
+      <div class="leaders-grid">
+        ${withImages.map((leader) => leaderCardHtml(leader)).join("")}
+      </div>`;
+    return;
+  }
+
+  // Group leaders by category, preserving category order
+  const leadersByCategory = {};
+  withImages.forEach((leader) => {
+    const cat = leader.categoryId || "__uncategorised__";
+    if (!leadersByCategory[cat]) leadersByCategory[cat] = [];
+    leadersByCategory[cat].push(leader);
+  });
+
+  Object.values(leadersByCategory).forEach((group) =>
+    group.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  );
+
+  let html = "";
+
+  categories.forEach((cat) => {
+    const group = leadersByCategory[cat.id];
+    if (!group || !group.length) return;
+    html += `
+      <div class="leaders-category">
+        <h3 class="leaders-category-title">${escapeHtml(cat.name)}</h3>
+        <div class="leaders-grid">
+          ${group.map((leader) => leaderCardHtml(leader)).join("")}
+        </div>
+      </div>`;
+  });
+
+  const uncategorised = leadersByCategory["__uncategorised__"];
+  if (uncategorised && uncategorised.length) {
+    html += `
+      <div class="leaders-category">
+        <h3 class="leaders-category-title">Other</h3>
+        <div class="leaders-grid">
+          ${uncategorised.map((leader) => leaderCardHtml(leader)).join("")}
+        </div>
+      </div>`;
+  }
+
+  container.innerHTML = html || `<div class="empty-state"><p>Leadership information will be added soon.</p></div>`;
+}
+
+function leaderCardHtml(leader) {
+  return `
+    <article class="leader-card">
+      <div class="leader-photo">
+        ${
+          leader.imageUrl
+            ? `<img src="${leader.imageUrl}" alt="${escapeHtml(leader.name)}" loading="lazy" />`
+            : `<span class="leader-photo-placeholder">${escapeHtml((leader.name || "?")[0])}</span>`
+        }
+      </div>
+      <div class="leader-info">
+        <h3>${escapeHtml(leader.name)}</h3>
+        <p>${escapeHtml(leader.title)}</p>
+      </div>
+    </article>`;
 }
 
 async function loadPage() {
   try {
-    const [org, leaders] = await Promise.all([
+    const [org, leaders, categories] = await Promise.all([
       getOrgStructure(),
       getLeaders(),
+      getCategories(),
     ]);
     await renderChart(org);
-    await renderLeaders(leaders);
+    await renderLeaders(leaders, categories);
   } catch (err) {
     console.error("Failed to load organisation page:", err);
   }
