@@ -1018,27 +1018,30 @@ a:hover {
 }
 
 .founder-card {
-  display: grid;
-  grid-template-columns: minmax(0, 280px) 1fr;
-  gap: 2rem;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 2rem;
   margin-top: 1rem;
+  overflow: hidden; /* contains the float so the card height wraps the content */
 }
 
 .founder-image {
+  float: left;
+  width: 280px;
+  height: 280px;
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--bg-muted);
+  margin: 0 2rem 1rem 0;
+  shape-outside: margin-box;
 }
 
 .founder-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  min-height: 280px;
+  display: block;
 }
 
 .founder-body h3 {
@@ -1052,6 +1055,13 @@ a:hover {
   color: var(--text-muted);
   line-height: 1.8;
   white-space: pre-wrap;
+}
+
+/* Clear the float after the text so subsequent page content doesn't ride up alongside it */
+.founder-body::after {
+  content: "";
+  display: block;
+  clear: both;
 }
 
 /* ── Organisation page ── */
@@ -1648,11 +1658,10 @@ a:hover {
     gap: 0.35rem;
   }
 
-  .founder-card {
-    grid-template-columns: 1fr;
-  }
-
-  .founder-image img {
-    min-height: 220px;
+  .founder-image {
+    float: none;
+    width: 100%;
+    height: 220px;
+    margin: 0 0 1.25rem 0;
   }
 }
