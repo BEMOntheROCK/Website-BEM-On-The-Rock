@@ -1578,6 +1578,23 @@ a:hover {
   color: #28a745;
 }
 
+/* Admin save confirmation — fixed toast, stays visible regardless of scroll */
+#admin-alert {
+  position: fixed;
+  top: calc(var(--header-h) + 1rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  width: min(90vw, 420px);
+  pointer-events: none;
+}
+
+#admin-alert .alert {
+  margin-bottom: 0;
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
