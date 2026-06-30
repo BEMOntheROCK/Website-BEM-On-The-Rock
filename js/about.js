@@ -19,28 +19,17 @@ const SECTIONS = [
   { key: "values", title: "Core Values", imageKey: "valuesImageId" },
 ];
 
-// showValue: true => display the label next to the icon (per user preference,
-// only WhatsApp shows a custom label by default; everything else shows its
-// own descriptive label, never the raw URL/value).
+// type: "copy"  -> click copies the displayed value to clipboard (no navigation)
+// type: "link"  -> click opens the href in a new tab (existing behaviour)
 const SOCIALS = [
-  { key: "whatsapp", icon: "fa-brands fa-whatsapp", label: "WhatsApp" },
-  { key: "officePhone", icon: "fa-solid fa-phone", label: "Office", linkKey: "officePhoneLink" },
-  { key: "instagram", icon: "fa-brands fa-instagram", label: "Instagram" },
-  { key: "facebook", icon: "fa-brands fa-facebook", label: "Facebook" },
-  { key: "emailAdmin", icon: "fa-solid fa-envelope", label: "Admin Email", mailto: true },
-  { key: "emailAccount", icon: "fa-solid fa-envelope", label: "Accounts Email", mailto: true },
-  { key: "youtubeSocial", icon: "fa-brands fa-youtube", label: "YouTube" },
+  { key: "whatsapp", icon: "fa-brands fa-whatsapp", label: "WhatsApp", type: "copy" },
+  { key: "officePhone", icon: "fa-solid fa-phone", label: "Office", type: "copy" },
+  { key: "instagram", icon: "fa-brands fa-instagram", label: "Instagram", type: "link" },
+  { key: "facebook", icon: "fa-brands fa-facebook", label: "Facebook", type: "link" },
+  { key: "emailAdmin", icon: "fa-solid fa-envelope", label: "Admin Email", type: "copy" },
+  { key: "emailAccount", icon: "fa-solid fa-envelope", label: "Accounts Email", type: "copy" },
+  { key: "youtubeSocial", icon: "fa-brands fa-youtube", label: "YouTube", type: "link" },
 ];
-
-function buildSocialHref(key, value, about, linkKey, mailto) {
-  if (!value) return null;
-  if (mailto) return value.includes("@") ? `mailto:${value}` : value;
-  if (linkKey && about[linkKey]) return about[linkKey];
-  if (key === "officePhone" && !value.startsWith("http") && !value.startsWith("tel:")) {
-    return `tel:${value.replace(/\s/g, "")}`;
-  }
-  return value;
-}
 
 function renderGeneralInfo(about) {
   const container = document.getElementById("general-info");
@@ -52,11 +41,10 @@ function renderGeneralInfo(about) {
     { label: "Registration No.", value: about.registrationNumber },
   ].filter((d) => d.value);
 
-  const socialLinks = SOCIALS.map((s) => {
+  const socialItems = SOCIALS.map((s) => {
     const value = about[s.key];
-    const href = buildSocialHref(s.key, value, about, s.linkKey, s.mailto);
-    if (!value && !href) return null;
-    return { ...s, href };
+    if (!value) return null;
+    return { ...s, value };
   }).filter(Boolean);
 
   container.innerHTML = `
@@ -86,24 +74,54 @@ function renderGeneralInfo(about) {
           : ""
       }
       ${
-        socialLinks.length
+        socialItems.length
           ? `<div class="social-links">
         <h3>Connect With Us</h3>
         <div class="social-links-grid">
-          ${socialLinks
-            .map(
-              (s) => `
-            <a href="${escapeHtml(s.href)}" class="social-link" target="_blank" rel="noopener noreferrer" title="${escapeHtml(s.label)}">
+          ${socialItems
+            .map((s) => {
+              if (s.type === "copy") {
+                return `
+            <button type="button" class="social-link social-link--copy" data-copy-value="${escapeHtml(s.value)}" title="${escapeHtml(s.label)}">
+              <span class="social-link-icon"><i class="${s.icon}"></i></span>
+              <span class="social-link-label">${escapeHtml(s.value)}</span>
+              <span class="copied-tooltip">Copied!</span>
+            </button>`;
+              }
+              return `
+            <a href="${escapeHtml(s.value)}" class="social-link" target="_blank" rel="noopener noreferrer" title="${escapeHtml(s.label)}">
               <span class="social-link-icon"><i class="${s.icon}"></i></span>
               <span class="social-link-label">${escapeHtml(s.label)}</span>
-            </a>`
-            )
+            </a>`;
+            })
             .join("")}
         </div>
       </div>`
           : ""
       }
     </div>`;
+
+  // Wire up copy-to-clipboard buttons
+  container.querySelectorAll("[data-copy-value]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const value = btn.getAttribute("data-copy-value");
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch {
+        // Fallback for browsers without Clipboard API access
+        const textarea = document.createElement("textarea");
+        textarea.value = value;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      btn.classList.add("copied");
+      setTimeout(() => btn.classList.remove("copied"), 1500);
+    });
+  });
 }
 
 async function renderFounder(about) {
