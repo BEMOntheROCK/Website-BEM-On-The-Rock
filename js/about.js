@@ -19,27 +19,18 @@ const SECTIONS = [
   { key: "values", title: "Core Values", imageKey: "valuesImageId" },
 ];
 
+// showValue: true => display the label next to the icon (per user preference,
+// only WhatsApp shows a custom label by default; everything else shows its
+// own descriptive label, never the raw URL/value).
 const SOCIALS = [
-  { key: "whatsapp", icon: "whatsapp", label: "WhatsApp" },
-  { key: "officePhone", icon: "phone", label: "Office", linkKey: "officePhoneLink" },
-  { key: "instagram", icon: "instagram", label: "Instagram" },
-  { key: "facebook", icon: "facebook", label: "Facebook" },
-  { key: "emailAdmin", icon: "email", label: "Admin Email", mailto: true },
-  { key: "emailAccount", icon: "email", label: "Accounts Email", mailto: true },
-  { key: "youtubeSocial", icon: "youtube", label: "YouTube" },
+  { key: "whatsapp", icon: "fa-brands fa-whatsapp", label: "WhatsApp" },
+  { key: "officePhone", icon: "fa-solid fa-phone", label: "Office", linkKey: "officePhoneLink" },
+  { key: "instagram", icon: "fa-brands fa-instagram", label: "Instagram" },
+  { key: "facebook", icon: "fa-brands fa-facebook", label: "Facebook" },
+  { key: "emailAdmin", icon: "fa-solid fa-envelope", label: "Admin Email", mailto: true },
+  { key: "emailAccount", icon: "fa-solid fa-envelope", label: "Accounts Email", mailto: true },
+  { key: "youtubeSocial", icon: "fa-brands fa-youtube", label: "YouTube" },
 ];
-
-function socialIcon(name) {
-  const icons = {
-    whatsapp: "💬",
-    phone: "📞",
-    instagram: "📷",
-    facebook: "👥",
-    email: "✉",
-    youtube: "▶",
-  };
-  return icons[name] || "🔗";
-}
 
 function buildSocialHref(key, value, about, linkKey, mailto) {
   if (!value) return null;
@@ -59,14 +50,13 @@ function renderGeneralInfo(about) {
     { label: "Full Name", value: about.fullName },
     { label: "Denomination", value: about.denomination },
     { label: "Registration No.", value: about.registrationNumber },
-    { label: "Office Hours", value: about.officeHours },
   ].filter((d) => d.value);
 
   const socialLinks = SOCIALS.map((s) => {
     const value = about[s.key];
     const href = buildSocialHref(s.key, value, about, s.linkKey, s.mailto);
     if (!value && !href) return null;
-    return { ...s, href, display: value || s.label };
+    return { ...s, href };
   }).filter(Boolean);
 
   container.innerHTML = `
@@ -88,6 +78,14 @@ function renderGeneralInfo(about) {
           : `<p class="empty-note">General information will be added soon.</p>`
       }
       ${
+        about.officeHours
+          ? `<div class="office-hours-block">
+        <h3>Office Hours</h3>
+        <p class="office-hours-text">${escapeHtml(about.officeHours)}</p>
+      </div>`
+          : ""
+      }
+      ${
         socialLinks.length
           ? `<div class="social-links">
         <h3>Connect With Us</h3>
@@ -96,8 +94,8 @@ function renderGeneralInfo(about) {
             .map(
               (s) => `
             <a href="${escapeHtml(s.href)}" class="social-link" target="_blank" rel="noopener noreferrer" title="${escapeHtml(s.label)}">
-              <span class="social-link-icon">${socialIcon(s.icon)}</span>
-              <span class="social-link-label">${escapeHtml(s.display)}</span>
+              <span class="social-link-icon"><i class="${s.icon}"></i></span>
+              <span class="social-link-label">${escapeHtml(s.label)}</span>
             </a>`
             )
             .join("")}

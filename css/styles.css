@@ -19,6 +19,7 @@
   font-display: swap;
 }
 
+
 :root {
   --marigold: #faa61a;
   --marigold-light: #ffc04d;
@@ -154,10 +155,6 @@ a:hover {
   font-weight: 700;
   color: var(--secondary);
   flex-shrink: 0;
-}
-
-.logo-text {
-  line-height: 1.2;
 }
 
 .logo-text span {
@@ -940,6 +937,27 @@ a:hover {
   font-size: 0.92rem;
 }
 
+.office-hours-block {
+  margin-top: 1.75rem;
+  padding: 1.15rem 1.25rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.office-hours-block h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: 0.65rem;
+}
+
+.office-hours-text {
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.85;
+  white-space: pre-wrap;
+}
+
 .social-links {
   margin-top: 1.75rem;
 }
@@ -959,7 +977,7 @@ a:hover {
 .social-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.55rem;
   padding: 0.65rem 1rem;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -976,8 +994,24 @@ a:hover {
 }
 
 .social-link-icon {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+  width: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: color var(--transition);
 }
+
+.social-link:hover .social-link-icon {
+  color: var(--marigold);
+}
+
+/* Brand-accurate icon colors on hover, subtle by default */
+.social-link[title="WhatsApp"]:hover .social-link-icon { color: #25d366; }
+.social-link[title="Instagram"]:hover .social-link-icon { color: #e1306c; }
+.social-link[title="Facebook"]:hover .social-link-icon { color: #1877f2; }
+.social-link[title="YouTube"]:hover .social-link-icon { color: #ff0000; }
 
 .founder-section {
   margin-bottom: 2.5rem;
@@ -1033,21 +1067,6 @@ a:hover {
   width: 100%;
   height: auto;
   display: block;
-}
-
-/* Leaders: category sections on public page */
-.leaders-category {
-  margin-bottom: 2.5rem;
-}
-
-.leaders-category-title {
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--marigold);
-  margin-bottom: 1.15rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--marigold);
 }
 
 .leaders-grid {
@@ -1452,61 +1471,6 @@ a:hover {
 .table-actions {
   display: flex;
   gap: 0.4rem;
-}
-
-/* ── Drag-and-drop ordering ── */
-.drag-handle {
-  cursor: grab;
-  color: var(--text-muted);
-  padding: 0 0.5rem;
-  font-size: 1.1rem;
-  user-select: none;
-}
-
-.drag-handle:active {
-  cursor: grabbing;
-}
-
-tr.dragging {
-  opacity: 0.5;
-  background: var(--bg-muted);
-}
-
-tr.drag-over {
-  border-top: 2px solid var(--marigold);
-}
-
-/* ── Category management (admin) ── */
-.category-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.category-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 1rem;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-}
-
-.category-item .drag-handle {
-  flex-shrink: 0;
-}
-
-.category-item-name {
-  flex: 1;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.category-item-actions {
-  display: flex;
-  gap: 0.35rem;
 }
 
 /* ── Modal ── */
