@@ -124,17 +124,23 @@ function initImageUploads() {
   };
 }
 
+let dataLoaded = false;
+
 function showDashboard(user) {
   authScreen.style.display = "none";
   dashboard.style.display = user ? "grid" : "none";
   logoutBtn.style.display = user ? "inline-flex" : "none";
-  if (user) loadAllData();
+  if (user && !dataLoaded) {
+    dataLoaded = true;
+    loadAllData();
+  }
 }
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
     showDashboard(user);
   } else {
+    dataLoaded = false;
     authScreen.style.display = "flex";
     dashboard.style.display = "none";
     logoutBtn.style.display = "none";
