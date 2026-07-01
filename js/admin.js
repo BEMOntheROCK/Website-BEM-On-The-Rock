@@ -85,39 +85,45 @@ function toHistoryDateText(value) {
 }
 
 function initImageUploads() {
-  crudImageUpload = bindImageUpload(document.getElementById("crud-image-upload"), {
+  const safeBind = (id, opts) => {
+    const el = document.getElementById(id);
+    if (!el) { console.warn(`initImageUploads: #${id} not found`); return null; }
+    return bindImageUpload(el, opts);
+  };
+
+  crudImageUpload = safeBind("crud-image-upload", {
     inputId: "crud-image-input",
     label: "Article Image",
   });
 
-  leaderImageUpload = bindImageUpload(document.getElementById("leader-image-upload"), {
+  leaderImageUpload = safeBind("leader-image-upload", {
     inputId: "leader-image-input",
     label: "Leader Photo",
   });
 
-  orgChartUpload = bindImageUpload(document.getElementById("org-chart-image-upload"), {
+  orgChartUpload = safeBind("org-chart-image-upload", {
     inputId: "org-chart-image-input",
     label: "Organisation Chart Image",
   });
 
   aboutUploads = {
-    hero: bindImageUpload(document.getElementById("about-hero-image-upload"), {
+    hero: safeBind("about-hero-image-upload", {
       inputId: "about-hero-image-input",
       label: "About Page Hero Background",
     }),
-    founder: bindImageUpload(document.getElementById("about-founder-image-upload"), {
+    founder: safeBind("about-founder-image-upload", {
       inputId: "about-founder-image-input",
       label: "Founder Photo",
     }),
-    mission: bindImageUpload(document.getElementById("about-mission-image-upload"), {
+    mission: safeBind("about-mission-image-upload", {
       inputId: "about-mission-image-input",
       label: "Mission Section Image",
     }),
-    vision: bindImageUpload(document.getElementById("about-vision-image-upload"), {
+    vision: safeBind("about-vision-image-upload", {
       inputId: "about-vision-image-input",
       label: "Vision Section Image",
     }),
-    values: bindImageUpload(document.getElementById("about-values-image-upload"), {
+    values: safeBind("about-values-image-upload", {
       inputId: "about-values-image-input",
       label: "Values Section Image",
     }),
@@ -509,6 +515,7 @@ function bindLeaderDrag(tbody) {
 }
 
 function bindTableActions(tbody, type) {
+  console.log("[bindTableActions] binding for type:", type, "buttons found:", tbody.querySelectorAll(`[data-edit-${type}]`).length);
   tbody.querySelectorAll(`[data-edit-${type}]`).forEach((btn) => {
     btn.addEventListener("click", () =>
       openModal(type, btn.getAttribute(`data-edit-${type}`))
@@ -601,7 +608,9 @@ function configureDateField(type, data) {
 }
 
 function openModal(type, id = null) {
+  console.log("[openModal] called with type:", type, "id:", id);
   const data = id ? getDataForType(type).find((item) => item.id === id) : null;
+  console.log("[openModal] data found:", data);
   const label = MODAL_LABELS[type] || "Item";
 
   document.getElementById("modal-title").textContent = id ? `Edit ${label}` : `Add ${label}`;
@@ -820,6 +829,7 @@ async function handleDeleteLeader(id) {
 }
 
 async function handleDelete(type, id) {
+  console.log("[handleDelete] called with type:", type, "id:", id);
   const labels = { news: "news article", updates: "update", history: "history article" };
   if (!confirm(`Delete this ${labels[type]}? This cannot be undone.`)) return;
 
