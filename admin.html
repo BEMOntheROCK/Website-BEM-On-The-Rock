@@ -92,7 +92,6 @@
       </aside>
 
       <div class="admin-main">
-        <div id="admin-alert"></div>
 
         <!-- News panel -->
         <section id="panel-news" class="admin-panel active">
@@ -485,6 +484,9 @@
         </div>
       </div>
     </div>
+
+    <!-- Fixed toast notification — lives outside all panels so it never intercepts clicks -->
+    <div id="admin-alert"></div>
 
     <script type="module" src="js/admin.js"></script>
   </body>

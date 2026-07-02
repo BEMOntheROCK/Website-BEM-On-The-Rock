@@ -515,7 +515,6 @@ function bindLeaderDrag(tbody) {
 }
 
 function bindTableActions(tbody, type) {
-  console.log("[bindTableActions] binding for type:", type, "buttons found:", tbody.querySelectorAll(`[data-edit-${type}]`).length);
   tbody.querySelectorAll(`[data-edit-${type}]`).forEach((btn) => {
     btn.addEventListener("click", () =>
       openModal(type, btn.getAttribute(`data-edit-${type}`))
@@ -608,9 +607,7 @@ function configureDateField(type, data) {
 }
 
 function openModal(type, id = null) {
-  console.log("[openModal] called with type:", type, "id:", id);
   const data = id ? getDataForType(type).find((item) => item.id === id) : null;
-  console.log("[openModal] data found:", data);
   const label = MODAL_LABELS[type] || "Item";
 
   document.getElementById("modal-title").textContent = id ? `Edit ${label}` : `Add ${label}`;
@@ -829,7 +826,6 @@ async function handleDeleteLeader(id) {
 }
 
 async function handleDelete(type, id) {
-  console.log("[handleDelete] called with type:", type, "id:", id);
   const labels = { news: "news article", updates: "update", history: "history article" };
   if (!confirm(`Delete this ${labels[type]}? This cannot be undone.`)) return;
 
