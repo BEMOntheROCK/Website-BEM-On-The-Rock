@@ -178,6 +178,7 @@ async function loadNews() {
     </tr>`).join("");
 }
 
+
 document.getElementById("add-news-btn").addEventListener("click", () => openCrud("news"));
 
 document.getElementById("news-table-body").addEventListener("click", e => {
