@@ -309,6 +309,11 @@ a:hover {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
+.hero--default-bg h1 .church-title-bem,
+.hero--default-bg h1 .church-title-ontherock {
+  color: #fff;
+}
+
 .hero--default-bg h1 em {
   color: var(--marigold-light);
 }
