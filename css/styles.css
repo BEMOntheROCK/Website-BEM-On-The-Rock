@@ -421,9 +421,17 @@ a:hover {
   margin-bottom: 1.75rem;
 }
 
+@font-face {
+  font-family: "Helvetica Neue Black Extended";
+  src: url("../assets/Helvetica-neue-black-extended.otf") format("opentype");
+  font-weight: 900;
+  font-display: swap;
+}
+
 .aurora-title {
   position: relative;
   display: inline-block;
+  font-family: "Helvetica Neue Black Extended", var(--font-display), sans-serif;
   font-size: clamp(2.2rem, 5.5vw, 3.4rem);
   font-weight: 900;
   letter-spacing: 0.5px;
