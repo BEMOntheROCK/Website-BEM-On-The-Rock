@@ -422,10 +422,12 @@ a:hover {
 }
 
 .aurora-title {
+  position: relative;
   display: inline-block;
-  font-size: clamp(1.8rem, 4vw, 2.75rem);
-  font-weight: 800;
+  font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+  font-weight: 900;
   letter-spacing: 0.5px;
+  padding: 0.4rem 1.5rem;
   background-image: url(../assets/aurora.gif);
   background-size: cover;
   background-position: center;
@@ -434,6 +436,15 @@ a:hover {
   -webkit-text-fill-color: transparent;
   color: transparent;
   margin-bottom: 1.75rem;
+}
+
+.aurora-title::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 14px;
+  z-index: -1;
 }
 
 .hero-actions {
