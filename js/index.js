@@ -32,14 +32,7 @@ async function renderHero(settings) {
     title.innerHTML = `<span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The <em>Rock</em></span>`;
   }
 
-  if (tagline && settings.tagline) {
-    const taglineSpan = tagline.querySelector("span");
-    if (taglineSpan) {
-      taglineSpan.textContent = settings.tagline;
-    } else {
-      tagline.textContent = settings.tagline;
-    }
-  }
+  if (tagline && settings.tagline) tagline.textContent = settings.tagline;
   if (footerTagline && settings.tagline) footerTagline.textContent = settings.tagline;
 }
 

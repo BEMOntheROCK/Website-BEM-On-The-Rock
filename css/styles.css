@@ -430,15 +430,16 @@ a:hover {
 
 .tagline-wrap {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   margin-bottom: 1.75rem;
 }
 
 .tagline-glass {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(18px) saturate(180%);
   -webkit-backdrop-filter: blur(18px) saturate(180%);
@@ -449,20 +450,21 @@ a:hover {
     inset 0 -6px 12px rgba(255, 255, 255, 0.08),
     0 8px 24px rgba(0, 0, 0, 0.35);
   z-index: 1;
+  pointer-events: none;
 }
 
 .aurora-title {
   position: relative;
   z-index: 2;
-  display: inline-block;
+  display: block;
   font-family: "Helvetica Neue Black Extended", var(--font-display), sans-serif;
   font-size: clamp(2.2rem, 6vw, 3.75rem);
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin: 0;
-  padding: 0.5rem 1.75rem;
-  line-height: 1;
+  padding: 0.6rem 2rem;
+  line-height: 1.1;
   background-image: url(../assets/aurora.gif);
   background-size: 200% 200%;
   background-position: 30% 40%;
@@ -1850,4 +1852,4 @@ a:hover {
     height: 40px;
     font-size: 1rem;
   }
-} 
+}
