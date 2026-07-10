@@ -432,7 +432,7 @@ a:hover {
   position: relative;
   display: inline-block;
   font-family: "Helvetica Neue Black Extended", var(--font-display), sans-serif;
-  font-size: clamp(3.3rem, 8.25vw, 5.1rem);
+  font-size: clamp(2rem, 5vw, 3rem);
   font-weight: 900;
   letter-spacing: 0.5px;
   padding: 0.4rem 1.5rem;
