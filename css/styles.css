@@ -430,13 +430,15 @@ a:hover {
 
 .tagline-wrap {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 1.75rem;
 }
 
 .tagline-glass {
   position: absolute;
-  inset: -0.4rem -1.2rem;
+  inset: 0;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(18px) saturate(180%);
   -webkit-backdrop-filter: blur(18px) saturate(180%);
@@ -458,8 +460,9 @@ a:hover {
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  padding: 0.3rem 0.5rem;
-  margin-bottom: 0;
+  margin: 0;
+  padding: 0.5rem 1.75rem;
+  line-height: 1;
   background-image: url(../assets/aurora.gif);
   background-size: 200% 200%;
   background-position: 30% 40%;
