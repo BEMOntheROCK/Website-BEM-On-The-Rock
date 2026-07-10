@@ -458,7 +458,7 @@ a:hover {
   z-index: 2;
   display: block;
   font-family: "Helvetica Neue Black Extended", var(--font-display), sans-serif;
-  font-size: clamp(2.2rem, 6vw, 3.75rem);
+  font-size: clamp(1.8rem, 4.5vw, 2.8rem);
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -472,6 +472,7 @@ a:hover {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+  -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.6);
 }
 
 .hero-actions {
