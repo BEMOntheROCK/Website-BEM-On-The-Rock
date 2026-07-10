@@ -423,38 +423,17 @@ a:hover {
 
 .aurora-title {
   display: inline-block;
-  font-size: 1.3rem;
-  font-weight: 700;
-  background-image: radial-gradient(circle at 20% 30%, #00c2ff, transparent 45%),
-    radial-gradient(circle at 80% 25%, #ffc640, transparent 45%),
-    radial-gradient(circle at 60% 80%, #e54cff, transparent 50%),
-    radial-gradient(circle at 15% 85%, #33ff8c, transparent 45%),
-    linear-gradient(135deg, #00c2ff, #33ff8c, #ffc640, #e54cff, #00c2ff);
-  background-size: 220% 220%;
+  font-size: clamp(1.8rem, 4vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background-image: url(../assets/aurora.gif);
+  background-size: cover;
+  background-position: center;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  animation: aurora-plasma 10s ease-in-out infinite;
   margin-bottom: 1.75rem;
-}
-
-@keyframes aurora-plasma {
-  0% {
-    background-position: 0% 50%;
-  }
-  25% {
-    background-position: 100% 30%;
-  }
-  50% {
-    background-position: 50% 100%;
-  }
-  75% {
-    background-position: 0% 70%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
 }
 
 .hero-actions {
