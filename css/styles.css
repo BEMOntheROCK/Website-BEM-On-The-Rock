@@ -429,11 +429,19 @@ a:hover {
   --blur: 1rem;
   position: relative;
   overflow: hidden;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+  min-height: 140px;
+  margin-inline: auto;
   color: #fff;
-  background: #111;
-  padding: 0.5rem 1.5rem;
-  border-radius: 8px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: #000;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
 }
 
 .aurora {
