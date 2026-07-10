@@ -430,6 +430,7 @@ a:hover {
 
 .aurora-title {
   position: relative;
+  isolation: isolate;
   display: inline-block;
   font-family: "Helvetica Neue Black Extended", var(--font-display), sans-serif;
   font-size: clamp(2rem, 5vw, 3rem);
