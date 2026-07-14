@@ -425,6 +425,31 @@
               <button type="submit" class="btn btn-primary">Save Settings</button>
             </div>
           </form>
+
+          <hr class="admin-divider" />
+
+          <h3 class="admin-subheading">Past Sermon Videos (Carousel)</h3>
+          <p class="admin-hint">Add past sermon or event videos. Visitors can click these to switch away from the live feed. Drag the ⠿ handle to reorder.</p>
+          <div class="admin-toolbar">
+            <span id="carousel-videos-count"></span>
+            <button type="button" class="btn btn-primary btn-sm" id="add-carousel-video-btn">+ Add Video</button>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;"></th>
+                  <th>Title</th>
+                  <th>Date</th>
+                  <th>YouTube ID</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="carousel-videos-table-body">
+                <tr><td colspan="5" class="loading">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
     </div>
@@ -586,6 +611,40 @@
             <div class="form-actions">
               <button type="submit" class="btn btn-primary">Save</button>
               <button type="button" class="btn btn-outline" id="act-category-modal-cancel">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carousel video modal -->
+    <div id="carousel-video-modal" class="modal-overlay" role="dialog" aria-modal="true">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="carousel-video-modal-title">Add Video</h3>
+          <button type="button" class="modal-close" id="carousel-video-modal-close" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="carousel-video-form">
+            <input type="hidden" id="carousel-video-id" />
+            <div class="form-group">
+              <label for="carousel-video-title">Title</label>
+              <input type="text" id="carousel-video-title" required placeholder="e.g. Sunday Service — July 6" />
+            </div>
+            <div class="form-group">
+              <label for="carousel-video-date">Date</label>
+              <input type="date" id="carousel-video-date" />
+            </div>
+            <div class="form-group">
+              <label for="carousel-video-yt-id">YouTube Video ID</label>
+              <input type="text" id="carousel-video-yt-id" required placeholder="e.g. dQw4w9WgXcQ" />
+              <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
+                Found in the video URL after "v=" — e.g. youtube.com/watch?v=<strong>dQw4w9WgXcQ</strong>
+              </small>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="button" class="btn btn-outline" id="carousel-video-modal-cancel">Cancel</button>
             </div>
           </form>
         </div>

@@ -3,6 +3,7 @@ import {
   getSiteSettings,
   getNews,
   getUpdates,
+  getCarouselVideos,
   formatDate,
 } from "./firebase-service.js";
 import { defaultYouTube } from "./firebase-config.js";
@@ -39,10 +40,23 @@ async function renderHero(settings) {
   if (taglineWrap) taglineWrap.classList.add("tagline-ready");
 }
 
+let liveVideoId = null;
+
+function embedVideo(videoId, title = "BEM On The Rock Sunday Service") {
+  const embed = document.getElementById("livestream-embed");
+  if (!embed || !videoId) return;
+  embed.innerHTML = `<iframe
+    src="https://www.youtube.com/embed/${escapeHtml(videoId)}"
+    title="${escapeHtml(title)}"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen
+  ></iframe>`;
+}
+
 function renderLivestream(settings) {
   const liveUrl = settings.youtubeLiveUrl || defaultYouTube.liveUrl;
   const channelUrl = settings.youtubeChannelUrl || defaultYouTube.channelUrl;
-  const videoId = settings.youtubeVideoId;
+  liveVideoId = settings.youtubeVideoId;
 
   setLink("livestream-link", liveUrl);
   setLink("channel-link", channelUrl);
@@ -54,17 +68,55 @@ function renderLivestream(settings) {
     serviceTimes.textContent = settings.serviceTimes;
   }
 
-  const embed = document.getElementById("livestream-embed");
-  if (!embed) return;
+  if (liveVideoId) embedVideo(liveVideoId);
+}
 
-  if (videoId) {
-    embed.innerHTML = `<iframe
-      src="https://www.youtube.com/embed/${escapeHtml(videoId)}"
-      title="BEM On The Rock Sunday Service"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowfullscreen
-    ></iframe>`;
-  }
+async function renderCarousel(videos) {
+  const container = document.getElementById("video-carousel");
+  if (!container) return;
+
+  const sorted = [...videos].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  const liveCardHtml = `
+    <button type="button" class="carousel-card carousel-card--live active" data-video-id="${escapeHtml(liveVideoId || "")}" data-title="Live Now">
+      <div class="carousel-card-thumb carousel-card-thumb--live">
+        <span class="live-badge carousel-live-badge">● Live</span>
+      </div>
+      <div class="carousel-card-body">
+        <h4>Live Now</h4>
+      </div>
+    </button>`;
+
+  const pastCardsHtml = sorted
+    .map(
+      (v) => `
+    <button type="button" class="carousel-card" data-video-id="${escapeHtml(v.videoId)}" data-title="${escapeHtml(v.title)}">
+      <div class="carousel-card-thumb">
+        <img src="https://img.youtube.com/vi/${escapeHtml(v.videoId)}/hqdefault.jpg" alt="${escapeHtml(v.title)}" loading="lazy" />
+        <span class="carousel-play-icon">▶</span>
+      </div>
+      <div class="carousel-card-body">
+        <h4>${escapeHtml(v.title)}</h4>
+        ${v.date ? `<time>${escapeHtml(formatDate(v.date))}</time>` : ""}
+      </div>
+    </button>`
+    )
+    .join("");
+
+  container.innerHTML = liveCardHtml + pastCardsHtml;
+
+  container.querySelectorAll(".carousel-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const videoId = card.getAttribute("data-video-id");
+      const title = card.getAttribute("data-title");
+      if (!videoId) return;
+
+      embedVideo(videoId, title);
+
+      container.querySelectorAll(".carousel-card").forEach((c) => c.classList.remove("active"));
+      card.classList.add("active");
+    });
+  });
 }
 
 async function renderUpdates(updates) {
@@ -147,14 +199,16 @@ async function renderNews(news) {
 
 async function loadPage() {
   try {
-    const [settings, news, updates] = await Promise.all([
+    const [settings, news, updates, carouselVideos] = await Promise.all([
       getSiteSettings(),
       getNews(),
       getUpdates(),
+      getCarouselVideos(),
     ]);
 
     await renderHero(settings);
     renderLivestream(settings);
+    await renderCarousel(carouselVideos);
     await renderUpdates(updates);
     await renderNews(news);
   } catch (err) {

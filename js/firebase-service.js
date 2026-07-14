@@ -141,6 +141,41 @@ export async function saveCategories(categories) {
   return batch.commit();
 }
 
+// ── Carousel Videos ──
+
+export async function getCarouselVideos() {
+  const q = query(collection(db, "carouselVideos"), orderBy("order", "asc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function createCarouselVideo(data) {
+  const ref = await addDoc(collection(db, "carouselVideos"), {
+    ...data,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateCarouselVideo(id, data) {
+  await updateDoc(doc(db, "carouselVideos", id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteCarouselVideo(id) {
+  await deleteDoc(doc(db, "carouselVideos", id));
+}
+
+export async function saveCarouselVideosOrder(videos) {
+  const batch = writeBatch(db);
+  videos.forEach((v, i) => {
+    batch.update(doc(db, "carouselVideos", v.id), { order: i });
+  });
+  return batch.commit();
+}
+
 // ── Activities Categories ──
 
 export async function getActivitiesCategories() {

@@ -14,6 +14,7 @@ import {
   getCategories, createCategory, updateCategory, deleteCategory, saveCategories,
   getActivitiesCategories, createActivitiesCategory, updateActivitiesCategory, deleteActivitiesCategory, saveActivitiesCategories,
   getActivities, createActivity, updateActivity, deleteActivity,
+  getCarouselVideos, createCarouselVideo, updateCarouselVideo, deleteCarouselVideo, saveCarouselVideosOrder,
   getNews, createNews, updateNews, deleteNews,
   getUpdates, createUpdate, updateUpdate, deleteUpdate,
   getHistory, createHistory, updateHistory, deleteHistory,
@@ -45,6 +46,7 @@ let leadersData    = [];
 let categoriesData = [];
 let actCategoriesData = [];
 let activitiesData    = [];
+let carouselVideosData = [];
 let dataLoaded     = false;
 
 let crudImgUpload    = null;
@@ -158,6 +160,7 @@ async function initAll() {
   // Leaders and activities depend on their categories being loaded first
   await loadLeaders();
   await loadActivities();
+  await loadCarouselVideos();
 }
 
 // ══════════════════════════════════════════
@@ -1053,5 +1056,140 @@ async function confirmDeleteActivity(id) {
     showAlert(adminAlert, "Activity deleted.", "success");
   } catch (err) {
     showAlert(adminAlert, "Failed to delete activity.");
+  }
+}
+
+// ══════════════════════════════════════════
+// CAROUSEL VIDEOS
+// ══════════════════════════════════════════
+async function loadCarouselVideos() {
+  const tbody = document.getElementById("carousel-videos-table-body");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="5" class="loading">Loading…</td></tr>`;
+  carouselVideosData = await getCarouselVideos();
+  carouselVideosData.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  document.getElementById("carousel-videos-count").textContent = `${carouselVideosData.length} video(s)`;
+
+  if (!carouselVideosData.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No videos added yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = carouselVideosData.map(item => `
+    <tr draggable="true" data-cvid="${item.id}">
+      <td><span class="drag-handle">⠿</span></td>
+      <td>${esc(item.title)}</td>
+      <td>${item.date ? esc(formatDate(item.date)) : "—"}</td>
+      <td>${esc(item.videoId)}</td>
+      <td>
+        <div class="table-actions">
+          <button class="btn btn-outline btn-sm" data-action="edit-cv" data-id="${item.id}">Edit</button>
+          <button class="btn btn-danger btn-sm"  data-action="del-cv"  data-id="${item.id}">Delete</button>
+        </div>
+      </td>
+    </tr>`).join("");
+
+  bindCarouselVideoDrag(tbody);
+}
+
+document.getElementById("add-carousel-video-btn").addEventListener("click", () => openCarouselVideoModal());
+
+document.getElementById("carousel-videos-table-body").addEventListener("click", e => {
+  const btn = e.target.closest("[data-action]");
+  if (!btn) return;
+  if (btn.dataset.action === "edit-cv") openCarouselVideoModal(btn.dataset.id);
+  if (btn.dataset.action === "del-cv")  confirmDeleteCarouselVideo(btn.dataset.id);
+});
+
+function bindCarouselVideoDrag(tbody) {
+  let dragSrc = null;
+  tbody.querySelectorAll("tr[data-cvid]").forEach(row => {
+    row.addEventListener("dragstart", e => {
+      dragSrc = row;
+      e.dataTransfer.effectAllowed = "move";
+      row.classList.add("dragging");
+    });
+    row.addEventListener("dragend", () => {
+      row.classList.remove("dragging");
+      tbody.querySelectorAll("tr").forEach(r => r.classList.remove("drag-over"));
+      dragSrc = null;
+    });
+    row.addEventListener("dragover", e => {
+      e.preventDefault();
+      tbody.querySelectorAll("tr").forEach(r => r.classList.remove("drag-over"));
+      if (row !== dragSrc) row.classList.add("drag-over");
+    });
+    row.addEventListener("drop", async e => {
+      e.preventDefault();
+      if (!dragSrc || dragSrc === row) return;
+      const rows   = [...tbody.querySelectorAll("tr[data-cvid]")];
+      const srcIdx = rows.indexOf(dragSrc);
+      const tgtIdx = rows.indexOf(row);
+      const reorder = [...carouselVideosData];
+      const [moved] = reorder.splice(srcIdx, 1);
+      reorder.splice(tgtIdx, 0, moved);
+      carouselVideosData = reorder.map((v, i) => ({ ...v, order: i }));
+      await loadCarouselVideos();
+      try {
+        await saveCarouselVideosOrder(carouselVideosData);
+        showAlert(adminAlert, "Video order saved.", "success");
+      } catch (err) {
+        showAlert(adminAlert, "Failed to save video order.");
+      }
+    });
+  });
+}
+
+const carouselVideoModal = document.getElementById("carousel-video-modal");
+const carouselVideoForm  = document.getElementById("carousel-video-form");
+
+function openCarouselVideoModal(id = null) {
+  const item = id ? carouselVideosData.find(v => v.id === id) : null;
+  document.getElementById("carousel-video-modal-title").textContent = id ? "Edit Video" : "Add Video";
+  document.getElementById("carousel-video-id").value    = id || "";
+  document.getElementById("carousel-video-title").value = item?.title || "";
+  document.getElementById("carousel-video-date").value  = item?.date ? toInputDate(item.date) : "";
+  document.getElementById("carousel-video-yt-id").value = item?.videoId || "";
+  carouselVideoModal.classList.add("open");
+}
+
+function closeCarouselVideoModal() {
+  carouselVideoModal.classList.remove("open");
+  carouselVideoForm.reset();
+}
+
+document.getElementById("carousel-video-modal-close").addEventListener("click", closeCarouselVideoModal);
+document.getElementById("carousel-video-modal-cancel").addEventListener("click", closeCarouselVideoModal);
+carouselVideoModal.addEventListener("click", e => { if (e.target === carouselVideoModal) closeCarouselVideoModal(); });
+
+carouselVideoForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  const id = document.getElementById("carousel-video-id").value;
+  const payload = {
+    title:   document.getElementById("carousel-video-title").value.trim(),
+    date:    document.getElementById("carousel-video-date").value,
+    videoId: document.getElementById("carousel-video-yt-id").value.trim(),
+    order:   id ? carouselVideosData.find(v => v.id === id)?.order ?? carouselVideosData.length : carouselVideosData.length,
+  };
+  try {
+    if (id) await updateCarouselVideo(id, payload);
+    else    await createCarouselVideo(payload);
+    await loadCarouselVideos();
+    closeCarouselVideoModal();
+    showAlert(adminAlert, "Video saved.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save video.");
+    console.error(err);
+  }
+});
+
+async function confirmDeleteCarouselVideo(id) {
+  if (!confirm("Delete this video? This cannot be undone.")) return;
+  try {
+    await deleteCarouselVideo(id);
+    await loadCarouselVideos();
+    showAlert(adminAlert, "Video deleted.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to delete video.");
   }
 }

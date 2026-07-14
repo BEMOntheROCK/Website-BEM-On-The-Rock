@@ -67,7 +67,63 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
   }
+}rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null;
+    }
+    match /siteSettings/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /about/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /news/{doc} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /updates/{doc} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /history/{doc} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /organisation/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /leaders/{doc} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /categories/{doc} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /activitiesCategories/{doc} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /activities/{doc} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /carouselVideos/{doc} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /media/{doc} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+  }
 }
+
 
 
     match /news/{doc} {
