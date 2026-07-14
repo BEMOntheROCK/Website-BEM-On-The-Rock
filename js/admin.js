@@ -741,6 +741,7 @@ async function loadSettings() {
   set("settings-tagline",          s.tagline);
   set("settings-youtube-live",     s.youtubeLiveUrl);
   set("settings-youtube-channel",  s.youtubeChannelUrl);
+  set("settings-youtube-channel-id", s.youtubeChannelId);
   set("settings-youtube-video-id", s.youtubeVideoId);
   set("settings-service-times",    s.serviceTimes);
   set("settings-address",          s.address);
@@ -757,6 +758,7 @@ document.getElementById("settings-form").addEventListener("submit", async e => {
       tagline:          get("settings-tagline"),
       youtubeLiveUrl:   get("settings-youtube-live"),
       youtubeChannelUrl:get("settings-youtube-channel"),
+      youtubeChannelId: get("settings-youtube-channel-id"),
       youtubeVideoId:   get("settings-youtube-video-id"),
       serviceTimes:     get("settings-service-times"),
       address:          get("settings-address"),

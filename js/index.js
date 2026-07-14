@@ -53,9 +53,21 @@ function embedVideo(videoId, title = "BEM On The Rock Sunday Service") {
   ></iframe>`;
 }
 
+function embedAutoLive(channelId) {
+  const embed = document.getElementById("livestream-embed");
+  if (!embed || !channelId) return;
+  embed.innerHTML = `<iframe
+    src="https://www.youtube.com/embed/live_stream?channel=${escapeHtml(channelId)}"
+    title="BEM On The Rock Live"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen
+  ></iframe>`;
+}
+
 function renderLivestream(settings) {
   const liveUrl = settings.youtubeLiveUrl || defaultYouTube.liveUrl;
   const channelUrl = settings.youtubeChannelUrl || defaultYouTube.channelUrl;
+  const channelId = settings.youtubeChannelId || defaultYouTube.channelId;
   liveVideoId = settings.youtubeVideoId;
 
   setLink("livestream-link", liveUrl);
@@ -68,17 +80,24 @@ function renderLivestream(settings) {
     serviceTimes.textContent = settings.serviceTimes;
   }
 
-  if (liveVideoId) embedVideo(liveVideoId);
+  // Auto-live embed always shows whatever is currently live on the channel.
+  // A manually set youtubeVideoId (if present) overrides it, letting admin
+  // feature a specific video instead.
+  if (liveVideoId) {
+    embedVideo(liveVideoId);
+  } else if (channelId) {
+    embedAutoLive(channelId);
+  }
 }
 
-async function renderCarousel(videos) {
+async function renderCarousel(videos, channelId) {
   const container = document.getElementById("video-carousel");
   if (!container) return;
 
   const sorted = [...videos].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const liveCardHtml = `
-    <button type="button" class="carousel-card carousel-card--live active" data-video-id="${escapeHtml(liveVideoId || "")}" data-title="Live Now">
+    <button type="button" class="carousel-card carousel-card--live active" data-live="true" data-title="Live Now">
       <div class="carousel-card-thumb carousel-card-thumb--live">
         <span class="live-badge carousel-live-badge">● Live</span>
       </div>
@@ -107,11 +126,17 @@ async function renderCarousel(videos) {
 
   container.querySelectorAll(".carousel-card").forEach((card) => {
     card.addEventListener("click", () => {
-      const videoId = card.getAttribute("data-video-id");
-      const title = card.getAttribute("data-title");
-      if (!videoId) return;
+      const isLive = card.getAttribute("data-live") === "true";
 
-      embedVideo(videoId, title);
+      if (isLive) {
+        if (liveVideoId) embedVideo(liveVideoId);
+        else if (channelId) embedAutoLive(channelId);
+      } else {
+        const videoId = card.getAttribute("data-video-id");
+        const title = card.getAttribute("data-title");
+        if (!videoId) return;
+        embedVideo(videoId, title);
+      }
 
       container.querySelectorAll(".carousel-card").forEach((c) => c.classList.remove("active"));
       card.classList.add("active");
@@ -208,7 +233,8 @@ async function loadPage() {
 
     await renderHero(settings);
     renderLivestream(settings);
-    await renderCarousel(carouselVideos);
+    const channelId = settings.youtubeChannelId || defaultYouTube.channelId;
+    await renderCarousel(carouselVideos, channelId);
     await renderUpdates(updates);
     await renderNews(news);
   } catch (err) {

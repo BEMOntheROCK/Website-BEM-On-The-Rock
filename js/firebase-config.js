@@ -17,4 +17,5 @@ export const firebaseConfig = {
 export const defaultYouTube = {
   channelUrl: "https://www.youtube.com/@bem_ontherock",
   liveUrl: "https://www.youtube.com/@bem_ontherock/live",
+  channelId: "UCokmjLYT92F1EDik5Gvx8Kw",
 };

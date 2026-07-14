@@ -395,10 +395,17 @@
               </div>
             </div>
             <div class="form-group">
-              <label for="settings-youtube-video-id">YouTube Video ID (optional embed)</label>
+              <label for="settings-youtube-channel-id">YouTube Channel ID <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+              <input type="text" id="settings-youtube-channel-id" placeholder="e.g. UCokmjLYT92F1EDik5Gvx8Kw" />
+              <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
+                The home page automatically embeds whatever is live on this channel. Found in the channel's About page. Leave blank to use the default configured channel.
+              </small>
+            </div>
+            <div class="form-group">
+              <label for="settings-youtube-video-id">Feature a Specific Video <span style="color:var(--text-muted);font-weight:400;">(optional override)</span></label>
               <input type="text" id="settings-youtube-video-id" placeholder="e.g. dQw4w9WgXcQ" />
               <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
-                If set, embeds the video on the home page. Leave blank to show a link button instead.
+                If set, this specific video always shows instead of the auto-live embed. Leave blank so the home page always shows whichever stream is currently live.
               </small>
             </div>
             <div class="form-row">
