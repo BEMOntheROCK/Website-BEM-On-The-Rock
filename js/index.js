@@ -34,6 +34,9 @@ async function renderHero(settings) {
 
   if (tagline && settings.tagline) tagline.textContent = settings.tagline;
   if (footerTagline && settings.tagline) footerTagline.textContent = settings.tagline;
+
+  const taglineWrap = document.getElementById("tagline-wrap");
+  if (taglineWrap) taglineWrap.classList.add("tagline-ready");
 }
 
 function renderLivestream(settings) {
@@ -160,6 +163,7 @@ async function loadPage() {
       el.textContent =
         "Unable to load content. Please check your Firebase configuration.";
     });
+    document.getElementById("tagline-wrap")?.classList.add("tagline-ready");
   }
 }
 
