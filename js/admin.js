@@ -742,7 +742,9 @@ async function loadSettings() {
   set("settings-youtube-live",     s.youtubeLiveUrl);
   set("settings-youtube-channel",  s.youtubeChannelUrl);
   set("settings-youtube-channel-id", s.youtubeChannelId);
-  set("settings-youtube-video-id", s.youtubeVideoId);
+  set("settings-youtube-fallback-id", s.youtubeFallbackVideoId);
+  const isLiveEl = document.getElementById("settings-is-live");
+  if (isLiveEl) isLiveEl.checked = !!s.isLive;
   set("settings-service-times",    s.serviceTimes);
   set("settings-address",          s.address);
   set("settings-phone",            s.phone);
@@ -759,7 +761,8 @@ document.getElementById("settings-form").addEventListener("submit", async e => {
       youtubeLiveUrl:   get("settings-youtube-live"),
       youtubeChannelUrl:get("settings-youtube-channel"),
       youtubeChannelId: get("settings-youtube-channel-id"),
-      youtubeVideoId:   get("settings-youtube-video-id"),
+      youtubeFallbackVideoId: get("settings-youtube-fallback-id"),
+      isLive: document.getElementById("settings-is-live")?.checked || false,
       serviceTimes:     get("settings-service-times"),
       address:          get("settings-address"),
       phone:            get("settings-phone"),

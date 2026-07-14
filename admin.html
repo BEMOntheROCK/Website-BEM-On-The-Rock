@@ -398,14 +398,28 @@
               <label for="settings-youtube-channel-id">YouTube Channel ID <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
               <input type="text" id="settings-youtube-channel-id" placeholder="e.g. UCokmjLYT92F1EDik5Gvx8Kw" />
               <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
-                The home page automatically embeds whatever is live on this channel. Found in the channel's About page. Leave blank to use the default configured channel.
+                Found in the channel's About page. Leave blank to use the default configured channel.
               </small>
             </div>
+
+            <div class="form-group live-toggle-group">
+              <label class="live-toggle-label">
+                <span>We are live right now</span>
+                <span class="live-toggle-switch">
+                  <input type="checkbox" id="settings-is-live" />
+                  <span class="live-toggle-slider"></span>
+                </span>
+              </label>
+              <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
+                Turn this ON right before service starts — the home page will show the live broadcast. Turn it OFF after service ends — the home page will show the fallback video below instead.
+              </small>
+            </div>
+
             <div class="form-group">
-              <label for="settings-youtube-video-id">Feature a Specific Video <span style="color:var(--text-muted);font-weight:400;">(optional override)</span></label>
-              <input type="text" id="settings-youtube-video-id" placeholder="e.g. dQw4w9WgXcQ" />
+              <label for="settings-youtube-fallback-id">Fallback Video <span style="color:var(--text-muted);font-weight:400;">(shown when the toggle above is off)</span></label>
+              <input type="text" id="settings-youtube-fallback-id" placeholder="e.g. dQw4w9WgXcQ" />
               <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
-                If set, this specific video always shows instead of the auto-live embed. Leave blank so the home page always shows whichever stream is currently live.
+                Update this after each service — it's the same video ID that was just live, now playable as the recording.
               </small>
             </div>
             <div class="form-row">

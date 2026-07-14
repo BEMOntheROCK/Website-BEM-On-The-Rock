@@ -40,7 +40,7 @@ async function renderHero(settings) {
   if (taglineWrap) taglineWrap.classList.add("tagline-ready");
 }
 
-let liveVideoId = null;
+let fallbackVideoId = null;
 
 function embedVideo(videoId, title = "BEM On The Rock Sunday Service") {
   const embed = document.getElementById("livestream-embed");
@@ -68,7 +68,7 @@ function renderLivestream(settings) {
   const liveUrl = settings.youtubeLiveUrl || defaultYouTube.liveUrl;
   const channelUrl = settings.youtubeChannelUrl || defaultYouTube.channelUrl;
   const channelId = settings.youtubeChannelId || defaultYouTube.channelId;
-  liveVideoId = settings.youtubeVideoId;
+  fallbackVideoId = settings.youtubeFallbackVideoId;
 
   setLink("livestream-link", liveUrl);
   setLink("channel-link", channelUrl);
@@ -80,17 +80,20 @@ function renderLivestream(settings) {
     serviceTimes.textContent = settings.serviceTimes;
   }
 
-  // Auto-live embed always shows whatever is currently live on the channel.
-  // A manually set youtubeVideoId (if present) overrides it, letting admin
-  // feature a specific video instead.
-  if (liveVideoId) {
-    embedVideo(liveVideoId);
+  // Admin controls this with a simple toggle in the dashboard:
+  // - "We are live right now" ON  → embed the auto-live channel feed
+  // - toggle OFF                  → embed the fallback video (last service's recording)
+  if (settings.isLive && channelId) {
+    embedAutoLive(channelId);
+  } else if (fallbackVideoId) {
+    embedVideo(fallbackVideoId, "BEM On The Rock — Recent Service");
   } else if (channelId) {
+    // No fallback configured yet — still try the auto-live embed as a reasonable default
     embedAutoLive(channelId);
   }
 }
 
-async function renderCarousel(videos, channelId) {
+async function renderCarousel(videos, channelId, isLive) {
   const container = document.getElementById("video-carousel");
   if (!container) return;
 
@@ -99,10 +102,10 @@ async function renderCarousel(videos, channelId) {
   const liveCardHtml = `
     <button type="button" class="carousel-card carousel-card--live active" data-live="true" data-title="Live Now">
       <div class="carousel-card-thumb carousel-card-thumb--live">
-        <span class="live-badge carousel-live-badge">● Live</span>
+        <span class="live-badge carousel-live-badge">${isLive ? "● Live" : "▶ Latest"}</span>
       </div>
       <div class="carousel-card-body">
-        <h4>Live Now</h4>
+        <h4>${isLive ? "Live Now" : "Watch Latest Service"}</h4>
       </div>
     </button>`;
 
@@ -126,11 +129,16 @@ async function renderCarousel(videos, channelId) {
 
   container.querySelectorAll(".carousel-card").forEach((card) => {
     card.addEventListener("click", () => {
-      const isLive = card.getAttribute("data-live") === "true";
+      const isLiveCard = card.getAttribute("data-live") === "true";
 
-      if (isLive) {
-        if (liveVideoId) embedVideo(liveVideoId);
-        else if (channelId) embedAutoLive(channelId);
+      if (isLiveCard) {
+        if (isLive && channelId) {
+          embedAutoLive(channelId);
+        } else if (fallbackVideoId) {
+          embedVideo(fallbackVideoId, "BEM On The Rock — Recent Service");
+        } else if (channelId) {
+          embedAutoLive(channelId);
+        }
       } else {
         const videoId = card.getAttribute("data-video-id");
         const title = card.getAttribute("data-title");
@@ -234,7 +242,7 @@ async function loadPage() {
     await renderHero(settings);
     renderLivestream(settings);
     const channelId = settings.youtubeChannelId || defaultYouTube.channelId;
-    await renderCarousel(carouselVideos, channelId);
+    await renderCarousel(carouselVideos, channelId, settings.isLive);
     await renderUpdates(updates);
     await renderNews(news);
   } catch (err) {
