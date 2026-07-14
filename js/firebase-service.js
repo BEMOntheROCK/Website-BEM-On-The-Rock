@@ -141,6 +141,65 @@ export async function saveCategories(categories) {
   return batch.commit();
 }
 
+// ── Activities Categories ──
+
+export async function getActivitiesCategories() {
+  const snap = await getDocs(
+    query(collection(db, "activitiesCategories"), orderBy("order", "asc"))
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function createActivitiesCategory(data) {
+  return addDoc(collection(db, "activitiesCategories"), {
+    ...data,
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function updateActivitiesCategory(id, data) {
+  return updateDoc(doc(db, "activitiesCategories", id), data);
+}
+
+export async function deleteActivitiesCategory(id) {
+  return deleteDoc(doc(db, "activitiesCategories", id));
+}
+
+export async function saveActivitiesCategories(categories) {
+  const batch = writeBatch(db);
+  categories.forEach((cat, i) => {
+    batch.update(doc(db, "activitiesCategories", cat.id), { order: i });
+  });
+  return batch.commit();
+}
+
+// ── Activities ──
+
+export async function getActivities() {
+  const q = query(collection(db, "activities"), orderBy("order", "asc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function createActivity(data) {
+  const ref = await addDoc(collection(db, "activities"), {
+    ...data,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateActivity(id, data) {
+  await updateDoc(doc(db, "activities", id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteActivity(id) {
+  await deleteDoc(doc(db, "activities", id));
+}
+
 // ── Leaders ──
 
 export async function getLeaders() {

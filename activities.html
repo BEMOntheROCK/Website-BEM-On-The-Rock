@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Explore the history of BEM On The Rock — milestones and stories of our church."
+      content="Activities and ministries at BEM On The Rock Church."
     />
-    <title>Our History — BEM On The Rock</title>
+    <title>Activities &amp; Ministries — BEM On The Rock</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
@@ -16,7 +18,7 @@
         <a href="index.html" class="logo">
           <div class="logo-mark">B</div>
           <div class="logo-text">
-            BEM On The Rock
+            <span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The Rock</span>
             <span>Church</span>
           </div>
         </a>
@@ -25,9 +27,9 @@
           <ul class="nav-links">
             <li><a href="index.html">Home</a></li>
             <li><a href="about.html">About Us</a></li>
-            <li><a href="history.html" class="active">History</a></li>
+            <li><a href="history.html">History</a></li>
             <li><a href="organisation-structure.html">Organisation</a></li>
-            <li><a href="activities.html">Activities</a></li>
+            <li><a href="activities.html" class="active">Activities</a></li>
             <li><a href="admin.html">Admin</a></li>
           </ul>
         </nav>
@@ -53,29 +55,16 @@
     </header>
 
     <main>
-      <section class="page-hero page-hero--history" id="history-hero">
+      <section class="page-hero">
         <div class="container">
-          <h1>Our History</h1>
-          <p>Milestones and stories that shaped BEM On The Rock.</p>
+          <h1>Activities &amp; Ministries</h1>
+          <p>Discover the ministries and activities that make up our church family.</p>
         </div>
       </section>
 
       <section class="container section">
-        <div class="section-header">
-          <div>
-            <h2 class="section-title">Timeline</h2>
-            <p class="section-subtitle">Browse milestones from our church journey.</p>
-          </div>
-          <div class="form-group" style="margin-bottom: 0; min-width: 180px;">
-            <label for="history-sort" class="sr-only">Sort order</label>
-            <select id="history-sort" class="sort-select">
-              <option value="desc" selected>Newest first</option>
-              <option value="asc">Oldest first</option>
-            </select>
-          </div>
-        </div>
-        <div id="history-list" class="history-grid">
-          <div class="loading">Loading history…</div>
+        <div id="activities-content">
+          <div class="loading">Loading activities &amp; ministries…</div>
         </div>
       </section>
     </main>
@@ -87,7 +76,7 @@
             <a href="index.html" class="logo">
               <div class="logo-mark">B</div>
               <div class="logo-text">
-                BEM On The Rock
+                <span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The Rock</span>
                 <span>Church</span>
               </div>
             </a>
@@ -113,6 +102,8 @@
       </div>
     </footer>
 
-    <script type="module" src="js/history.js"></script>
+    <button id="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
+    <script type="module" src="js/scroll-effects.js"></script>
+    <script type="module" src="js/activities.js"></script>
   </body>
 </html>

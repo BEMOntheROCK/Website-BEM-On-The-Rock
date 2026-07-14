@@ -26,6 +26,7 @@
             <li><a href="about.html">About Us</a></li>
             <li><a href="history.html">History</a></li>
             <li><a href="organisation-structure.html">Organisation</a></li>
+            <li><a href="activities.html">Activities</a></li>
             <li><a href="admin.html" class="active">Admin</a></li>
           </ul>
         </nav>
@@ -87,6 +88,7 @@
           <li><button type="button" data-panel="history">History</button></li>
           <li><button type="button" data-panel="about">About Page</button></li>
           <li><button type="button" data-panel="organisation">Organisation</button></li>
+          <li><button type="button" data-panel="activities">Activities</button></li>
           <li><button type="button" data-panel="settings">Site Settings</button></li>
         </ul>
       </aside>
@@ -326,6 +328,47 @@
         </section>
 
 
+        <!-- Activities panel -->
+        <section id="panel-activities" class="admin-panel">
+          <h2>Activities &amp; Ministries</h2>
+          <p>Manage categories and individual activities or ministries shown on the public page.</p>
+
+          <h3 class="admin-subheading" style="border-top: none; margin-top: 0; padding-top: 0;">Activity Categories</h3>
+          <p class="admin-hint">Add categories and drag to reorder. Each activity must belong to a category.</p>
+          <div class="admin-toolbar">
+            <span id="act-categories-count"></span>
+            <button type="button" class="btn btn-primary btn-sm" id="add-act-category-btn">+ Add Category</button>
+          </div>
+          <div id="act-categories-list" class="category-list">
+            <div class="loading">Loading categories…</div>
+          </div>
+
+          <hr class="admin-divider" />
+
+          <div class="admin-toolbar">
+            <span id="activities-count"></span>
+            <button type="button" class="btn btn-primary btn-sm" id="add-activity-btn">+ Add Activity</button>
+          </div>
+          <p class="admin-hint">Drag the ⠿ handle to reorder activities within the table.</p>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;"></th>
+                  <th>Title</th>
+                  <th>Subtitle</th>
+                  <th>Category</th>
+                  <th>Image</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="activities-table-body">
+                <tr><td colspan="6" class="loading">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <!-- Settings panel -->
         <section id="panel-settings" class="admin-panel">
           <h2>Site Settings</h2>
@@ -487,6 +530,67 @@
 
     <!-- Fixed toast notification — lives outside all panels so it never intercepts clicks -->
     <div id="admin-alert"></div>
+
+    <!-- Activity modal -->
+    <div id="activity-modal" class="modal-overlay" role="dialog" aria-modal="true">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="activity-modal-title">Add Activity</h3>
+          <button type="button" class="modal-close" id="activity-modal-close" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="activity-form">
+            <input type="hidden" id="activity-id" />
+            <div class="form-group">
+              <label for="activity-title">Title</label>
+              <input type="text" id="activity-title" required />
+            </div>
+            <div class="form-group">
+              <label for="activity-subtitle">Subtitle <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+              <input type="text" id="activity-subtitle" />
+            </div>
+            <div class="form-group">
+              <label for="activity-description">Description <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+              <textarea id="activity-description" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="activity-category">Category</label>
+              <select id="activity-category" required>
+                <option value="">— Select a category —</option>
+              </select>
+            </div>
+            <div id="activity-image-upload"></div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="button" class="btn btn-outline" id="activity-modal-cancel">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity category modal -->
+    <div id="act-category-modal" class="modal-overlay" role="dialog" aria-modal="true">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="act-category-modal-title">Add Category</h3>
+          <button type="button" class="modal-close" id="act-category-modal-close" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="act-category-form">
+            <input type="hidden" id="act-category-id" />
+            <div class="form-group">
+              <label for="act-category-name">Category Name</label>
+              <input type="text" id="act-category-name" required placeholder="e.g. Youth Ministry" />
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="button" class="btn btn-outline" id="act-category-modal-cancel">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
     <script type="module" src="js/admin.js"></script>
   </body>

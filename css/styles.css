@@ -437,6 +437,12 @@ a:hover {
   position: relative;
   display: inline-block;
   margin-bottom: 1.75rem;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.tagline-wrap.tagline-ready {
+  opacity: 1;
 }
 
 .tagline-glass {
@@ -1857,5 +1863,129 @@ a:hover {
     width: 40px;
     height: 40px;
     font-size: 1rem;
+  }
+}
+/* ── Activities & Ministries ── */
+.activities-category {
+  margin-bottom: 3rem;
+}
+
+.activities-category-title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--marigold);
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--marigold);
+}
+
+.activities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.activity-card {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.activity-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Hero-style image with overlay */
+.activity-card-image {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.activity-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.45s ease;
+}
+
+.activity-card:hover .activity-card-image img {
+  transform: scale(1.04);
+}
+
+.activity-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.25) 55%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.5rem;
+}
+
+.activity-card-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  margin-bottom: 0.25rem;
+  line-height: 1.25;
+}
+
+.activity-card-subtitle {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--marigold-light);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* No-image fallback header */
+.activity-card-no-img {
+  background: linear-gradient(135deg, var(--marigold-dark), var(--marigold));
+  padding: 2rem 1.5rem;
+}
+
+.activity-card-no-img .activity-card-title {
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.activity-card-no-img .activity-card-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: none;
+}
+
+/* Description section */
+.activity-card-body {
+  padding: 1.25rem 1.5rem;
+}
+
+.activity-card-body p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/* No-image card needs rounded top since there's no image */
+.activity-card--no-image .activity-card-no-img {
+  border-radius: 0;
+}
+
+@media (max-width: 768px) {
+  .activities-grid {
+    grid-template-columns: 1fr;
   }
 }

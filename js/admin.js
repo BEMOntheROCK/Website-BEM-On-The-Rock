@@ -12,6 +12,8 @@ import {
   getOrgStructure, saveOrgStructure,
   getLeaders, createLeader, updateLeader, deleteLeader,
   getCategories, createCategory, updateCategory, deleteCategory, saveCategories,
+  getActivitiesCategories, createActivitiesCategory, updateActivitiesCategory, deleteActivitiesCategory, saveActivitiesCategories,
+  getActivities, createActivity, updateActivity, deleteActivity,
   getNews, createNews, updateNews, deleteNews,
   getUpdates, createUpdate, updateUpdate, deleteUpdate,
   getHistory, createHistory, updateHistory, deleteHistory,
@@ -41,11 +43,14 @@ let updatesData    = [];
 let historyData    = [];
 let leadersData    = [];
 let categoriesData = [];
+let actCategoriesData = [];
+let activitiesData    = [];
 let dataLoaded     = false;
 
 let crudImgUpload    = null;
 let leaderImgUpload  = null;
 let orgChartUpload   = null;
+let activityImgUpload = null;
 let aboutUploads     = {};
 
 // ── Helpers ──
@@ -131,6 +136,7 @@ async function initAll() {
   crudImgUpload   = safeBind("crud-image-upload",      { inputId: "crud-img-in",    label: "Article Image" });
   leaderImgUpload = safeBind("leader-image-upload",    { inputId: "leader-img-in",  label: "Leader Photo" });
   orgChartUpload  = safeBind("org-chart-image-upload", { inputId: "org-img-in",     label: "Organisation Chart Image" });
+  activityImgUpload = safeBind("activity-image-upload", { inputId: "act-img-in", label: "Activity Image" });
   aboutUploads = {
     hero:    safeBind("about-hero-image-upload",    { inputId: "ab-hero-in",    label: "Hero Background" }),
     founder: safeBind("about-founder-image-upload", { inputId: "ab-founder-in", label: "Founder Photo" }),
@@ -144,12 +150,14 @@ async function initAll() {
     loadUpdates(),
     loadHistory(),
     loadCategories(),
+    loadActCategories(),
     loadAboutForm(),
     loadOrgForm(),
     loadSettings(),
   ]);
-  // Leaders depend on categories being loaded first
+  // Leaders and activities depend on their categories being loaded first
   await loadLeaders();
+  await loadActivities();
 }
 
 // ══════════════════════════════════════════
@@ -177,7 +185,6 @@ async function loadNews() {
       </td>
     </tr>`).join("");
 }
-
 
 document.getElementById("add-news-btn").addEventListener("click", () => openCrud("news"));
 
@@ -759,3 +766,292 @@ document.getElementById("settings-form").addEventListener("submit", async e => {
     console.error(err);
   }
 });
+// ══════════════════════════════════════════
+// ACTIVITY CATEGORIES
+// ══════════════════════════════════════════
+async function loadActCategories() {
+  const container = document.getElementById("act-categories-list");
+  if (!container) return;
+  actCategoriesData = await getActivitiesCategories();
+  document.getElementById("act-categories-count").textContent = `${actCategoriesData.length} category(s)`;
+  renderActCategories();
+}
+
+function renderActCategories() {
+  const container = document.getElementById("act-categories-list");
+  if (!container) return;
+  if (!actCategoriesData.length) {
+    container.innerHTML = `<p class="admin-hint">No categories yet. Add one to get started.</p>`;
+    return;
+  }
+  container.innerHTML = actCategoriesData.map(cat => `
+    <div class="category-item" draggable="true" data-act-cat-id="${cat.id}">
+      <span class="drag-handle" title="Drag to reorder">⠿</span>
+      <span class="category-item-name">${esc(cat.name)}</span>
+      <div class="category-item-actions">
+        <button class="btn btn-outline btn-sm" data-action="edit-act-cat" data-id="${cat.id}">Edit</button>
+        <button class="btn btn-danger btn-sm"  data-action="del-act-cat"  data-id="${cat.id}">Delete</button>
+      </div>
+    </div>`).join("");
+
+  bindActCatDrag(container);
+}
+
+document.getElementById("act-categories-list").addEventListener("click", e => {
+  const btn = e.target.closest("[data-action]");
+  if (!btn) return;
+  if (btn.dataset.action === "edit-act-cat") openActCatModal(btn.dataset.id);
+  if (btn.dataset.action === "del-act-cat")  confirmDeleteActCat(btn.dataset.id);
+});
+
+function bindActCatDrag(container) {
+  let dragSrc = null;
+  container.querySelectorAll(".category-item").forEach(item => {
+    item.addEventListener("dragstart", e => {
+      dragSrc = item;
+      e.dataTransfer.effectAllowed = "move";
+      item.style.opacity = "0.5";
+    });
+    item.addEventListener("dragend", () => {
+      item.style.opacity = "";
+      container.querySelectorAll(".category-item").forEach(i => i.classList.remove("drag-over"));
+    });
+    item.addEventListener("dragover", e => {
+      e.preventDefault();
+      container.querySelectorAll(".category-item").forEach(i => i.classList.remove("drag-over"));
+      if (item !== dragSrc) item.classList.add("drag-over");
+    });
+    item.addEventListener("drop", async e => {
+      e.preventDefault();
+      if (!dragSrc || dragSrc === item) return;
+      const items   = [...container.querySelectorAll(".category-item")];
+      const srcIdx  = items.indexOf(dragSrc);
+      const tgtIdx  = items.indexOf(item);
+      const reorder = [...actCategoriesData];
+      const [moved] = reorder.splice(srcIdx, 1);
+      reorder.splice(tgtIdx, 0, moved);
+      actCategoriesData = reorder.map((c, i) => ({ ...c, order: i }));
+      renderActCategories();
+      try {
+        await saveActivitiesCategories(actCategoriesData);
+        showAlert(adminAlert, "Category order saved.", "success");
+      } catch (err) {
+        showAlert(adminAlert, "Failed to save order.");
+      }
+    });
+  });
+}
+
+const actCatModal  = document.getElementById("act-category-modal");
+const actCatForm   = document.getElementById("act-category-form");
+
+function openActCatModal(id = null) {
+  const cat = id ? actCategoriesData.find(c => c.id === id) : null;
+  document.getElementById("act-category-modal-title").textContent = id ? "Edit Category" : "Add Category";
+  document.getElementById("act-category-id").value   = id || "";
+  document.getElementById("act-category-name").value = cat?.name || "";
+  actCatModal.classList.add("open");
+}
+
+function closeActCatModal() {
+  actCatModal.classList.remove("open");
+  actCatForm.reset();
+}
+
+document.getElementById("add-act-category-btn").addEventListener("click", () => openActCatModal());
+document.getElementById("act-category-modal-close").addEventListener("click", closeActCatModal);
+document.getElementById("act-category-modal-cancel").addEventListener("click", closeActCatModal);
+actCatModal.addEventListener("click", e => { if (e.target === actCatModal) closeActCatModal(); });
+
+actCatForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  const id   = document.getElementById("act-category-id").value;
+  const name = document.getElementById("act-category-name").value.trim();
+  try {
+    if (id) await updateActivitiesCategory(id, { name });
+    else    await createActivitiesCategory({ name, order: actCategoriesData.length });
+    await loadActCategories();
+    closeActCatModal();
+    showAlert(adminAlert, "Category saved.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save category.");
+    console.error(err);
+  }
+});
+
+async function confirmDeleteActCat(id) {
+  if (activitiesData.some(a => a.categoryId === id)) {
+    showAlert(adminAlert, "Cannot delete: activities are still assigned to this category.");
+    return;
+  }
+  if (!confirm("Delete this category? This cannot be undone.")) return;
+  try {
+    await deleteActivitiesCategory(id);
+    await loadActCategories();
+    showAlert(adminAlert, "Category deleted.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to delete category.");
+  }
+}
+
+// ══════════════════════════════════════════
+// ACTIVITIES
+// ══════════════════════════════════════════
+async function loadActivities() {
+  const tbody = document.getElementById("activities-table-body");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="6" class="loading">Loading…</td></tr>`;
+  activitiesData = await getActivities();
+  activitiesData.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  document.getElementById("activities-count").textContent = `${activitiesData.length} activity(s)`;
+
+  if (!activitiesData.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No activities yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = activitiesData.map(item => `
+    <tr draggable="true" data-activity-id="${item.id}">
+      <td><span class="drag-handle">⠿</span></td>
+      <td>${esc(item.title)}</td>
+      <td>${esc(item.subtitle || "—")}</td>
+      <td>${esc(getActCategoryName(item.categoryId))}</td>
+      <td>${item.imageId ? "Yes" : "—"}</td>
+      <td>
+        <div class="table-actions">
+          <button class="btn btn-outline btn-sm" data-action="edit-activity" data-id="${item.id}">Edit</button>
+          <button class="btn btn-danger btn-sm"  data-action="del-activity"  data-id="${item.id}">Delete</button>
+        </div>
+      </td>
+    </tr>`).join("");
+
+  bindActivityDrag(tbody);
+}
+
+function getActCategoryName(id) {
+  if (!id) return "—";
+  return actCategoriesData.find(c => c.id === id)?.name || "—";
+}
+
+document.getElementById("add-activity-btn").addEventListener("click", () => openActivityModal());
+
+document.getElementById("activities-table-body").addEventListener("click", e => {
+  const btn = e.target.closest("[data-action]");
+  if (!btn) return;
+  if (btn.dataset.action === "edit-activity") openActivityModal(btn.dataset.id);
+  if (btn.dataset.action === "del-activity")  confirmDeleteActivity(btn.dataset.id);
+});
+
+function bindActivityDrag(tbody) {
+  let dragSrc = null;
+  tbody.querySelectorAll("tr[data-activity-id]").forEach(row => {
+    row.addEventListener("dragstart", e => {
+      dragSrc = row;
+      e.dataTransfer.effectAllowed = "move";
+      row.classList.add("dragging");
+    });
+    row.addEventListener("dragend", () => {
+      row.classList.remove("dragging");
+      tbody.querySelectorAll("tr").forEach(r => r.classList.remove("drag-over"));
+      dragSrc = null;
+    });
+    row.addEventListener("dragover", e => {
+      e.preventDefault();
+      tbody.querySelectorAll("tr").forEach(r => r.classList.remove("drag-over"));
+      if (row !== dragSrc) row.classList.add("drag-over");
+    });
+    row.addEventListener("drop", async e => {
+      e.preventDefault();
+      if (!dragSrc || dragSrc === row) return;
+      const rows   = [...tbody.querySelectorAll("tr[data-activity-id]")];
+      const srcIdx = rows.indexOf(dragSrc);
+      const tgtIdx = rows.indexOf(row);
+      const reorder = [...activitiesData];
+      const [moved] = reorder.splice(srcIdx, 1);
+      reorder.splice(tgtIdx, 0, moved);
+      activitiesData = reorder.map((a, i) => ({ ...a, order: i }));
+      await loadActivities();
+      try {
+        await Promise.all(activitiesData.map(a => updateActivity(a.id, { order: a.order })));
+        showAlert(adminAlert, "Activity order saved.", "success");
+      } catch (err) {
+        showAlert(adminAlert, "Failed to save activity order.");
+      }
+    });
+  });
+}
+
+const activityModal = document.getElementById("activity-modal");
+const activityForm  = document.getElementById("activity-form");
+
+function populateActCatSelect(selectedId = "") {
+  const sel = document.getElementById("activity-category");
+  sel.innerHTML = `<option value="">— Select a category —</option>`;
+  actCategoriesData.forEach(cat => {
+    const opt = document.createElement("option");
+    opt.value = cat.id;
+    opt.textContent = cat.name;
+    if (cat.id === selectedId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function openActivityModal(id = null) {
+  const item = id ? activitiesData.find(a => a.id === id) : null;
+  document.getElementById("activity-modal-title").textContent = id ? "Edit Activity" : "Add Activity";
+  document.getElementById("activity-id").value          = id || "";
+  document.getElementById("activity-title").value       = item?.title || "";
+  document.getElementById("activity-subtitle").value    = item?.subtitle || "";
+  document.getElementById("activity-description").value = item?.description || "";
+  populateActCatSelect(item?.categoryId || "");
+  activityImgUpload?.setImageId(item?.imageId || null);
+  activityModal.classList.add("open");
+}
+
+function closeActivityModal() {
+  activityModal.classList.remove("open");
+  activityForm.reset();
+  activityImgUpload?.setImageId(null);
+}
+
+document.getElementById("activity-modal-close").addEventListener("click", closeActivityModal);
+document.getElementById("activity-modal-cancel").addEventListener("click", closeActivityModal);
+activityModal.addEventListener("click", e => { if (e.target === activityModal) closeActivityModal(); });
+
+activityForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  const id         = document.getElementById("activity-id").value;
+  const categoryId = document.getElementById("activity-category").value;
+  if (!categoryId) { showAlert(adminAlert, "Please select a category."); return; }
+  const payload = {
+    title:       document.getElementById("activity-title").value.trim(),
+    subtitle:    document.getElementById("activity-subtitle").value.trim(),
+    description: document.getElementById("activity-description").value.trim(),
+    categoryId,
+    imageId:     activityImgUpload?.getImageId() || null,
+    order:       id ? activitiesData.find(a => a.id === id)?.order ?? activitiesData.length : activitiesData.length,
+  };
+  try {
+    if (id) await updateActivity(id, payload);
+    else    await createActivity(payload);
+    await loadActivities();
+    closeActivityModal();
+    showAlert(adminAlert, "Activity saved.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save activity.");
+    console.error(err);
+  }
+});
+
+async function confirmDeleteActivity(id) {
+  if (!confirm("Delete this activity? This cannot be undone.")) return;
+  const item = activitiesData.find(a => a.id === id);
+  try {
+    await deleteActivity(id);
+    if (item?.imageId) await deleteImage(item.imageId).catch(() => {});
+    await loadActivities();
+    showAlert(adminAlert, "Activity deleted.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to delete activity.");
+  }
+}
