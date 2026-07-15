@@ -621,6 +621,21 @@ a:hover {
   font-size: 3rem;
 }
 
+.livestream-placeholder-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.livestream-placeholder-subtitle {
+  font-size: 0.95rem;
+  color: #ccc;
+  margin: 0;
+  max-width: 380px;
+}
+
 .livestream-footer {
   padding: 1.25rem;
   display: flex;

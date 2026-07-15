@@ -64,6 +64,24 @@ function embedAutoLive(channelId) {
   ></iframe>`;
 }
 
+function embedNextServicePlaceholder(serviceTimesText, liveUrl) {
+  const embed = document.getElementById("livestream-embed");
+  if (!embed) return;
+  embed.innerHTML = `
+    <div class="livestream-placeholder livestream-placeholder--next">
+      <span class="icon">▶</span>
+      <p class="livestream-placeholder-title">We're not live right now</p>
+      ${
+        serviceTimesText
+          ? `<p class="livestream-placeholder-subtitle">Join our next livestream ${escapeHtml(serviceTimesText)}</p>`
+          : `<p class="livestream-placeholder-subtitle">Check back during our next service.</p>`
+      }
+      <a href="${escapeHtml(liveUrl)}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+        Visit Our YouTube Channel
+      </a>
+    </div>`;
+}
+
 function renderLivestream(settings) {
   const liveUrl = settings.youtubeLiveUrl || defaultYouTube.liveUrl;
   const channelUrl = settings.youtubeChannelUrl || defaultYouTube.channelUrl;
@@ -82,18 +100,19 @@ function renderLivestream(settings) {
 
   // Admin controls this with a simple toggle in the dashboard:
   // - "We are live right now" ON  → embed the auto-live channel feed
-  // - toggle OFF                  → embed the fallback video (last service's recording)
+  // - toggle OFF + fallback set   → embed the fallback video (last service's recording)
+  // - toggle OFF + no fallback    → show our own "next livestream" placeholder,
+  //                                  rather than YouTube's generic "not live" screen
   if (settings.isLive && channelId) {
     embedAutoLive(channelId);
   } else if (fallbackVideoId) {
     embedVideo(fallbackVideoId, "BEM On The Rock — Recent Service");
-  } else if (channelId) {
-    // No fallback configured yet — still try the auto-live embed as a reasonable default
-    embedAutoLive(channelId);
+  } else {
+    embedNextServicePlaceholder(settings.serviceTimes, liveUrl);
   }
 }
 
-async function renderCarousel(videos, channelId, isLive) {
+async function renderCarousel(videos, channelId, isLive, serviceTimesText, liveUrl) {
   const container = document.getElementById("video-carousel");
   if (!container) return;
 
@@ -136,8 +155,8 @@ async function renderCarousel(videos, channelId, isLive) {
           embedAutoLive(channelId);
         } else if (fallbackVideoId) {
           embedVideo(fallbackVideoId, "BEM On The Rock — Recent Service");
-        } else if (channelId) {
-          embedAutoLive(channelId);
+        } else {
+          embedNextServicePlaceholder(serviceTimesText, liveUrl);
         }
       } else {
         const videoId = card.getAttribute("data-video-id");
@@ -242,7 +261,8 @@ async function loadPage() {
     await renderHero(settings);
     renderLivestream(settings);
     const channelId = settings.youtubeChannelId || defaultYouTube.channelId;
-    await renderCarousel(carouselVideos, channelId, settings.isLive);
+    const liveUrl = settings.youtubeLiveUrl || defaultYouTube.liveUrl;
+    await renderCarousel(carouselVideos, channelId, settings.isLive, settings.serviceTimes, liveUrl);
     await renderUpdates(updates);
     await renderNews(news);
   } catch (err) {
