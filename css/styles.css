@@ -285,30 +285,16 @@ a:hover {
 
 /* ── Hero ── */
 .hero--default-bg {
-  background-image: url("../assets/index-hero-background-image.png");
+  background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35)),
+    url("../assets/index-hero-background-image.png");
   background-size: cover;
   background-position: center;
   padding: 5rem 0 3.5rem;
   color: #fff;
 }
 
-/* Overlay for hero background images: hidden in light mode, shown in dark
-   mode so hero text stays readable over the photo. Applies to any hero
-   using .hero--default-bg or .hero--has-bg, current or future. */
-.hero--default-bg::before,
-.hero--has-bg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.45));
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-[data-theme="dark"] .hero--default-bg::before,
-[data-theme="dark"] .hero--has-bg::before {
-  opacity: 1;
+.hero--default-bg::before {
+  display: none;
 }
 
 .hero--default-bg .hero-badge {
@@ -354,6 +340,10 @@ a:hover {
 .hero--has-bg {
   padding: 5rem 0 3.5rem;
   color: #fff;
+}
+
+.hero--has-bg::before {
+  display: none;
 }
 
 .hero--has-bg .hero-badge {
