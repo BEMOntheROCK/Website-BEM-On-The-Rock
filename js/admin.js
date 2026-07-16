@@ -239,16 +239,26 @@ document.getElementById("updates-table-body").addEventListener("click", e => {
 // ══════════════════════════════════════════
 async function loadHistory() {
   const tbody = document.getElementById("history-table-body");
-  tbody.innerHTML = `<tr><td colspan="4" class="loading">Loading…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="5" class="loading">Loading…</td></tr>`;
   historyData = await getHistory("desc");
+  await backfillHistoryOrder(historyData);
   document.getElementById("history-count").textContent = `${historyData.length} article(s)`;
 
   if (!historyData.length) {
-    tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No history articles yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No history articles yet.</td></tr>`;
     return;
   }
-  tbody.innerHTML = historyData.map(item => `
-    <tr>
+
+  const dateCounts = {};
+  historyData.forEach(item => {
+    dateCounts[item.date] = (dateCounts[item.date] || 0) + 1;
+  });
+
+  tbody.innerHTML = historyData.map(item => {
+    const groupable = dateCounts[item.date] > 1;
+    return `
+    <tr ${groupable ? `draggable="true"` : ""} data-history-id="${item.id}" data-history-date="${esc(item.date)}">
+      <td>${groupable ? `<span class="drag-handle" title="Drag to reorder within same date">⠿</span>` : ""}</td>
       <td>${esc(item.title)}</td>
       <td>${esc(displayHistoryDate(item.date))}</td>
       <td>${item.imageId ? "Yes" : "—"}</td>
@@ -258,7 +268,80 @@ async function loadHistory() {
           <button class="btn btn-danger btn-sm"  data-action="del-history"  data-id="${item.id}">Delete</button>
         </div>
       </td>
-    </tr>`).join("");
+    </tr>`;
+  }).join("");
+
+  bindHistoryDrag(tbody);
+}
+
+/** One-time backfill: assign an `order` to any history item that lacks one,
+    scoped within items that share the exact same date string. */
+async function backfillHistoryOrder(items) {
+  const groups = {};
+  items.forEach(item => {
+    (groups[item.date] ??= []).push(item);
+  });
+
+  const updates = [];
+  Object.values(groups).forEach(group => {
+    const needsBackfill = group.some(i => i.order === undefined || i.order === null);
+    if (!needsBackfill) return;
+    group.sort((a, b) => (a.createdAt?.seconds ?? 0) - (b.createdAt?.seconds ?? 0));
+    group.forEach((item, idx) => {
+      item.order = idx;
+      updates.push(updateHistory(item.id, { order: idx }));
+    });
+  });
+
+  if (updates.length) await Promise.all(updates);
+}
+
+function bindHistoryDrag(tbody) {
+  let dragSrc = null;
+  tbody.querySelectorAll("tr[draggable='true']").forEach(row => {
+    row.addEventListener("dragstart", e => {
+      dragSrc = row;
+      e.dataTransfer.effectAllowed = "move";
+      row.classList.add("dragging");
+    });
+    row.addEventListener("dragend", () => {
+      row.classList.remove("dragging");
+      tbody.querySelectorAll("tr").forEach(r => r.classList.remove("drag-over"));
+      dragSrc = null;
+    });
+    row.addEventListener("dragover", e => {
+      if (!dragSrc || dragSrc.dataset.historyDate !== row.dataset.historyDate) return;
+      e.preventDefault();
+      tbody.querySelectorAll("tr").forEach(r => r.classList.remove("drag-over"));
+      if (row !== dragSrc) row.classList.add("drag-over");
+    });
+    row.addEventListener("drop", async e => {
+      e.preventDefault();
+      if (!dragSrc || dragSrc === row) return;
+      if (dragSrc.dataset.historyDate !== row.dataset.historyDate) return;
+
+      const groupDate = row.dataset.historyDate;
+      const group = historyData.filter(i => i.date === groupDate);
+      const rows  = [...tbody.querySelectorAll(`tr[data-history-date="${CSS.escape(groupDate)}"]`)];
+      const srcIdx = rows.indexOf(dragSrc);
+      const tgtIdx = rows.indexOf(row);
+      const reorder = [...group];
+      const [moved] = reorder.splice(srcIdx, 1);
+      reorder.splice(tgtIdx, 0, moved);
+      reorder.forEach((item, i) => {
+        const found = historyData.find(h => h.id === item.id);
+        if (found) found.order = i;
+      });
+
+      await loadHistory();
+      try {
+        await Promise.all(reorder.map((item, i) => updateHistory(item.id, { order: i })));
+        showAlert(adminAlert, "History order saved.", "success");
+      } catch (err) {
+        showAlert(adminAlert, "Failed to save history order.");
+      }
+    });
+  });
 }
 
 document.getElementById("add-history-btn").addEventListener("click", () => openCrud("history"));

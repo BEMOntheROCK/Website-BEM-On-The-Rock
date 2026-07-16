@@ -285,9 +285,9 @@ export function sortHistoryItems(items, direction = "desc") {
     const keyB = b.sortKey ?? parseSortKey(b.date);
     if (keyA !== keyB) return (keyA - keyB) * dir;
 
-    const createdA = a.createdAt?.seconds ?? 0;
-    const createdB = b.createdAt?.seconds ?? 0;
-    return (createdA - createdB) * dir;
+    const orderA = a.order ?? 0;
+    const orderB = b.order ?? 0;
+    return (orderA - orderB) * dir;
   });
 }
 
@@ -299,9 +299,17 @@ export async function getHistory(direction = "desc") {
 
 export async function createHistory(data) {
   const date = data.date?.trim() ?? "";
+  const snap = await getDocs(collection(db, "history"));
+  const sameDate = snap.docs
+    .map((d) => d.data())
+    .filter((d) => (d.date ?? "").trim() === date);
+  const order = sameDate.length
+    ? Math.max(...sameDate.map((d) => d.order ?? 0)) + 1
+    : 0;
   const ref = await addDoc(collection(db, "history"), {
     ...data,
     date,
+    order,
     sortKey: parseSortKey(date),
     createdAt: serverTimestamp(),
   });
@@ -309,13 +317,13 @@ export async function createHistory(data) {
 }
 
 export async function updateHistory(id, data) {
-  const date = data.date?.trim() ?? "";
-  await updateDoc(doc(db, "history", id), {
-    ...data,
-    date,
-    sortKey: parseSortKey(date),
-    updatedAt: serverTimestamp(),
-  });
+  const payload = { ...data, updatedAt: serverTimestamp() };
+  if (data.date !== undefined) {
+    const date = data.date.trim();
+    payload.date = date;
+    payload.sortKey = parseSortKey(date);
+  }
+  await updateDoc(doc(db, "history", id), payload);
 }
 
 export async function deleteHistory(id) {
@@ -389,11 +397,7 @@ export function formatDate(value) {
   });
 }
 
-/** Display history date — plain text or formatted ISO */
+/** Display history date — always shown exactly as entered (free text) */
 export function displayHistoryDate(value) {
-  if (!value) return "";
-  if (typeof value === "string" && Number.isNaN(Date.parse(value))) {
-    return value;
-  }
-  return formatDate(value);
+  return value ?? "";
 }
