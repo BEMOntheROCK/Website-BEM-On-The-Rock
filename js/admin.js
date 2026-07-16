@@ -320,18 +320,14 @@ function bindHistoryDrag(tbody) {
       const reorder = [...group];
       const [moved] = reorder.splice(srcIdx, 1);
       reorder.splice(tgtIdx, 0, moved);
-      reorder.forEach((item, i) => {
-        const found = historyData.find(h => h.id === item.id);
-        if (found) found.order = i;
-      });
 
-      await loadHistory();
       try {
         await Promise.all(reorder.map((item, i) => updateHistory(item.id, { order: i })));
         showAlert(adminAlert, "History order saved.", "success");
       } catch (err) {
         showAlert(adminAlert, "Failed to save history order.");
       }
+      await loadHistory();
     });
   });
 }
