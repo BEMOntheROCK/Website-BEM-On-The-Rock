@@ -262,33 +262,162 @@ export async function deleteLeader(id) {
   await deleteDoc(doc(db, "leaders", id));
 }
 
-/** Derive a numeric sort key from free-text or ISO dates */
+const MONTH_NAMES = "january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec";
+const MONTH_INDEX = { january:1, jan:1, february:2, feb:2, march:3, mar:3, april:4, apr:4, may:5, june:6, jun:6, july:7, jul:7, august:8, aug:8, september:9, sep:9, sept:9, october:10, oct:10, november:11, nov:11, december:12, dec:12 };
+
+/** Extract the 4-digit year from a freeform date string, or null. */
+export function extractDateYear(value) {
+  const text = String(value ?? "").trim();
+  const match = text.match(/\b(19|20)\d{2}\b/);
+  return match ? parseInt(match[0], 10) : null;
+}
+
+/** Classify a freeform date string's precision: "day", "month", "year", or "unknown". */
+export function getDatePrecision(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return "unknown";
+
+  if (/^\d{4}$/.test(text)) return "year";
+
+  const monthRe = new RegExp(MONTH_NAMES, "i");
+  const hasNamedMonth = monthRe.test(text);
+  const hasDayNumber = /\b\d{1,2}\b/.test(text.replace(/\b(19|20)\d{2}\b/, ""));
+  const isIsoDate = /\b\d{4}-\d{2}-\d{2}\b/.test(text);
+  const isSlashDate = /\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/.test(text);
+
+  if (isIsoDate || isSlashDate) return "day";
+  if (hasNamedMonth && hasDayNumber) return "day";
+  if (hasNamedMonth) return "month";
+
+  const isSlashMonthYear = /^\d{1,2}\/\d{4}$/.test(text);
+  if (isSlashMonthYear) return "month";
+
+  return "unknown";
+}
+
+/** Extract a month*100+day style value for within-year/within-month comparison. 0 if unavailable. */
+function getWithinYearValue(value, precision) {
+  const text = String(value ?? "").trim();
+  if (precision === "year" || precision === "unknown") return 0;
+
+  const isoMatch = text.match(/\b\d{4}-(\d{2})-(\d{2})\b/);
+  if (isoMatch) return parseInt(isoMatch[1], 10) * 100 + parseInt(isoMatch[2], 10);
+
+  const slashMatch = text.match(/\b(\d{1,2})\/(\d{1,2})\/\d{2,4}\b/);
+  if (slashMatch) return parseInt(slashMatch[1], 10) * 100 + parseInt(slashMatch[2], 10);
+
+  const slashMonthYear = text.match(/^(\d{1,2})\/\d{4}$/);
+  if (slashMonthYear) return parseInt(slashMonthYear[1], 10) * 100;
+
+  const monthRe = new RegExp(`\\b(${MONTH_NAMES})\\b`, "i");
+  const monthMatch = text.match(monthRe);
+  if (monthMatch) {
+    const month = MONTH_INDEX[monthMatch[1].toLowerCase()] || 0;
+    if (precision === "day") {
+      const dayMatch = text.replace(/\b(19|20)\d{2}\b/, "").match(/\b(\d{1,2})\b/);
+      const day = dayMatch ? parseInt(dayMatch[1], 10) : 0;
+      return month * 100 + day;
+    }
+    return month * 100;
+  }
+
+  return 0;
+}
+
+const PRECISION_RANK = { year: 1, unknown: 1, month: 2, day: 3 };
+
+/** Derive a numeric sort key from free-text or ISO dates. Cross-year comparable. */
 export function parseSortKey(value) {
   if (!value) return 0;
   if (value.toDate) return value.toDate().getTime();
   if (typeof value === "number") return value;
 
-  const text = String(value).trim();
-  const parsed = Date.parse(text);
-  if (!Number.isNaN(parsed)) return parsed;
+  const year = extractDateYear(value);
+  if (year === null) return 0;
 
-  const yearMatch = text.match(/\b(19|20)\d{2}\b/);
-  if (yearMatch) return parseInt(yearMatch[0], 10) * 1e10;
+  const precision = getDatePrecision(value);
+  const withinYear = getWithinYearValue(value, precision);
+  return year * 1e6 + withinYear;
+}
 
-  return 0;
+/** Group items by extracted year. */
+function groupByYear(items) {
+  const groups = {};
+  items.forEach((item) => {
+    const year = extractDateYear(item.date) ?? "unknown";
+    (groups[year] ??= []).push(item);
+  });
+  return groups;
+}
+
+/** A year-group is ambiguous (needs manual ordering) unless every item in it
+    is day-precise with a distinct exact date string. */
+export function isAmbiguousGroup(group) {
+  if (!group || group.length < 2) return false;
+  const allDayLevel = group.every((i) => getDatePrecision(i.date) === "day");
+  if (!allDayLevel) return true;
+  const distinctDates = new Set(group.map((i) => String(i.date ?? "").trim()));
+  return distinctDates.size !== group.length;
 }
 
 export function sortHistoryItems(items, direction = "desc") {
   const dir = direction === "asc" ? 1 : -1;
+  const groups = groupByYear(items);
+
   return [...items].sort((a, b) => {
+    const yearA = extractDateYear(a.date) ?? 0;
+    const yearB = extractDateYear(b.date) ?? 0;
+    if (yearA !== yearB) return (yearA - yearB) * dir;
+
+    const group = groups[yearA] ?? groups["unknown"];
+    if (isAmbiguousGroup(group)) {
+      const orderA = a.order ?? 0;
+      const orderB = b.order ?? 0;
+      return (orderA - orderB) * dir;
+    }
+
     const keyA = a.sortKey ?? parseSortKey(a.date);
     const keyB = b.sortKey ?? parseSortKey(b.date);
-    if (keyA !== keyB) return (keyA - keyB) * dir;
-
-    const orderA = a.order ?? 0;
-    const orderB = b.order ?? 0;
-    return (orderA - orderB) * dir;
+    return (keyA - keyB) * dir;
   });
+}
+
+/** Backfill `order` for items in ambiguous year-groups that lack one.
+    Default order ranks by precision (less precise = earlier by default,
+    i.e. day-level dates automatically outrank month/year-level ones),
+    then by within-precision chronological value. Admin can drag to override. */
+export function computeBackfillOrder(items) {
+  const groups = groupByYear(items);
+  const updates = [];
+
+  Object.values(groups).forEach((group) => {
+    if (!isAmbiguousGroup(group)) return;
+    const needsBackfill = group.some((i) => i.order === undefined || i.order === null);
+    if (!needsBackfill) return;
+
+    const ranked = [...group].sort((a, b) => {
+      const precA = getDatePrecision(a.date);
+      const precB = getDatePrecision(b.date);
+      const rankA = PRECISION_RANK[precA] ?? 1;
+      const rankB = PRECISION_RANK[precB] ?? 1;
+      if (rankA !== rankB) return rankA - rankB;
+
+      const valA = getWithinYearValue(a.date, precA);
+      const valB = getWithinYearValue(b.date, precB);
+      if (valA !== valB) return valA - valB;
+
+      const createdA = a.createdAt?.seconds ?? 0;
+      const createdB = b.createdAt?.seconds ?? 0;
+      return createdA - createdB;
+    });
+
+    ranked.forEach((item, idx) => {
+      item.order = idx;
+      updates.push({ id: item.id, order: idx });
+    });
+  });
+
+  return updates;
 }
 
 export async function getHistory(direction = "desc") {
@@ -299,12 +428,13 @@ export async function getHistory(direction = "desc") {
 
 export async function createHistory(data) {
   const date = data.date?.trim() ?? "";
+  const year = extractDateYear(date);
   const snap = await getDocs(collection(db, "history"));
-  const sameDate = snap.docs
+  const sameYear = snap.docs
     .map((d) => d.data())
-    .filter((d) => (d.date ?? "").trim() === date);
-  const order = sameDate.length
-    ? Math.max(...sameDate.map((d) => d.order ?? 0)) + 1
+    .filter((d) => extractDateYear(d.date) === year);
+  const order = sameYear.length
+    ? Math.max(...sameYear.map((d) => d.order ?? 0)) + 1
     : 0;
   const ref = await addDoc(collection(db, "history"), {
     ...data,

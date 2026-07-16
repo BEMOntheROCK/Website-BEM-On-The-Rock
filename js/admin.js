@@ -19,6 +19,7 @@ import {
   getUpdates, createUpdate, updateUpdate, deleteUpdate,
   getHistory, createHistory, updateHistory, deleteHistory,
   formatDate, displayHistoryDate,
+  extractDateYear, isAmbiguousGroup, computeBackfillOrder,
 } from "./firebase-service.js";
 import { bindImageUpload, deleteImage } from "./image-service.js";
 
@@ -249,16 +250,19 @@ async function loadHistory() {
     return;
   }
 
-  const dateCounts = {};
+  const yearGroups = {};
   historyData.forEach(item => {
-    dateCounts[item.date] = (dateCounts[item.date] || 0) + 1;
+    const year = extractDateYear(item.date) ?? "unknown";
+    (yearGroups[year] ??= []).push(item);
   });
 
   tbody.innerHTML = historyData.map(item => {
-    const groupable = dateCounts[item.date] > 1;
+    const year = extractDateYear(item.date) ?? "unknown";
+    const group = yearGroups[year];
+    const groupable = isAmbiguousGroup(group);
     return `
-    <tr ${groupable ? `draggable="true"` : ""} data-history-id="${item.id}" data-history-date="${esc(item.date)}">
-      <td>${groupable ? `<span class="drag-handle" title="Drag to reorder within same date">⠿</span>` : ""}</td>
+    <tr ${groupable ? `draggable="true"` : ""} data-history-id="${item.id}" data-history-year="${esc(String(year))}">
+      <td>${groupable ? `<span class="drag-handle" title="Drag to reorder within same year">⠿</span>` : ""}</td>
       <td>${esc(item.title)}</td>
       <td>${esc(displayHistoryDate(item.date))}</td>
       <td>${item.imageId ? "Yes" : "—"}</td>
@@ -274,26 +278,14 @@ async function loadHistory() {
   bindHistoryDrag(tbody);
 }
 
-/** One-time backfill: assign an `order` to any history item that lacks one,
-    scoped within items that share the exact same date string. */
+/** One-time backfill: assign `order` to any item in an ambiguous year-group
+    that lacks one. Default ranks less-precise dates earlier, more-precise
+    dates later (see computeBackfillOrder in firebase-service.js). */
 async function backfillHistoryOrder(items) {
-  const groups = {};
-  items.forEach(item => {
-    (groups[item.date] ??= []).push(item);
-  });
-
-  const updates = [];
-  Object.values(groups).forEach(group => {
-    const needsBackfill = group.some(i => i.order === undefined || i.order === null);
-    if (!needsBackfill) return;
-    group.sort((a, b) => (a.createdAt?.seconds ?? 0) - (b.createdAt?.seconds ?? 0));
-    group.forEach((item, idx) => {
-      item.order = idx;
-      updates.push(updateHistory(item.id, { order: idx }));
-    });
-  });
-
-  if (updates.length) await Promise.all(updates);
+  const updates = computeBackfillOrder(items);
+  if (updates.length) {
+    await Promise.all(updates.map(u => updateHistory(u.id, { order: u.order })));
+  }
 }
 
 function bindHistoryDrag(tbody) {
@@ -310,7 +302,7 @@ function bindHistoryDrag(tbody) {
       dragSrc = null;
     });
     row.addEventListener("dragover", e => {
-      if (!dragSrc || dragSrc.dataset.historyDate !== row.dataset.historyDate) return;
+      if (!dragSrc || dragSrc.dataset.historyYear !== row.dataset.historyYear) return;
       e.preventDefault();
       tbody.querySelectorAll("tr").forEach(r => r.classList.remove("drag-over"));
       if (row !== dragSrc) row.classList.add("drag-over");
@@ -318,11 +310,11 @@ function bindHistoryDrag(tbody) {
     row.addEventListener("drop", async e => {
       e.preventDefault();
       if (!dragSrc || dragSrc === row) return;
-      if (dragSrc.dataset.historyDate !== row.dataset.historyDate) return;
+      if (dragSrc.dataset.historyYear !== row.dataset.historyYear) return;
 
-      const groupDate = row.dataset.historyDate;
-      const group = historyData.filter(i => i.date === groupDate);
-      const rows  = [...tbody.querySelectorAll(`tr[data-history-date="${CSS.escape(groupDate)}"]`)];
+      const groupYear = row.dataset.historyYear;
+      const group = historyData.filter(i => String(extractDateYear(i.date) ?? "unknown") === groupYear);
+      const rows  = [...tbody.querySelectorAll(`tr[data-history-year="${CSS.escape(groupYear)}"]`)];
       const srcIdx = rows.indexOf(dragSrc);
       const tgtIdx = rows.indexOf(row);
       const reorder = [...group];
