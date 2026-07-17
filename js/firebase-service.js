@@ -382,18 +382,22 @@ export function sortHistoryItems(items, direction = "desc") {
   });
 }
 
-/** Backfill `order` for items in ambiguous year-groups that lack one.
+/** Backfill `order` for items in ambiguous year-groups that haven't been
+    manually reordered yet (orderSource !== "manual"). Recomputes (not just
+    fills gaps) so stale order values from earlier logic get corrected.
     Default order ranks by precision (less precise = earlier by default,
     i.e. day-level dates automatically outrank month/year-level ones),
-    then by within-precision chronological value. Admin can drag to override. */
+    then by within-precision chronological value. Admin can drag to override,
+    which marks the group as manually ordered and exempts it from future
+    auto-recompute. */
 export function computeBackfillOrder(items) {
   const groups = groupByYear(items);
   const updates = [];
 
   Object.values(groups).forEach((group) => {
     if (!isAmbiguousGroup(group)) return;
-    const needsBackfill = group.some((i) => i.order === undefined || i.order === null);
-    if (!needsBackfill) return;
+    const hasManualOrder = group.some((i) => i.orderSource === "manual");
+    if (hasManualOrder) return;
 
     const ranked = [...group].sort((a, b) => {
       const precA = getDatePrecision(a.date);
@@ -412,8 +416,10 @@ export function computeBackfillOrder(items) {
     });
 
     ranked.forEach((item, idx) => {
+      if (item.order === idx && item.orderSource === "auto") return;
       item.order = idx;
-      updates.push({ id: item.id, order: idx });
+      item.orderSource = "auto";
+      updates.push({ id: item.id, order: idx, orderSource: "auto" });
     });
   });
 
@@ -440,6 +446,7 @@ export async function createHistory(data) {
     ...data,
     date,
     order,
+    orderSource: "auto",
     sortKey: parseSortKey(date),
     createdAt: serverTimestamp(),
   });

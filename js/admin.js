@@ -322,7 +322,7 @@ function bindHistoryDrag(tbody) {
       reorder.splice(tgtIdx, 0, moved);
 
       try {
-        await Promise.all(reorder.map((item, i) => updateHistory(item.id, { order: i })));
+        await Promise.all(reorder.map((item, i) => updateHistory(item.id, { order: i, orderSource: "manual" })));
         showAlert(adminAlert, "History order saved.", "success");
       } catch (err) {
         showAlert(adminAlert, "Failed to save history order.");
