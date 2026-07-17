@@ -634,14 +634,14 @@ function bindLeaderDrag(tbody) {
       const reorder = [...leadersData];
       const [moved] = reorder.splice(srcIdx, 1);
       reorder.splice(tgtIdx, 0, moved);
-      leadersData = reorder.map((l, i) => ({ ...l, order: i }));
-      await loadLeaders();
+      const reordered = reorder.map((l, i) => ({ ...l, order: i }));
       try {
-        await Promise.all(leadersData.map(l => updateLeader(l.id, { order: l.order })));
+        await Promise.all(reordered.map(l => updateLeader(l.id, { order: l.order })));
         showAlert(adminAlert, "Leader order saved.", "success");
       } catch (err) {
         showAlert(adminAlert, "Failed to save leader order.");
       }
+      await loadLeaders();
     });
   });
 }
@@ -1048,14 +1048,14 @@ function bindActivityDrag(tbody) {
       const reorder = [...activitiesData];
       const [moved] = reorder.splice(srcIdx, 1);
       reorder.splice(tgtIdx, 0, moved);
-      activitiesData = reorder.map((a, i) => ({ ...a, order: i }));
-      await loadActivities();
+      const reordered = reorder.map((a, i) => ({ ...a, order: i }));
       try {
-        await Promise.all(activitiesData.map(a => updateActivity(a.id, { order: a.order })));
+        await Promise.all(reordered.map(a => updateActivity(a.id, { order: a.order })));
         showAlert(adminAlert, "Activity order saved.", "success");
       } catch (err) {
         showAlert(adminAlert, "Failed to save activity order.");
       }
+      await loadActivities();
     });
   });
 }
