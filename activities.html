@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
-    <header class="site-header">
+    <header class="site-header notranslate" translate="no">
       <div class="container header-inner">
         <a href="index.html" class="logo">
           <div class="logo-mark">B</div>
@@ -25,12 +25,18 @@
 
         <nav>
           <ul class="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="about.html">About Us</a></li>
-            <li><a href="history.html">History</a></li>
-            <li><a href="organisation-structure.html">Organisation</a></li>
-            <li><a href="activities.html" class="active">Activities</a></li>
-            <li><a href="admin.html">Admin</a></li>
+            <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+            <li><a href="about.html" data-i18n="nav.about">About Us</a></li>
+            <li><a href="history.html" data-i18n="nav.history">History</a></li>
+            <li><a href="organisation-structure.html" data-i18n="nav.org">Organisation</a></li>
+            <li><a href="activities.html" class="active" data-i18n="nav.activities">Activities</a></li>
+            <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
+            <li class="lang-toggle-item">
+              <div class="lang-toggle" role="group" aria-label="Language">
+                <button type="button" data-lang-btn="en">EN</button>
+                <button type="button" data-lang-btn="ms">BM</button>
+              </div>
+            </li>
           </ul>
         </nav>
 
@@ -40,6 +46,7 @@
             data-theme-toggle
             aria-label="Toggle dark or light mode"
             title="Toggle theme"
+            data-i18n-attr="aria-label:header.themeToggle,title:header.themeToggle"
           >
             <span data-theme-icon>🌙</span>
           </button>
@@ -47,6 +54,7 @@
             class="mobile-menu-btn"
             data-mobile-menu
             aria-label="Open menu"
+            data-i18n-attr="aria-label:header.menuOpen"
           >
             ☰
           </button>
@@ -55,10 +63,10 @@
     </header>
 
     <main>
-      <section class="page-hero">
+      <section class="page-hero notranslate" translate="no">
         <div class="container">
-          <h1>Activities &amp; Ministries</h1>
-          <p>Discover the ministries and activities that make up our church family.</p>
+          <h1 data-i18n="activities.hero.title">Activities &amp; Ministries</h1>
+          <p data-i18n="activities.hero.subtitle">Discover the ministries and activities that make up our church family.</p>
         </div>
       </section>
 
@@ -69,7 +77,7 @@
       </section>
     </main>
 
-    <footer class="site-footer">
+    <footer class="site-footer" translate="no">
       <div class="container">
         <div class="footer-inner">
           <div class="footer-brand">
@@ -80,29 +88,33 @@
                 <span>Church</span>
               </div>
             </a>
-            <p>Building lives on the solid foundation of Christ.</p>
+            <p translate="yes">Building lives on the solid foundation of Christ.</p>
           </div>
           <div class="footer-links">
             <div class="footer-col">
-              <h4>Pages</h4>
+              <h4 data-i18n="footer.pages">Pages</h4>
               <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="about.html">About Us</a></li>
-                <li><a href="history.html">History</a></li>
-                <li><a href="organisation-structure.html">Organisation</a></li>
-                <li><a href="activities.html">Activities</a></li>
-                <li><a href="admin.html">Admin</a></li>
+                <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+                <li><a href="about.html" data-i18n="nav.about">About Us</a></li>
+                <li><a href="history.html" data-i18n="nav.history">History</a></li>
+                <li><a href="organisation-structure.html" data-i18n="nav.org">Organisation</a></li>
+                <li><a href="activities.html" data-i18n="nav.activities">Activities</a></li>
+                <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
               </ul>
             </div>
           </div>
         </div>
         <div class="footer-bottom">
-          <span>© <span id="year"></span> BEM On The Rock. All rights reserved.</span>
+          <span>© <span id="year"></span> BEM On The Rock. <span data-i18n="footer.rights">All rights reserved.</span></span>
         </div>
       </div>
     </footer>
 
     <button id="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
+    <div id="google_translate_element"></div>
+    <script src="js/gtranslate-init.js"></script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script type="module" src="js/i18n.js"></script>
     <script type="module" src="js/scroll-effects.js"></script>
     <script type="module" src="js/activities.js"></script>
   </body>

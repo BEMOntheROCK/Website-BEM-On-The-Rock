@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
-    <header class="site-header">
+    <header class="site-header notranslate" translate="no">
       <div class="container header-inner">
         <a href="index.html" class="logo">
           <div class="logo-mark">B</div>
@@ -25,12 +25,18 @@
 
         <nav>
           <ul class="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="about.html" class="active">About Us</a></li>
-            <li><a href="history.html">History</a></li>
-            <li><a href="organisation-structure.html">Organisation</a></li>
-            <li><a href="activities.html">Activities</a></li>
-            <li><a href="admin.html">Admin</a></li>
+            <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+            <li><a href="about.html" class="active" data-i18n="nav.about">About Us</a></li>
+            <li><a href="history.html" data-i18n="nav.history">History</a></li>
+            <li><a href="organisation-structure.html" data-i18n="nav.org">Organisation</a></li>
+            <li><a href="activities.html" data-i18n="nav.activities">Activities</a></li>
+            <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
+            <li class="lang-toggle-item">
+              <div class="lang-toggle" role="group" aria-label="Language">
+                <button type="button" data-lang-btn="en">EN</button>
+                <button type="button" data-lang-btn="ms">BM</button>
+              </div>
+            </li>
           </ul>
         </nav>
 
@@ -40,6 +46,7 @@
             data-theme-toggle
             aria-label="Toggle dark or light mode"
             title="Toggle theme"
+            data-i18n-attr="aria-label:header.themeToggle,title:header.themeToggle"
           >
             <span data-theme-icon>🌙</span>
           </button>
@@ -47,6 +54,7 @@
             class="mobile-menu-btn"
             data-mobile-menu
             aria-label="Open menu"
+            data-i18n-attr="aria-label:header.menuOpen"
           >
             ☰
           </button>
@@ -55,13 +63,13 @@
     </header>
 
     <main>
-      <section class="page-hero" id="about-hero">
+      <section class="page-hero notranslate" translate="no" id="about-hero">
         <div class="container">
-          <h1>About BEM On The Rock</h1>
-          <p>Our mission, vision, and the heart behind our church family.</p>
+          <h1 data-i18n="about.hero.title">About BEM On The Rock</h1>
+          <p data-i18n="about.hero.subtitle">Our mission, vision, and the heart behind our church family.</p>
           <div class="hero-actions" style="margin-top: 1.25rem;">
-            <a href="history.html" class="btn btn-primary">Read Our History</a>
-            <a href="organisation-structure.html" class="btn btn-outline">Organisation</a>
+            <a href="history.html" class="btn btn-primary" data-i18n="about.hero.historyBtn">Read Our History</a>
+            <a href="organisation-structure.html" class="btn btn-outline" data-i18n="about.hero.orgBtn">Organisation</a>
           </div>
         </div>
       </section>
@@ -79,7 +87,7 @@
 
         <div class="contact-bar" id="contact-bar">
           <div>
-            <h2>Visit Us</h2>
+            <h2 class="notranslate" translate="no" data-i18n="about.visit.title">Visit Us</h2>
             <p id="contact-note" style="font-size: 0.9rem; margin-top: 0.35rem; opacity: 0.85;">
               We welcome visitors and newcomers.
             </p>
@@ -94,7 +102,7 @@
       </section>
     </main>
 
-    <footer class="site-footer">
+    <footer class="site-footer" translate="no">
       <div class="container">
         <div class="footer-inner">
           <div class="footer-brand">
@@ -105,28 +113,32 @@
                 <span>Church</span>
               </div>
             </a>
-            <p>Building lives on the solid foundation of Christ.</p>
+            <p translate="yes">Building lives on the solid foundation of Christ.</p>
           </div>
           <div class="footer-links">
             <div class="footer-col">
-              <h4>Pages</h4>
+              <h4 data-i18n="footer.pages">Pages</h4>
               <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="about.html">About Us</a></li>
-                <li><a href="history.html">History</a></li>
-                <li><a href="organisation-structure.html">Organisation</a></li>
-                <li><a href="activities.html">Activities</a></li>
-                <li><a href="admin.html">Admin</a></li>
+                <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+                <li><a href="about.html" data-i18n="nav.about">About Us</a></li>
+                <li><a href="history.html" data-i18n="nav.history">History</a></li>
+                <li><a href="organisation-structure.html" data-i18n="nav.org">Organisation</a></li>
+                <li><a href="activities.html" data-i18n="nav.activities">Activities</a></li>
+                <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
               </ul>
             </div>
           </div>
         </div>
         <div class="footer-bottom">
-          <span>© <span id="year"></span> BEM On The Rock. All rights reserved.</span>
+          <span>© <span id="year"></span> BEM On The Rock. <span data-i18n="footer.rights">All rights reserved.</span></span>
         </div>
       </div>
     </footer>
 
+    <div id="google_translate_element"></div>
+    <script src="js/gtranslate-init.js"></script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script type="module" src="js/i18n.js"></script>
     <script type="module" src="js/about.js"></script>
   </body>
 </html>

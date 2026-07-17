@@ -1,0 +1,59 @@
+{
+  "nav.home": "Laman Utama",
+  "nav.about": "Tentang Kami",
+  "nav.history": "Sejarah",
+  "nav.org": "Organisasi",
+  "nav.activities": "Aktiviti",
+  "nav.admin": "Admin",
+
+  "header.themeToggle": "Tukar mod gelap atau terang",
+  "header.menuOpen": "Buka menu",
+  "header.menuClose": "Tutup menu",
+
+  "footer.pages": "Laman",
+  "footer.connect": "Hubungi Kami",
+  "footer.youtube": "YouTube",
+  "footer.rights": "Hak cipta terpelihara.",
+
+  "home.hero.badge": "Selamat Datang",
+  "home.hero.aboutBtn": "Tentang Gereja Kami",
+  "home.hero.historyBtn": "Sejarah Kami",
+  "home.hero.youtubeBtn": "Tonton di YouTube",
+
+  "home.livestream.title": "Ibadah Hari Minggu",
+  "home.livestream.subtitle": "Sertai kami secara langsung atau tonton semula di saluran YouTube kami",
+  "home.livestream.badge": "Siaran Langsung",
+  "home.livestream.placeholder": "Siaran langsung ibadah hari Minggu",
+  "home.livestream.watchBtn": "Tonton Langsung di YouTube",
+  "home.livestream.note": "Siaran akan dibuka di saluran YouTube kami sepanjang waktu ibadah.",
+  "home.livestream.channelBtn": "Lawati Saluran YouTube",
+
+  "home.updates.title": "Pengumuman Terkini",
+  "home.updates.subtitle": "Pengumuman dan aktiviti berterusan di gereja",
+
+  "home.news.title": "Berita",
+  "home.news.subtitle": "Berita dan kisah terkini daripada BEM On The Rock",
+
+  "about.hero.title": "Tentang BEM On The Rock",
+  "about.hero.subtitle": "Misi, visi, dan semangat di sebalik keluarga gereja kami.",
+  "about.hero.historyBtn": "Baca Sejarah Kami",
+  "about.hero.orgBtn": "Organisasi",
+  "about.visit.title": "Lawati Kami",
+
+  "activities.hero.title": "Aktiviti & Pelayanan",
+  "activities.hero.subtitle": "Terokai pelayanan dan aktiviti yang membentuk keluarga gereja kami.",
+
+  "history.hero.title": "Sejarah Kami",
+  "history.hero.subtitle": "Detik-detik penting dan kisah yang membentuk BEM On The Rock.",
+  "history.timeline.title": "Garis Masa",
+  "history.timeline.subtitle": "Semak imbas detik-detik penting dalam perjalanan gereja kami.",
+  "history.sort.label": "Susunan",
+  "history.sort.newest": "Terkini dahulu",
+  "history.sort.oldest": "Terawal dahulu",
+
+  "org.hero.title": "Struktur Organisasi",
+  "org.hero.subtitle": "Pasukan kepimpinan kami dan cara kami berkhidmat bersama.",
+  "org.chart.title": "Carta Organisasi",
+  "org.leadership.title": "Kepimpinan",
+  "org.leadership.subtitle": "Kenali para pemimpin yang membimbing keluarga gereja kami."
+}

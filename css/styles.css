@@ -42,7 +42,7 @@
 }
 
 [data-theme="light"] {
-  --bg: #fafafa;
+  --bg: #fafbf9;
   --bg-elevated: #fafbf9;
   --bg-muted: #f0f0f0;
   --text: #111111;
@@ -2188,4 +2188,65 @@ a:hover {
 
 .live-toggle-switch input:checked + .live-toggle-slider::before {
   transform: translateX(20px);
+}
+/* ── Language toggle (EN / BM) ── */
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.lang-toggle button {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.lang-toggle button:hover {
+  color: var(--text);
+}
+
+.lang-toggle button.active {
+  background: var(--secondary);
+  color: #fff;
+}
+
+/* Nav-embedded variant (shows inside mobile hamburger menu too) */
+.nav-links .lang-toggle-item {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+
+/* ── Google Website Translator: hide default banner/UI, we drive it via
+     our own EN/BM toggle instead ── */
+#google_translate_element {
+  display: none !important;
+}
+
+.goog-te-banner-frame.skiptranslate {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
+.goog-te-gadget-icon {
+  display: none !important;
+}
+
+.skiptranslate iframe {
+  display: none !important;
 }

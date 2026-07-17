@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
-    <header class="site-header">
+    <header class="site-header notranslate" translate="no">
       <div class="container header-inner">
         <a href="index.html" class="logo">
           <div class="logo-mark">B</div>
@@ -25,12 +25,18 @@
 
         <nav>
           <ul class="nav-links">
-            <li><a href="index.html" class="active">Home</a></li>
-            <li><a href="about.html">About Us</a></li>
-            <li><a href="history.html">History</a></li>
-            <li><a href="organisation-structure.html">Organisation</a></li>
-            <li><a href="activities.html">Activities</a></li>
-            <li><a href="admin.html">Admin</a></li>
+            <li><a href="index.html" class="active" data-i18n="nav.home">Home</a></li>
+            <li><a href="about.html" data-i18n="nav.about">About Us</a></li>
+            <li><a href="history.html" data-i18n="nav.history">History</a></li>
+            <li><a href="organisation-structure.html" data-i18n="nav.org">Organisation</a></li>
+            <li><a href="activities.html" data-i18n="nav.activities">Activities</a></li>
+            <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
+            <li class="lang-toggle-item">
+              <div class="lang-toggle" role="group" aria-label="Language">
+                <button type="button" data-lang-btn="en">EN</button>
+                <button type="button" data-lang-btn="ms">BM</button>
+              </div>
+            </li>
           </ul>
         </nav>
 
@@ -40,6 +46,7 @@
             data-theme-toggle
             aria-label="Toggle dark or light mode"
             title="Toggle theme"
+            data-i18n-attr="aria-label:header.themeToggle,title:header.themeToggle"
           >
             <span data-theme-icon>🌙</span>
           </button>
@@ -47,6 +54,7 @@
             class="mobile-menu-btn"
             data-mobile-menu
             aria-label="Open menu"
+            data-i18n-attr="aria-label:header.menuOpen"
           >
             ☰
           </button>
@@ -57,15 +65,15 @@
     <main>
       <section class="hero hero--default-bg" id="hero">
         <div class="container hero-content">
-          <span class="hero-badge">Welcome</span>
+          <span class="hero-badge notranslate" translate="no" data-i18n="home.hero.badge">Welcome</span>
           <h1 id="hero-title">BEM On The <em>Rock</em></h1>
           <div class="tagline-wrap" id="tagline-wrap">
             <div class="tagline-glass"></div>
             <span id="hero-tagline" class="aurora-title">Building lives on the solid foundation of Christ</span>
           </div>
-          <div class="hero-actions">
-            <a href="about.html" class="btn btn-primary">About Our Church</a>
-            <a href="history.html" class="btn btn-outline">Our History</a>
+          <div class="hero-actions notranslate" translate="no">
+            <a href="about.html" class="btn btn-primary" data-i18n="home.hero.aboutBtn">About Our Church</a>
+            <a href="history.html" class="btn btn-outline" data-i18n="home.hero.historyBtn">Our History</a>
             <a
               id="hero-youtube-btn"
               href="#"
@@ -73,7 +81,7 @@
               target="_blank"
               rel="noopener noreferrer"
             >
-              ▶ Watch on YouTube
+              ▶ <span data-i18n="home.hero.youtubeBtn">Watch on YouTube</span>
             </a>
           </div>
         </div>
@@ -81,31 +89,31 @@
 
       <section class="section livestream-section" id="livestream">
         <div class="container">
-          <div class="section-header">
+          <div class="section-header notranslate" translate="no">
             <div>
-              <h2 class="section-title">Sunday Service</h2>
-              <p class="section-subtitle">
+              <h2 class="section-title" data-i18n="home.livestream.title">Sunday Service</h2>
+              <p class="section-subtitle" data-i18n="home.livestream.subtitle">
                 Join us live or catch up on our YouTube channel
               </p>
             </div>
           </div>
 
           <div class="livestream-card">
-            <div class="livestream-header">
-              <span class="live-badge">Live Stream</span>
+            <div class="livestream-header notranslate" translate="no">
+              <span class="live-badge" data-i18n="home.livestream.badge">Live Stream</span>
               <span id="service-times" class="section-subtitle"></span>
             </div>
             <div class="livestream-embed" id="livestream-embed">
-              <div class="livestream-placeholder">
+              <div class="livestream-placeholder notranslate" translate="no">
                 <span class="icon">▶</span>
-                <p>Sunday service livestream</p>
-                <a id="livestream-link" href="#" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                <p data-i18n="home.livestream.placeholder">Sunday service livestream</p>
+                <a id="livestream-link" href="#" class="btn btn-primary" target="_blank" rel="noopener noreferrer" data-i18n="home.livestream.watchBtn">
                   Watch Live on YouTube
                 </a>
               </div>
             </div>
-            <div class="livestream-footer">
-              <p id="livestream-note" style="color: var(--text-muted); font-size: 0.9rem;">
+            <div class="livestream-footer notranslate" translate="no">
+              <p id="livestream-note" style="color: var(--text-muted); font-size: 0.9rem;" data-i18n="home.livestream.note">
                 Stream opens on our YouTube channel during service times.
               </p>
               <a
@@ -114,6 +122,7 @@
                 class="btn btn-outline btn-sm"
                 target="_blank"
                 rel="noopener noreferrer"
+                data-i18n="home.livestream.channelBtn"
               >
                 Visit YouTube Channel
               </a>
@@ -130,10 +139,10 @@
 
       <section class="section" id="updates">
         <div class="container">
-          <div class="section-header">
+          <div class="section-header notranslate" translate="no">
             <div>
-              <h2 class="section-title">Current Updates</h2>
-              <p class="section-subtitle">
+              <h2 class="section-title" data-i18n="home.updates.title">Current Updates</h2>
+              <p class="section-subtitle" data-i18n="home.updates.subtitle">
                 Announcements and ongoing activities at the church
               </p>
             </div>
@@ -146,10 +155,10 @@
 
       <section class="section" id="news" style="background: var(--bg-elevated); border-top: 1px solid var(--border);">
         <div class="container">
-          <div class="section-header">
+          <div class="section-header notranslate" translate="no">
             <div>
-              <h2 class="section-title">News</h2>
-              <p class="section-subtitle">
+              <h2 class="section-title" data-i18n="home.news.title">News</h2>
+              <p class="section-subtitle" data-i18n="home.news.subtitle">
                 Latest news and stories from BEM On The Rock
               </p>
             </div>
@@ -161,7 +170,7 @@
       </section>
     </main>
 
-    <footer class="site-footer">
+    <footer class="site-footer" translate="no">
       <div class="container">
         <div class="footer-inner">
           <div class="footer-brand">
@@ -172,39 +181,43 @@
                 <span>Church</span>
               </div>
             </a>
-            <p id="footer-tagline">
+            <p id="footer-tagline" translate="yes">
               Building lives on the solid foundation of Christ.
             </p>
           </div>
           <div class="footer-links">
             <div class="footer-col">
-              <h4>Pages</h4>
+              <h4 data-i18n="footer.pages">Pages</h4>
               <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="about.html">About Us</a></li>
-                <li><a href="history.html">History</a></li>
-                <li><a href="organisation-structure.html">Organisation</a></li>
-                <li><a href="activities.html">Activities</a></li>
-                <li><a href="admin.html">Admin</a></li>
+                <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+                <li><a href="about.html" data-i18n="nav.about">About Us</a></li>
+                <li><a href="history.html" data-i18n="nav.history">History</a></li>
+                <li><a href="organisation-structure.html" data-i18n="nav.org">Organisation</a></li>
+                <li><a href="activities.html" data-i18n="nav.activities">Activities</a></li>
+                <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
               </ul>
             </div>
             <div class="footer-col">
-              <h4>Connect</h4>
+              <h4 data-i18n="footer.connect">Connect</h4>
               <ul>
                 <li>
-                  <a id="footer-youtube" href="#" target="_blank" rel="noopener noreferrer">YouTube</a>
+                  <a id="footer-youtube" href="#" target="_blank" rel="noopener noreferrer" data-i18n="footer.youtube">YouTube</a>
                 </li>
               </ul>
             </div>
           </div>
         </div>
         <div class="footer-bottom">
-          <span>© <span id="year"></span> BEM On The Rock. All rights reserved.</span>
+          <span>© <span id="year"></span> BEM On The Rock. <span data-i18n="footer.rights">All rights reserved.</span></span>
         </div>
       </div>
     </footer>
 
     <button id="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
+    <div id="google_translate_element"></div>
+    <script src="js/gtranslate-init.js"></script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script type="module" src="js/i18n.js"></script>
     <script type="module" src="js/scroll-effects.js"></script>
     <script type="module" src="js/index.js"></script>
   </body>

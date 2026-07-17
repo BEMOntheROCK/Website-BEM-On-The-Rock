@@ -1,0 +1,59 @@
+{
+  "nav.home": "Home",
+  "nav.about": "About Us",
+  "nav.history": "History",
+  "nav.org": "Organisation",
+  "nav.activities": "Activities",
+  "nav.admin": "Admin",
+
+  "header.themeToggle": "Toggle dark or light mode",
+  "header.menuOpen": "Open menu",
+  "header.menuClose": "Close menu",
+
+  "footer.pages": "Pages",
+  "footer.connect": "Connect",
+  "footer.youtube": "YouTube",
+  "footer.rights": "All rights reserved.",
+
+  "home.hero.badge": "Welcome",
+  "home.hero.aboutBtn": "About Our Church",
+  "home.hero.historyBtn": "Our History",
+  "home.hero.youtubeBtn": "Watch on YouTube",
+
+  "home.livestream.title": "Sunday Service",
+  "home.livestream.subtitle": "Join us live or catch up on our YouTube channel",
+  "home.livestream.badge": "Live Stream",
+  "home.livestream.placeholder": "Sunday service livestream",
+  "home.livestream.watchBtn": "Watch Live on YouTube",
+  "home.livestream.note": "Stream opens on our YouTube channel during service times.",
+  "home.livestream.channelBtn": "Visit YouTube Channel",
+
+  "home.updates.title": "Current Updates",
+  "home.updates.subtitle": "Announcements and ongoing activities at the church",
+
+  "home.news.title": "News",
+  "home.news.subtitle": "Latest news and stories from BEM On The Rock",
+
+  "about.hero.title": "About BEM On The Rock",
+  "about.hero.subtitle": "Our mission, vision, and the heart behind our church family.",
+  "about.hero.historyBtn": "Read Our History",
+  "about.hero.orgBtn": "Organisation",
+  "about.visit.title": "Visit Us",
+
+  "activities.hero.title": "Activities & Ministries",
+  "activities.hero.subtitle": "Discover the ministries and activities that make up our church family.",
+
+  "history.hero.title": "Our History",
+  "history.hero.subtitle": "Milestones and stories that shaped BEM On The Rock.",
+  "history.timeline.title": "Timeline",
+  "history.timeline.subtitle": "Browse milestones from our church journey.",
+  "history.sort.label": "Sort order",
+  "history.sort.newest": "Newest first",
+  "history.sort.oldest": "Oldest first",
+
+  "org.hero.title": "Organisation Structure",
+  "org.hero.subtitle": "Our leadership team and how we serve together.",
+  "org.chart.title": "Organisation Chart",
+  "org.leadership.title": "Leadership",
+  "org.leadership.subtitle": "Meet the leaders who guide our church family."
+}
