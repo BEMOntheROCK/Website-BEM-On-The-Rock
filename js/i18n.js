@@ -41,10 +41,37 @@ function applyStrings(strings) {
 }
 
 /** Drive Google Website Translator for dynamic (database-sourced) content.
-    Uses the hidden combo box the widget injects, so no page reload is
-    needed. Falls back silently if the widget hasn't finished loading yet —
-    static translation still applies regardless. */
-function setGoogleTranslateLanguage(lang) {
+    The script is only injected the first time it's actually needed — i.e.
+    the first time the page needs a non-English state — so English-only
+    visitors never pay the load cost of Google's translate script. */
+let googleTranslateReady = null;
+
+function loadGoogleTranslate() {
+  if (googleTranslateReady) return googleTranslateReady;
+
+  googleTranslateReady = new Promise((resolve) => {
+    window.googleTranslateElementInit = () => {
+      new google.translate.TranslateElement(
+        { pageLanguage: "en", includedLanguages: "ms", autoDisplay: false },
+        "google_translate_element"
+      );
+      resolve();
+    };
+    const script = document.createElement("script");
+    script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+    document.head.appendChild(script);
+  });
+
+  return googleTranslateReady;
+}
+
+async function setGoogleTranslateLanguage(lang) {
+  // Nothing loaded yet and we're headed to English (the page's natural
+  // state) — no need to load Google's script at all.
+  if (!googleTranslateReady && lang !== "ms") return;
+
+  await loadGoogleTranslate();
+
   const tryApply = (attemptsLeft) => {
     const combo = document.querySelector(".goog-te-combo");
     if (combo) {
@@ -72,7 +99,7 @@ export async function setLanguage(lang) {
   const strings = await loadLocale(lang);
   applyStrings(strings);
   updateToggleUI(lang);
-  setGoogleTranslateLanguage(lang);
+  await setGoogleTranslateLanguage(lang);
 }
 
 export function getCurrentLanguage() {
