@@ -70,21 +70,61 @@
       </section>
 
       <section class="container section">
-        <div class="section-header notranslate" translate="no">
-          <h2 class="section-title" data-i18n="org.chart.title">Organisation Chart</h2>
+        <div class="org-tabs" role="tablist" aria-label="Organisation sections">
+          <button
+            type="button"
+            class="org-tab-btn active"
+            role="tab"
+            aria-selected="true"
+            aria-controls="org-tab-leaders"
+            id="org-tab-btn-leaders"
+            data-org-tab="leaders"
+            data-i18n="org.leadership.title"
+          >
+            Leadership
+          </button>
+          <button
+            type="button"
+            class="org-tab-btn"
+            role="tab"
+            aria-selected="false"
+            aria-controls="org-tab-chart"
+            id="org-tab-btn-chart"
+            data-org-tab="chart"
+            data-i18n="org.chart.title"
+          >
+            Organisation Chart
+          </button>
         </div>
-        <div id="org-chart">
-          <div class="loading">Loading organisation chart…</div>
-        </div>
-      </section>
 
-      <section class="container section" style="padding-top: 0;">
-        <div class="section-header notranslate" translate="no">
-          <h2 class="section-title" data-i18n="org.leadership.title">Leadership</h2>
-          <p class="section-subtitle" data-i18n="org.leadership.subtitle">Meet the leaders who guide our church family.</p>
+        <div
+          id="org-tab-leaders"
+          class="org-tab-panel active"
+          role="tabpanel"
+          aria-labelledby="org-tab-btn-leaders"
+        >
+          <div class="section-header notranslate" translate="no">
+            <h2 class="section-title" data-i18n="org.leadership.title">Leadership</h2>
+            <p class="section-subtitle" data-i18n="org.leadership.subtitle">Meet the leaders who guide our church family.</p>
+          </div>
+          <div id="leaders-list">
+            <div class="loading">Loading leaders…</div>
+          </div>
         </div>
-        <div id="leaders-list">
-          <div class="loading">Loading leaders…</div>
+
+        <div
+          id="org-tab-chart"
+          class="org-tab-panel"
+          role="tabpanel"
+          aria-labelledby="org-tab-btn-chart"
+          hidden
+        >
+          <div class="section-header notranslate" translate="no">
+            <h2 class="section-title" data-i18n="org.chart.title">Organisation Chart</h2>
+          </div>
+          <div id="org-chart">
+            <div class="loading">Loading organisation chart…</div>
+          </div>
         </div>
       </section>
     </main>

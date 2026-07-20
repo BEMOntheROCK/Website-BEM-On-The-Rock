@@ -116,7 +116,29 @@ function leaderCardHtml(leader) {
     </article>`;
 }
 
+function bindOrgTabs() {
+  const buttons = document.querySelectorAll(".org-tab-btn");
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = btn.getAttribute("data-org-tab");
+
+      buttons.forEach((b) => {
+        const active = b === btn;
+        b.classList.toggle("active", active);
+        b.setAttribute("aria-selected", active ? "true" : "false");
+      });
+
+      document.querySelectorAll(".org-tab-panel").forEach((panel) => {
+        const active = panel.id === `org-tab-${target}`;
+        panel.classList.toggle("active", active);
+        panel.hidden = !active;
+      });
+    });
+  });
+}
+
 async function loadPage() {
+  bindOrgTabs();
   try {
     const [org, leaders, categories] = await Promise.all([
       getOrgStructure(),
