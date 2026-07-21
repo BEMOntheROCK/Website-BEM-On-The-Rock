@@ -143,18 +143,20 @@ a:hover {
   font-size: 1.1rem;
 }
 
-.logo-mark {
+.logo-marks {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.logo-marks img {
   width: 40px;
   height: 40px;
-  background: var(--marigold);
-  border-radius: var(--radius-sm);
-  display: grid;
-  place-items: center;
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--secondary);
-  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
 }
 
 .logo-text span {
