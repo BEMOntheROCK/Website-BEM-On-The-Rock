@@ -38,6 +38,10 @@ const leaderModal   = document.getElementById("leader-modal");
 const leaderForm    = document.getElementById("leader-form");
 const catModal      = document.getElementById("category-modal");
 const catForm       = document.getElementById("category-form");
+const confirmModal  = document.getElementById("confirm-modal");
+const confirmMsgEl  = document.getElementById("confirm-modal-message");
+const confirmYesBtn = document.getElementById("confirm-modal-yes");
+const confirmNoBtn  = document.getElementById("confirm-modal-no");
 
 // ── State ──
 let newsData       = [];
@@ -92,7 +96,57 @@ function authError(code) {
   return map[code] || "Sign in failed. Please try again.";
 }
 
-// ── Auth ──
+// ── Custom confirm modal (replaces native confirm()) ──
+function confirmAction(message) {
+  return new Promise(resolve => {
+    confirmMsgEl.textContent = message;
+    confirmModal.classList.add("open");
+    const cleanup = result => {
+      confirmModal.classList.remove("open");
+      confirmYesBtn.removeEventListener("click", onYes);
+      confirmNoBtn.removeEventListener("click", onNo);
+      confirmModal.removeEventListener("click", onOverlay);
+      resolve(result);
+    };
+    const onYes = () => cleanup(true);
+    const onNo  = () => cleanup(false);
+    const onOverlay = e => { if (e.target === confirmModal) cleanup(false); };
+    confirmYesBtn.addEventListener("click", onYes);
+    confirmNoBtn.addEventListener("click", onNo);
+    confirmModal.addEventListener("click", onOverlay);
+  });
+}
+
+// ── Plain-language validation messages ──
+function friendlyValidationMessage(input) {
+  if (input.validity.valueMissing) return "This field is required.";
+  if (input.type === "url" && input.validity.typeMismatch) {
+    return "This doesn't look like a web link — make sure it starts with https://";
+  }
+  if (input.type === "email" && input.validity.typeMismatch) {
+    return "This doesn't look like an email address — check for typos.";
+  }
+  return "";
+}
+
+document.addEventListener("invalid", e => {
+  const input = e.target;
+  if (input.tagName !== "INPUT" && input.tagName !== "TEXTAREA" && input.tagName !== "SELECT") return;
+  const msg = friendlyValidationMessage(input);
+  if (msg) input.setCustomValidity(msg);
+}, true);
+
+document.addEventListener("input", e => {
+  if (e.target.tagName === "INPUT") e.target.setCustomValidity("");
+});
+
+/** Shows "Last edited" for a Firestore document, falling back to
+    createdAt (updatedAt is only set once an item has been edited). */
+function formatUpdatedAt(item) {
+  const ts = item?.updatedAt ?? item?.createdAt;
+  if (!ts?.toDate) return "—";
+  return ts.toDate().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
 loginForm.addEventListener("submit", async e => {
   e.preventDefault();
   const email    = document.getElementById("login-email").value.trim();
@@ -169,18 +223,19 @@ async function initAll() {
 // ══════════════════════════════════════════
 async function loadNews() {
   const tbody = document.getElementById("news-table-body");
-  tbody.innerHTML = `<tr><td colspan="3" class="loading">Loading…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="4" class="loading">Loading…</td></tr>`;
   newsData = await getNews();
   document.getElementById("news-count").textContent = `${newsData.length} article(s)`;
 
   if (!newsData.length) {
-    tbody.innerHTML = `<tr><td colspan="3" class="empty-state">No news yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No news yet.</td></tr>`;
     return;
   }
   tbody.innerHTML = newsData.map(item => `
     <tr>
       <td>${esc(item.title)}${item.imageId ? " 🖼" : ""}</td>
       <td>${esc(formatDate(item.date))}</td>
+      <td>${formatUpdatedAt(item)}</td>
       <td>
         <div class="table-actions">
           <button class="btn btn-outline btn-sm" data-action="edit-news" data-id="${item.id}">Edit</button>
@@ -204,12 +259,12 @@ document.getElementById("news-table-body").addEventListener("click", e => {
 // ══════════════════════════════════════════
 async function loadUpdates() {
   const tbody = document.getElementById("updates-table-body");
-  tbody.innerHTML = `<tr><td colspan="4" class="loading">Loading…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="5" class="loading">Loading…</td></tr>`;
   updatesData = await getUpdates();
   document.getElementById("updates-count").textContent = `${updatesData.length} update(s)`;
 
   if (!updatesData.length) {
-    tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No updates yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No updates yet.</td></tr>`;
     return;
   }
   tbody.innerHTML = updatesData.map(item => `
@@ -217,6 +272,7 @@ async function loadUpdates() {
       <td>${esc(item.title)}${item.imageId ? " 🖼" : ""}</td>
       <td>${esc(formatDate(item.date))}</td>
       <td>${esc(item.priority || "normal")}</td>
+      <td>${formatUpdatedAt(item)}</td>
       <td>
         <div class="table-actions">
           <button class="btn btn-outline btn-sm" data-action="edit-update" data-id="${item.id}">Edit</button>
@@ -240,13 +296,13 @@ document.getElementById("updates-table-body").addEventListener("click", e => {
 // ══════════════════════════════════════════
 async function loadHistory() {
   const tbody = document.getElementById("history-table-body");
-  tbody.innerHTML = `<tr><td colspan="5" class="loading">Loading…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="6" class="loading">Loading…</td></tr>`;
   historyData = await getHistory("desc");
   await backfillHistoryOrder(historyData);
   document.getElementById("history-count").textContent = `${historyData.length} article(s)`;
 
   if (!historyData.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No history articles yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No history articles yet.</td></tr>`;
     return;
   }
 
@@ -260,12 +316,20 @@ async function loadHistory() {
     const year = extractDateYear(item.date) ?? "unknown";
     const group = yearGroups[year];
     const groupable = isAmbiguousGroup(group);
+    const groupIdx = groupable ? group.findIndex(g => g.id === item.id) : -1;
     return `
     <tr ${groupable ? `draggable="true"` : ""} data-history-id="${item.id}" data-history-year="${esc(String(year))}">
-      <td>${groupable ? `<span class="drag-handle" title="Drag to reorder within same year">⠿</span>` : ""}</td>
+      <td>
+        ${groupable ? `<span class="drag-handle" title="Drag to reorder within same year">⠿</span>
+        <span class="reorder-btns">
+          <button type="button" class="reorder-btn" data-reorder="history-up" data-id="${item.id}" ${groupIdx === 0 ? "disabled" : ""} aria-label="Move up">▲</button>
+          <button type="button" class="reorder-btn" data-reorder="history-down" data-id="${item.id}" ${groupIdx === group.length - 1 ? "disabled" : ""} aria-label="Move down">▼</button>
+        </span>` : ""}
+      </td>
       <td>${esc(item.title)}</td>
       <td>${esc(displayHistoryDate(item.date))}</td>
       <td>${item.imageId ? "Yes" : "—"}</td>
+      <td>${formatUpdatedAt(item)}</td>
       <td>
         <div class="table-actions">
           <button class="btn btn-outline btn-sm" data-action="edit-history" data-id="${item.id}">Edit</button>
@@ -334,11 +398,33 @@ function bindHistoryDrag(tbody) {
 
 document.getElementById("add-history-btn").addEventListener("click", () => openCrud("history"));
 
-document.getElementById("history-table-body").addEventListener("click", e => {
+document.getElementById("history-table-body").addEventListener("click", async e => {
   const btn = e.target.closest("[data-action]");
-  if (!btn) return;
-  if (btn.dataset.action === "edit-history") openCrud("history", btn.dataset.id);
-  if (btn.dataset.action === "del-history")  confirmDelete("history", btn.dataset.id);
+  if (btn) {
+    if (btn.dataset.action === "edit-history") openCrud("history", btn.dataset.id);
+    if (btn.dataset.action === "del-history")  confirmDelete("history", btn.dataset.id);
+    return;
+  }
+  const reorderBtn = e.target.closest("[data-reorder]");
+  if (!reorderBtn || reorderBtn.disabled) return;
+  const id  = reorderBtn.dataset.id;
+  const dir = reorderBtn.dataset.reorder === "history-up" ? -1 : 1;
+  const item = historyData.find(h => h.id === id);
+  if (!item) return;
+  const year = extractDateYear(item.date) ?? "unknown";
+  const group = historyData.filter(h => (extractDateYear(h.date) ?? "unknown") === year);
+  const idx = group.findIndex(h => h.id === id);
+  const swapIdx = idx + dir;
+  if (swapIdx < 0 || swapIdx >= group.length) return;
+  const reorder = [...group];
+  [reorder[idx], reorder[swapIdx]] = [reorder[swapIdx], reorder[idx]];
+  try {
+    await Promise.all(reorder.map((h, i) => updateHistory(h.id, { order: i, orderSource: "manual" })));
+    showAlert(adminAlert, "History order saved.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save history order.");
+  }
+  await loadHistory();
 });
 
 // ══════════════════════════════════════════
@@ -428,7 +514,7 @@ crudForm.addEventListener("submit", async e => {
 
 async function confirmDelete(type, id) {
   const labels = { news: "news article", updates: "update", history: "history article" };
-  if (!confirm(`Delete this ${labels[type]}? This cannot be undone.`)) return;
+  if (!(await confirmAction(`Delete this ${labels[type]}? This cannot be undone.`))) return;
   const item = getItems(type).find(i => i.id === id);
   try {
     if (type === "news")    { await deleteNews(id);    await loadNews(); }
@@ -556,7 +642,7 @@ async function confirmDeleteCat(id) {
     showAlert(adminAlert, "Cannot delete: leaders are still assigned to this category.");
     return;
   }
-  if (!confirm("Delete this category? This cannot be undone.")) return;
+  if (!(await confirmAction("Delete this category? This cannot be undone."))) return;
   try {
     await deleteCategory(id);
     await loadCategories();
@@ -571,22 +657,29 @@ async function confirmDeleteCat(id) {
 // ══════════════════════════════════════════
 async function loadLeaders() {
   const tbody = document.getElementById("leaders-table-body");
-  tbody.innerHTML = `<tr><td colspan="6" class="loading">Loading…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="7" class="loading">Loading…</td></tr>`;
   leadersData = await getLeaders();
   leadersData.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   document.getElementById("leaders-count").textContent = `${leadersData.length} leader(s)`;
 
   if (!leadersData.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No leaders yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No leaders yet.</td></tr>`;
     return;
   }
-  tbody.innerHTML = leadersData.map(item => `
+  tbody.innerHTML = leadersData.map((item, idx) => `
     <tr draggable="true" data-leader-id="${item.id}">
-      <td><span class="drag-handle">⠿</span></td>
+      <td>
+        <span class="drag-handle">⠿</span>
+        <span class="reorder-btns">
+          <button type="button" class="reorder-btn" data-reorder="leader-up" data-id="${item.id}" ${idx === 0 ? "disabled" : ""} aria-label="Move up">▲</button>
+          <button type="button" class="reorder-btn" data-reorder="leader-down" data-id="${item.id}" ${idx === leadersData.length - 1 ? "disabled" : ""} aria-label="Move down">▼</button>
+        </span>
+      </td>
       <td>${esc(item.name)}</td>
       <td>${esc(item.title)}</td>
       <td>${esc(getCategoryName(item.categoryId))}</td>
       <td>${item.imageId ? "Yes" : "—"}</td>
+      <td>${formatUpdatedAt(item)}</td>
       <td>
         <div class="table-actions">
           <button class="btn btn-outline btn-sm" data-action="edit-leader" data-id="${item.id}">Edit</button>
@@ -600,11 +693,30 @@ async function loadLeaders() {
 
 document.getElementById("add-leader-btn").addEventListener("click", () => openLeaderModal());
 
-document.getElementById("leaders-table-body").addEventListener("click", e => {
+document.getElementById("leaders-table-body").addEventListener("click", async e => {
   const btn = e.target.closest("[data-action]");
-  if (!btn) return;
-  if (btn.dataset.action === "edit-leader") openLeaderModal(btn.dataset.id);
-  if (btn.dataset.action === "del-leader")  confirmDeleteLeader(btn.dataset.id);
+  if (btn) {
+    if (btn.dataset.action === "edit-leader") openLeaderModal(btn.dataset.id);
+    if (btn.dataset.action === "del-leader")  confirmDeleteLeader(btn.dataset.id);
+    return;
+  }
+  const reorderBtn = e.target.closest("[data-reorder]");
+  if (!reorderBtn || reorderBtn.disabled) return;
+  const id  = reorderBtn.dataset.id;
+  const dir = reorderBtn.dataset.reorder === "leader-up" ? -1 : 1;
+  const idx = leadersData.findIndex(l => l.id === id);
+  const swapIdx = idx + dir;
+  if (swapIdx < 0 || swapIdx >= leadersData.length) return;
+  const reorder = [...leadersData];
+  [reorder[idx], reorder[swapIdx]] = [reorder[swapIdx], reorder[idx]];
+  const reordered = reorder.map((l, i) => ({ ...l, order: i }));
+  try {
+    await Promise.all(reordered.map(l => updateLeader(l.id, { order: l.order })));
+    showAlert(adminAlert, "Leader order saved.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save leader order.");
+  }
+  await loadLeaders();
 });
 
 function bindLeaderDrag(tbody) {
@@ -704,7 +816,7 @@ leaderForm.addEventListener("submit", async e => {
 });
 
 async function confirmDeleteLeader(id) {
-  if (!confirm("Delete this leader? This cannot be undone.")) return;
+  if (!(await confirmAction("Delete this leader? This cannot be undone."))) return;
   const item = leadersData.find(l => l.id === id);
   try {
     await deleteLeader(id);
@@ -963,7 +1075,7 @@ async function confirmDeleteActCat(id) {
     showAlert(adminAlert, "Cannot delete: activities are still assigned to this category.");
     return;
   }
-  if (!confirm("Delete this category? This cannot be undone.")) return;
+  if (!(await confirmAction("Delete this category? This cannot be undone."))) return;
   try {
     await deleteActivitiesCategory(id);
     await loadActCategories();
@@ -979,23 +1091,30 @@ async function confirmDeleteActCat(id) {
 async function loadActivities() {
   const tbody = document.getElementById("activities-table-body");
   if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="6" class="loading">Loading…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="7" class="loading">Loading…</td></tr>`;
   activitiesData = await getActivities();
   activitiesData.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   document.getElementById("activities-count").textContent = `${activitiesData.length} activity(s)`;
 
   if (!activitiesData.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No activities yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No activities yet.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = activitiesData.map(item => `
+  tbody.innerHTML = activitiesData.map((item, idx) => `
     <tr draggable="true" data-activity-id="${item.id}">
-      <td><span class="drag-handle">⠿</span></td>
+      <td>
+        <span class="drag-handle">⠿</span>
+        <span class="reorder-btns">
+          <button type="button" class="reorder-btn" data-reorder="activity-up" data-id="${item.id}" ${idx === 0 ? "disabled" : ""} aria-label="Move up">▲</button>
+          <button type="button" class="reorder-btn" data-reorder="activity-down" data-id="${item.id}" ${idx === activitiesData.length - 1 ? "disabled" : ""} aria-label="Move down">▼</button>
+        </span>
+      </td>
       <td>${esc(item.title)}</td>
       <td>${esc(item.subtitle || "—")}</td>
       <td>${esc(getActCategoryName(item.categoryId))}</td>
       <td>${item.imageId ? "Yes" : "—"}</td>
+      <td>${formatUpdatedAt(item)}</td>
       <td>
         <div class="table-actions">
           <button class="btn btn-outline btn-sm" data-action="edit-activity" data-id="${item.id}">Edit</button>
@@ -1014,11 +1133,30 @@ function getActCategoryName(id) {
 
 document.getElementById("add-activity-btn").addEventListener("click", () => openActivityModal());
 
-document.getElementById("activities-table-body").addEventListener("click", e => {
+document.getElementById("activities-table-body").addEventListener("click", async e => {
   const btn = e.target.closest("[data-action]");
-  if (!btn) return;
-  if (btn.dataset.action === "edit-activity") openActivityModal(btn.dataset.id);
-  if (btn.dataset.action === "del-activity")  confirmDeleteActivity(btn.dataset.id);
+  if (btn) {
+    if (btn.dataset.action === "edit-activity") openActivityModal(btn.dataset.id);
+    if (btn.dataset.action === "del-activity")  confirmDeleteActivity(btn.dataset.id);
+    return;
+  }
+  const reorderBtn = e.target.closest("[data-reorder]");
+  if (!reorderBtn || reorderBtn.disabled) return;
+  const id  = reorderBtn.dataset.id;
+  const dir = reorderBtn.dataset.reorder === "activity-up" ? -1 : 1;
+  const idx = activitiesData.findIndex(a => a.id === id);
+  const swapIdx = idx + dir;
+  if (swapIdx < 0 || swapIdx >= activitiesData.length) return;
+  const reorder = [...activitiesData];
+  [reorder[idx], reorder[swapIdx]] = [reorder[swapIdx], reorder[idx]];
+  const reordered = reorder.map((a, i) => ({ ...a, order: i }));
+  try {
+    await Promise.all(reordered.map(a => updateActivity(a.id, { order: a.order })));
+    showAlert(adminAlert, "Activity order saved.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save activity order.");
+  }
+  await loadActivities();
 });
 
 function bindActivityDrag(tbody) {
@@ -1123,7 +1261,7 @@ activityForm.addEventListener("submit", async e => {
 });
 
 async function confirmDeleteActivity(id) {
-  if (!confirm("Delete this activity? This cannot be undone.")) return;
+  if (!(await confirmAction("Delete this activity? This cannot be undone."))) return;
   const item = activitiesData.find(a => a.id === id);
   try {
     await deleteActivity(id);
@@ -1141,13 +1279,13 @@ async function confirmDeleteActivity(id) {
 async function loadCarouselVideos() {
   const tbody = document.getElementById("carousel-videos-table-body");
   if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="5" class="loading">Loading…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="6" class="loading">Loading…</td></tr>`;
   carouselVideosData = await getCarouselVideos();
   carouselVideosData.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   document.getElementById("carousel-videos-count").textContent = `${carouselVideosData.length} video(s)`;
 
   if (!carouselVideosData.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No videos added yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No videos added yet.</td></tr>`;
     return;
   }
 
@@ -1157,6 +1295,7 @@ async function loadCarouselVideos() {
       <td>${esc(item.title)}</td>
       <td>${item.date ? esc(formatDate(item.date)) : "—"}</td>
       <td>${esc(item.videoId)}</td>
+      <td>${formatUpdatedAt(item)}</td>
       <td>
         <div class="table-actions">
           <button class="btn btn-outline btn-sm" data-action="edit-cv" data-id="${item.id}">Edit</button>
@@ -1260,7 +1399,7 @@ carouselVideoForm.addEventListener("submit", async e => {
 });
 
 async function confirmDeleteCarouselVideo(id) {
-  if (!confirm("Delete this video? This cannot be undone.")) return;
+  if (!(await confirmAction("Delete this video? This cannot be undone."))) return;
   try {
     await deleteCarouselVideo(id);
     await loadCarouselVideos();

@@ -1440,6 +1440,109 @@ a:hover {
   color: var(--marigold);
 }
 
+.admin-advanced {
+  margin: 1rem 0 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.25rem 1rem;
+  background: var(--bg-muted);
+}
+
+.admin-advanced summary {
+  cursor: pointer;
+  padding: 0.75rem 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  list-style: none;
+}
+
+.admin-advanced summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-advanced summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: 0.5rem;
+  transition: transform var(--transition);
+}
+
+.admin-advanced[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.admin-advanced-body {
+  padding: 0.25rem 0 1rem;
+}
+
+.drag-handle {
+  cursor: grab;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.reorder-btns {
+  display: none;
+  gap: 0.25rem;
+}
+
+.reorder-btn {
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.reorder-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.reorder-btn:not(:disabled):hover {
+  border-color: var(--marigold);
+  color: var(--marigold);
+}
+
+@media (max-width: 768px) {
+  .drag-handle {
+    display: none;
+  }
+
+  .reorder-btns {
+    display: flex;
+  }
+}
+
+.admin-panel-intro {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  max-width: 65ch;
+  margin-bottom: 1.25rem;
+}
+
+.admin-nav-group {
+  margin-bottom: 1.5rem;
+}
+
+.admin-nav-group-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  padding: 0 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
 .admin-nav {
   list-style: none;
   display: flex;
@@ -1449,6 +1552,9 @@ a:hover {
 
 .admin-nav button {
   width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
   text-align: left;
   background: none;
   border: none;
@@ -1462,9 +1568,43 @@ a:hover {
   transition: all var(--transition);
 }
 
+.admin-nav-icon {
+  flex-shrink: 0;
+  width: 1.1rem;
+  text-align: center;
+  margin-top: 0.15rem;
+  color: var(--text-muted);
+  transition: color var(--transition);
+}
+
+.admin-nav-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.admin-nav-label {
+  font-weight: 600;
+  color: inherit;
+}
+
+.admin-nav-sub {
+  font-size: 0.74rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  line-height: 1.3;
+  opacity: 0.85;
+}
+
 .admin-nav button:hover,
 .admin-nav button.active {
   background: var(--bg-muted);
+  color: var(--marigold);
+}
+
+.admin-nav button:hover .admin-nav-icon,
+.admin-nav button.active .admin-nav-icon {
   color: var(--marigold);
 }
 
@@ -1655,6 +1795,16 @@ a:hover {
   box-shadow: var(--shadow-lg);
 }
 
+.modal-sm {
+  width: min(100%, 400px);
+}
+
+.confirm-modal-message {
+  padding-top: 0.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
 .modal-header {
   display: flex;
   align-items: center;
@@ -1785,14 +1935,12 @@ a:hover {
     border-bottom: 1px solid var(--border);
   }
 
-  .admin-nav {
-    flex-direction: row;
-    overflow-x: auto;
-    flex-wrap: nowrap;
+  .admin-nav button {
+    padding: 0.75rem 0.85rem;
   }
 
-  .admin-nav button {
-    white-space: nowrap;
+  .admin-nav-sub {
+    display: block;
   }
 
   .form-row {

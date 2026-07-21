@@ -43,9 +43,6 @@
           >
             <span data-theme-icon>🌙</span>
           </button>
-          <button id="logout-btn" class="btn btn-outline btn-sm" style="display: none;">
-            Sign Out
-          </button>
           <button
             class="mobile-menu-btn"
             data-mobile-menu
@@ -85,23 +82,103 @@
     <div id="admin-dashboard" class="admin-layout" style="display: none;">
       <aside class="admin-sidebar">
         <h2>Dashboard</h2>
-        <ul class="admin-nav">
-          <li><button type="button" data-panel="news" class="active">News</button></li>
-          <li><button type="button" data-panel="updates">Updates</button></li>
-          <li><button type="button" data-panel="history">History</button></li>
-          <li><button type="button" data-panel="about">About Page</button></li>
-          <li><button type="button" data-panel="organisation">Organisation</button></li>
-          <li><button type="button" data-panel="activities">Activities</button></li>
-          <li><button type="button" data-panel="settings">Site Settings</button></li>
-        </ul>
+
+        <div class="admin-nav-group">
+          <span class="admin-nav-group-label">Content</span>
+          <ul class="admin-nav">
+            <li>
+              <button type="button" data-panel="news" class="active">
+                <i class="fa-solid fa-newspaper admin-nav-icon"></i>
+                <span class="admin-nav-text">
+                  <span class="admin-nav-label">Homepage News</span>
+                  <span class="admin-nav-sub">News articles shown on the homepage</span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button type="button" data-panel="updates">
+                <i class="fa-solid fa-bullhorn admin-nav-icon"></i>
+                <span class="admin-nav-text">
+                  <span class="admin-nav-label">Announcements</span>
+                  <span class="admin-nav-sub">Time-sensitive notices for the homepage</span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div class="admin-nav-group">
+          <span class="admin-nav-group-label">Information</span>
+          <ul class="admin-nav">
+            <li>
+              <button type="button" data-panel="about">
+                <i class="fa-solid fa-circle-info admin-nav-icon"></i>
+                <span class="admin-nav-text">
+                  <span class="admin-nav-label">About Us Page</span>
+                  <span class="admin-nav-sub">Mission, vision &amp; contact info on About Us</span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button type="button" data-panel="history">
+                <i class="fa-solid fa-clock-rotate-left admin-nav-icon"></i>
+                <span class="admin-nav-text">
+                  <span class="admin-nav-label">Church History</span>
+                  <span class="admin-nav-sub">Timeline of milestones on the History page</span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button type="button" data-panel="organisation">
+                <i class="fa-solid fa-sitemap admin-nav-icon"></i>
+                <span class="admin-nav-text">
+                  <span class="admin-nav-label">Leaders &amp; Org Chart</span>
+                  <span class="admin-nav-sub">Leader profiles &amp; the organisation chart</span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button type="button" data-panel="activities">
+                <i class="fa-solid fa-hands-praying admin-nav-icon"></i>
+                <span class="admin-nav-text">
+                  <span class="admin-nav-label">Ministries &amp; Activities</span>
+                  <span class="admin-nav-sub">Ministries and activities listed on the Activities page</span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div class="admin-nav-group">
+          <span class="admin-nav-group-label">Settings</span>
+          <ul class="admin-nav">
+            <li>
+              <button type="button" data-panel="settings">
+                <i class="fa-solid fa-address-book admin-nav-icon"></i>
+                <span class="admin-nav-text">
+                  <span class="admin-nav-label">Church Contact &amp; Settings</span>
+                  <span class="admin-nav-sub">Church details, contact info &amp; homepage settings</span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button type="button" id="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket admin-nav-icon"></i>
+                <span class="admin-nav-text">
+                  <span class="admin-nav-label">Log Out</span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </div>
       </aside>
 
       <div class="admin-main">
 
         <!-- News panel -->
         <section id="panel-news" class="admin-panel active">
-          <h2>Manage News</h2>
-          <p>Create, edit, and delete news articles displayed on the home page.</p>
+          <h2>Homepage News</h2>
+          <p class="admin-panel-intro">This is where you post news stories that show up on the homepage. Click "Add" to write a new one — give it a title, a short story, and a photo if you have one. Newest posts show up first.</p>
           <div class="admin-toolbar">
             <span id="news-count"></span>
             <button type="button" class="btn btn-primary btn-sm" id="add-news-btn">+ Add News</button>
@@ -112,11 +189,12 @@
                 <tr>
                   <th>Title</th>
                   <th>Date</th>
+                  <th>Last Updated</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="news-table-body">
-                <tr><td colspan="3" class="loading">Loading…</td></tr>
+                <tr><td colspan="4" class="loading">Loading…</td></tr>
               </tbody>
             </table>
           </div>
@@ -124,8 +202,8 @@
 
         <!-- Updates panel -->
         <section id="panel-updates" class="admin-panel">
-          <h2>Manage Updates</h2>
-          <p>Create, edit, and delete current announcements and ongoing activities.</p>
+          <h2>Announcements</h2>
+          <p class="admin-panel-intro">Use this for short, time-sensitive notices — things like a special service, a schedule change, or an upcoming event. These also appear on the homepage, separate from News.</p>
           <div class="admin-toolbar">
             <span id="updates-count"></span>
             <button type="button" class="btn btn-primary btn-sm" id="add-update-btn">+ Add Update</button>
@@ -137,11 +215,12 @@
                   <th>Title</th>
                   <th>Date</th>
                   <th>Priority</th>
+                  <th>Last Updated</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="updates-table-body">
-                <tr><td colspan="4" class="loading">Loading…</td></tr>
+                <tr><td colspan="5" class="loading">Loading…</td></tr>
               </tbody>
             </table>
           </div>
@@ -149,8 +228,8 @@
 
         <!-- History panel -->
         <section id="panel-history" class="admin-panel">
-          <h2>Manage History</h2>
-          <p>Create, edit, and delete history articles displayed on the History page.</p>
+          <h2>Church History</h2>
+          <p class="admin-panel-intro">This builds the timeline shown on the History page. Each entry needs a title, a short story, and a date — if you don't remember the exact date, just typing the year is fine (see the tip under the Date field).</p>
           <div class="admin-toolbar">
             <span id="history-count"></span>
             <button type="button" class="btn btn-primary btn-sm" id="add-history-btn">+ Add Article</button>
@@ -163,11 +242,12 @@
                   <th>Title</th>
                   <th>Date</th>
                   <th>Image</th>
+                  <th>Last Updated</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="history-table-body">
-                <tr><td colspan="5" class="loading">Loading…</td></tr>
+                <tr><td colspan="6" class="loading">Loading…</td></tr>
               </tbody>
             </table>
           </div>
@@ -175,30 +255,43 @@
 
         <!-- About panel -->
         <section id="panel-about" class="admin-panel">
-          <h2>About Page Content</h2>
-          <p>Edit general information, founder biography, mission, vision, values, and section images.</p>
+          <h2>About Us Page</h2>
+          <p class="admin-panel-intro">Everything here fills in the "About Us" page — your church's mission, vision, founder's story, contact details, and social media links. Most of these fields are things you'll only update occasionally, like when contact info changes.</p>
           <form id="about-form">
             <h3 class="admin-subheading">General Information</h3>
             <div class="form-row">
               <div class="form-group">
                 <label for="about-full-name">Church Full Name</label>
-                <input type="text" id="about-full-name" />
+                <input type="text" id="about-full-name" placeholder="e.g. BEM On The Rock" />
               </div>
               <div class="form-group">
                 <label for="about-denomination">Denomination</label>
-                <input type="text" id="about-denomination" />
+                <input type="text" id="about-denomination" placeholder="e.g. Sidang Injil Borneo" />
               </div>
             </div>
             <div class="form-row">
-              <div class="form-group">
-                <label for="about-registration">Registration Number</label>
-                <input type="text" id="about-registration" />
-              </div>
               <div class="form-group">
                 <label for="about-office-hours">Office Hours</label>
                 <textarea id="about-office-hours" rows="4" placeholder="Mon: Off Day&#10;Tue – Fri: 8.30 a.m – 4.30 p.m&#10;Sat: 10.00 a.m. – 3.00 p.m"></textarea>
               </div>
             </div>
+
+            <details class="admin-advanced">
+              <summary>Advanced (rarely needed)</summary>
+              <div class="admin-advanced-body">
+                <div class="form-group">
+                  <label for="about-registration">Registration Number</label>
+                  <input type="text" id="about-registration" placeholder="e.g. PPM-012-3456" />
+                </div>
+                <div class="form-group">
+                  <label for="about-office-phone-link">Office Phone Link (optional)</label>
+                  <input type="text" id="about-office-phone-link" placeholder="tel:+60123456789" />
+                  <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
+                    Only needed if you want the phone number to be tappable on mobile. Leave blank otherwise.
+                  </small>
+                </div>
+              </div>
+            </details>
 
             <h3 class="admin-subheading">Social Links</h3>
             <p class="admin-hint">Enter a URL or contact value. Users can click the icon on the About page to open the link.</p>
@@ -212,18 +305,14 @@
                 <input type="text" id="about-office-phone" placeholder="+60 12-345 6789" />
               </div>
             </div>
-            <div class="form-group">
-              <label for="about-office-phone-link">Office Phone Link (optional)</label>
-              <input type="text" id="about-office-phone-link" placeholder="tel:+60123456789" />
-            </div>
             <div class="form-row">
               <div class="form-group">
                 <label for="about-instagram">Instagram URL</label>
-                <input type="url" id="about-instagram" />
+                <input type="url" id="about-instagram" placeholder="https://instagram.com/yourchurch" />
               </div>
               <div class="form-group">
                 <label for="about-facebook">Facebook URL</label>
-                <input type="url" id="about-facebook" />
+                <input type="url" id="about-facebook" placeholder="https://facebook.com/yourchurch" />
               </div>
             </div>
             <div class="form-row">
@@ -281,8 +370,8 @@
 
         <!-- Organisation panel -->
         <section id="panel-organisation" class="admin-panel">
-          <h2>Organisation Structure</h2>
-          <p>Manage the organisation chart, leader categories, and leadership list.</p>
+          <h2>Leaders &amp; Org Chart</h2>
+          <p class="admin-panel-intro">Add or edit the leaders shown on the Organisation page, and arrange the org chart to reflect the current leadership structure. Drag and drop a leader's name to reorder them.</p>
 
           <form id="org-chart-form">
             <div id="org-chart-image-upload"></div>
@@ -321,11 +410,12 @@
                   <th>Title</th>
                   <th>Category</th>
                   <th>Image</th>
+                  <th>Last Updated</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="leaders-table-body">
-                <tr><td colspan="6" class="loading">Loading…</td></tr>
+                <tr><td colspan="7" class="loading">Loading…</td></tr>
               </tbody>
             </table>
           </div>
@@ -334,8 +424,8 @@
 
         <!-- Activities panel -->
         <section id="panel-activities" class="admin-panel">
-          <h2>Activities &amp; Ministries</h2>
-          <p>Manage categories and individual activities or ministries shown on the public page.</p>
+          <h2>Ministries &amp; Activities</h2>
+          <p class="admin-panel-intro">This controls the ministries and activities listed on the Activities page — things like youth group, worship team, or outreach programs. Each one can have its own description and photo.</p>
 
           <h3 class="admin-subheading" style="border-top: none; margin-top: 0; padding-top: 0;">Activity Categories</h3>
           <p class="admin-hint">Add categories and drag to reorder. Each activity must belong to a category.</p>
@@ -363,11 +453,12 @@
                   <th>Subtitle</th>
                   <th>Category</th>
                   <th>Image</th>
+                  <th>Last Updated</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="activities-table-body">
-                <tr><td colspan="6" class="loading">Loading…</td></tr>
+                <tr><td colspan="7" class="loading">Loading…</td></tr>
               </tbody>
             </table>
           </div>
@@ -375,17 +466,17 @@
 
         <!-- Settings panel -->
         <section id="panel-settings" class="admin-panel">
-          <h2>Site Settings</h2>
-          <p>Configure church details, service times, and YouTube livestream links.</p>
+          <h2>Church Contact &amp; Settings</h2>
+          <p class="admin-panel-intro">General church details shown across the website — church name, tagline, service times, address, and the homepage's YouTube livestream settings. Changes here affect the whole site, not just one page.</p>
           <form id="settings-form">
             <div class="form-row">
               <div class="form-group">
                 <label for="settings-church-name">Church Name</label>
-                <input type="text" id="settings-church-name" />
+                <input type="text" id="settings-church-name" placeholder="e.g. BEM On The Rock" />
               </div>
               <div class="form-group">
                 <label for="settings-tagline">Tagline</label>
-                <input type="text" id="settings-tagline" />
+                <input type="text" id="settings-tagline" placeholder="e.g. Building lives on the solid foundation of Christ" />
               </div>
             </div>
             <div class="form-row">
@@ -397,13 +488,6 @@
                 <label for="settings-youtube-channel">YouTube Channel URL</label>
                 <input type="url" id="settings-youtube-channel" placeholder="https://www.youtube.com/@channel" />
               </div>
-            </div>
-            <div class="form-group">
-              <label for="settings-youtube-channel-id">YouTube Channel ID <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
-              <input type="text" id="settings-youtube-channel-id" placeholder="e.g. UCokmjLYT92F1EDik5Gvx8Kw" />
-              <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
-                Found in the channel's About page. Leave blank to use the default configured channel.
-              </small>
             </div>
 
             <div class="form-group live-toggle-group">
@@ -429,23 +513,37 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="settings-service-times">Service Times</label>
-                <input type="text" id="settings-service-times" />
+                <input type="text" id="settings-service-times" placeholder="e.g. Sundays, 10:00 AM" />
               </div>
               <div class="form-group">
                 <label for="settings-address">Address</label>
-                <input type="text" id="settings-address" />
+                <input type="text" id="settings-address" placeholder="e.g. 123 Jalan Taman Tunku, Muar, Johor" />
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label for="settings-phone">Phone</label>
-                <input type="tel" id="settings-phone" />
+                <input type="tel" id="settings-phone" placeholder="+60 12-345 6789" />
               </div>
               <div class="form-group">
                 <label for="settings-email">Email</label>
-                <input type="email" id="settings-email" />
+                <input type="email" id="settings-email" placeholder="office@bemontherock.org" />
               </div>
             </div>
+
+            <details class="admin-advanced">
+              <summary>Advanced (rarely needed)</summary>
+              <div class="admin-advanced-body">
+                <div class="form-group">
+                  <label for="settings-youtube-channel-id">YouTube Channel ID <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+                  <input type="text" id="settings-youtube-channel-id" placeholder="e.g. UCokmjLYT92F1EDik5Gvx8Kw" />
+                  <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
+                    Found in the channel's About page. Leave blank to use the default configured channel.
+                  </small>
+                </div>
+              </div>
+            </details>
+
             <div class="form-actions">
               <button type="submit" class="btn btn-primary">Save Settings</button>
             </div>
@@ -467,11 +565,12 @@
                   <th>Title</th>
                   <th>Date</th>
                   <th>YouTube ID</th>
+                  <th>Last Updated</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="carousel-videos-table-body">
-                <tr><td colspan="5" class="loading">Loading…</td></tr>
+                <tr><td colspan="6" class="loading">Loading…</td></tr>
               </tbody>
             </table>
           </div>
@@ -574,6 +673,19 @@
               <button type="button" class="btn btn-outline" id="category-modal-cancel">Cancel</button>
             </div>
           </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generic confirm modal (delete confirmations, etc.) -->
+    <div id="confirm-modal" class="modal-overlay" role="dialog" aria-modal="true">
+      <div class="modal modal-sm">
+        <div class="modal-body">
+          <p id="confirm-modal-message" class="confirm-modal-message"></p>
+          <div class="form-actions">
+            <button type="button" class="btn btn-danger" id="confirm-modal-yes">Delete</button>
+            <button type="button" class="btn btn-outline" id="confirm-modal-no">Cancel</button>
+          </div>
         </div>
       </div>
     </div>
