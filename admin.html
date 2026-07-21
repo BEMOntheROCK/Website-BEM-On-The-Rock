@@ -425,25 +425,14 @@
         <!-- Activities panel -->
         <section id="panel-activities" class="admin-panel">
           <h2>Ministries &amp; Activities</h2>
-          <p class="admin-panel-intro">This controls the ministries and activities listed on the Activities page — things like youth group, worship team, or outreach programs. Each one can have its own description and photo.</p>
+          <p class="admin-panel-intro">This controls the Activities page, which has three fixed sections: Ministries, Activities, and Community Contributions.</p>
 
-          <h3 class="admin-subheading" style="border-top: none; margin-top: 0; padding-top: 0;">Activity Categories</h3>
-          <p class="admin-hint">Add categories and drag to reorder. Each activity must belong to a category.</p>
-          <div class="admin-toolbar">
-            <span id="act-categories-count"></span>
-            <button type="button" class="btn btn-primary btn-sm" id="add-act-category-btn">+ Add Category</button>
-          </div>
-          <div id="act-categories-list" class="category-list">
-            <div class="loading">Loading categories…</div>
-          </div>
-
-          <hr class="admin-divider" />
-
+          <h3 class="admin-subheading" style="border-top: none; margin-top: 0; padding-top: 0;">Ministries &amp; Activities items</h3>
+          <p class="admin-hint">Each item belongs to either the "Ministries" or "Activities" section. Drag the ⠿ handle to reorder items within the table.</p>
           <div class="admin-toolbar">
             <span id="activities-count"></span>
             <button type="button" class="btn btn-primary btn-sm" id="add-activity-btn">+ Add Activity</button>
           </div>
-          <p class="admin-hint">Drag the ⠿ handle to reorder activities within the table.</p>
           <div class="data-table-wrap">
             <table class="data-table">
               <thead>
@@ -451,7 +440,7 @@
                   <th style="width: 40px;"></th>
                   <th>Title</th>
                   <th>Subtitle</th>
-                  <th>Category</th>
+                  <th>Section</th>
                   <th>Image</th>
                   <th>Last Updated</th>
                   <th>Actions</th>
@@ -461,6 +450,30 @@
                 <tr><td colspan="7" class="loading">Loading…</td></tr>
               </tbody>
             </table>
+          </div>
+
+          <hr class="admin-divider" />
+
+          <h3 class="admin-subheading">Community Contributions</h3>
+          <p class="admin-hint">This section shows an intro paragraph followed by a photo collage — each photo has its own title and optional description.</p>
+
+          <form id="community-intro-form">
+            <div class="form-group">
+              <label for="community-intro-text">Intro text</label>
+              <textarea id="community-intro-text" rows="4" placeholder="Tell people about the church's community contributions…"></textarea>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-sm">Save Text</button>
+            </div>
+          </form>
+
+          <div class="admin-toolbar">
+            <span id="community-photos-count"></span>
+            <button type="button" class="btn btn-primary btn-sm" id="add-community-photo-btn">+ Add Photo</button>
+          </div>
+          <p class="admin-hint">Drag the ⠿ handle to reorder photos in the collage.</p>
+          <div id="community-photos-list" class="category-list">
+            <div class="loading">Loading photos…</div>
           </div>
         </section>
 
@@ -716,9 +729,11 @@
               <textarea id="activity-description" rows="4"></textarea>
             </div>
             <div class="form-group">
-              <label for="activity-category">Category</label>
-              <select id="activity-category" required>
-                <option value="">— Select a category —</option>
+              <label for="activity-section">Section</label>
+              <select id="activity-section" required>
+                <option value="">— Select a section —</option>
+                <option value="ministries">Ministries</option>
+                <option value="activities">Activities</option>
               </select>
             </div>
             <div id="activity-image-upload"></div>
@@ -731,23 +746,28 @@
       </div>
     </div>
 
-    <!-- Activity category modal -->
-    <div id="act-category-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <!-- Community photo modal -->
+    <div id="community-photo-modal" class="modal-overlay" role="dialog" aria-modal="true">
       <div class="modal">
         <div class="modal-header">
-          <h3 id="act-category-modal-title">Add Category</h3>
-          <button type="button" class="modal-close" id="act-category-modal-close" aria-label="Close">×</button>
+          <h3 id="community-photo-modal-title">Add Photo</h3>
+          <button type="button" class="modal-close" id="community-photo-modal-close" aria-label="Close">×</button>
         </div>
         <div class="modal-body">
-          <form id="act-category-form">
-            <input type="hidden" id="act-category-id" />
+          <form id="community-photo-form">
+            <input type="hidden" id="community-photo-id" />
             <div class="form-group">
-              <label for="act-category-name">Category Name</label>
-              <input type="text" id="act-category-name" required placeholder="e.g. Youth Ministry" />
+              <label for="community-photo-title">Title</label>
+              <input type="text" id="community-photo-title" required />
             </div>
+            <div class="form-group">
+              <label for="community-photo-description">Description <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+              <textarea id="community-photo-description" rows="3"></textarea>
+            </div>
+            <div id="community-photo-image-upload"></div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary">Save</button>
-              <button type="button" class="btn btn-outline" id="act-category-modal-cancel">Cancel</button>
+              <button type="button" class="btn btn-outline" id="community-photo-modal-cancel">Cancel</button>
             </div>
           </form>
         </div>

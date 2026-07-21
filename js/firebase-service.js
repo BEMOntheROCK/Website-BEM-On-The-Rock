@@ -18,6 +18,7 @@ import { defaultYouTube } from "./firebase-config.js";
 const SITE_SETTINGS_DOC = doc(db, "siteSettings", "main");
 const ABOUT_DOC = doc(db, "about", "main");
 const ORG_DOC = doc(db, "organisation", "main");
+const COMMUNITY_DOC = doc(db, "community", "main");
 
 export async function getSiteSettings() {
   const snap = await getDoc(SITE_SETTINGS_DOC);
@@ -176,34 +177,60 @@ export async function saveCarouselVideosOrder(videos) {
   return batch.commit();
 }
 
-// ── Activities Categories ──
+// ── Community Contributions (intro text) ──
 
-export async function getActivitiesCategories() {
+const DEFAULT_COMMUNITY = {
+  introText: "",
+};
+
+export async function getCommunityContent() {
+  const snap = await getDoc(COMMUNITY_DOC);
+  if (snap.exists()) {
+    return { ...DEFAULT_COMMUNITY, id: snap.id, ...snap.data() };
+  }
+  return { ...DEFAULT_COMMUNITY };
+}
+
+export async function saveCommunityContent(data) {
+  await setDoc(
+    COMMUNITY_DOC,
+    { ...data, updatedAt: serverTimestamp() },
+    { merge: true }
+  );
+}
+
+// ── Community Contributions (photo collage) ──
+
+export async function getCommunityPhotos() {
   const snap = await getDocs(
-    query(collection(db, "activitiesCategories"), orderBy("order", "asc"))
+    query(collection(db, "communityPhotos"), orderBy("order", "asc"))
   );
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
-export async function createActivitiesCategory(data) {
-  return addDoc(collection(db, "activitiesCategories"), {
+export async function createCommunityPhoto(data) {
+  const ref = await addDoc(collection(db, "communityPhotos"), {
     ...data,
     createdAt: serverTimestamp(),
   });
+  return ref.id;
 }
 
-export async function updateActivitiesCategory(id, data) {
-  return updateDoc(doc(db, "activitiesCategories", id), data);
+export async function updateCommunityPhoto(id, data) {
+  await updateDoc(doc(db, "communityPhotos", id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
 }
 
-export async function deleteActivitiesCategory(id) {
-  return deleteDoc(doc(db, "activitiesCategories", id));
+export async function deleteCommunityPhoto(id) {
+  await deleteDoc(doc(db, "communityPhotos", id));
 }
 
-export async function saveActivitiesCategories(categories) {
+export async function saveCommunityPhotosOrder(photos) {
   const batch = writeBatch(db);
-  categories.forEach((cat, i) => {
-    batch.update(doc(db, "activitiesCategories", cat.id), { order: i });
+  photos.forEach((p, i) => {
+    batch.update(doc(db, "communityPhotos", p.id), { order: i });
   });
   return batch.commit();
 }

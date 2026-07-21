@@ -36,7 +36,11 @@ service cloud.firestore {
       allow read: if true;
       allow create, update, delete: if isAdmin();
     }
-    match /activitiesCategories/{doc} {
+    match /community/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /communityPhotos/{doc} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
     }

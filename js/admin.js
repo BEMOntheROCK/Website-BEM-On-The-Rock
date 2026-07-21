@@ -12,7 +12,8 @@ import {
   getOrgStructure, saveOrgStructure,
   getLeaders, createLeader, updateLeader, deleteLeader,
   getCategories, createCategory, updateCategory, deleteCategory, saveCategories,
-  getActivitiesCategories, createActivitiesCategory, updateActivitiesCategory, deleteActivitiesCategory, saveActivitiesCategories,
+  getCommunityContent, saveCommunityContent,
+  getCommunityPhotos, createCommunityPhoto, updateCommunityPhoto, deleteCommunityPhoto, saveCommunityPhotosOrder,
   getActivities, createActivity, updateActivity, deleteActivity,
   getCarouselVideos, createCarouselVideo, updateCarouselVideo, deleteCarouselVideo, saveCarouselVideosOrder,
   getNews, createNews, updateNews, deleteNews,
@@ -49,8 +50,9 @@ let updatesData    = [];
 let historyData    = [];
 let leadersData    = [];
 let categoriesData = [];
-let actCategoriesData = [];
 let activitiesData    = [];
+let communityContentData = { introText: "" };
+let communityPhotosData  = [];
 let carouselVideosData = [];
 let dataLoaded     = false;
 
@@ -58,6 +60,7 @@ let crudImgUpload    = null;
 let leaderImgUpload  = null;
 let orgChartUpload   = null;
 let activityImgUpload = null;
+let communityPhotoImgUpload = null;
 let aboutUploads     = {};
 
 // ── Helpers ──
@@ -194,6 +197,7 @@ async function initAll() {
   leaderImgUpload = safeBind("leader-image-upload",    { inputId: "leader-img-in",  label: "Leader Photo" });
   orgChartUpload  = safeBind("org-chart-image-upload", { inputId: "org-img-in",     label: "Organisation Chart Image" });
   activityImgUpload = safeBind("activity-image-upload", { inputId: "act-img-in", label: "Activity Image" });
+  communityPhotoImgUpload = safeBind("community-photo-image-upload", { inputId: "comm-img-in", label: "Photo" });
   aboutUploads = {
     hero:    safeBind("about-hero-image-upload",    { inputId: "ab-hero-in",    label: "Hero Background" }),
     founder: safeBind("about-founder-image-upload", { inputId: "ab-founder-in", label: "Founder Photo" }),
@@ -207,10 +211,11 @@ async function initAll() {
     loadUpdates(),
     loadHistory(),
     loadCategories(),
-    loadActCategories(),
     loadAboutForm(),
     loadOrgForm(),
     loadSettings(),
+    loadCommunityContent(),
+    loadCommunityPhotos(),
   ]);
   // Leaders and activities depend on their categories being loaded first
   await loadLeaders();
@@ -958,44 +963,69 @@ document.getElementById("settings-form").addEventListener("submit", async e => {
   }
 });
 // ══════════════════════════════════════════
-// ACTIVITY CATEGORIES
+// COMMUNITY CONTRIBUTIONS — intro text
 // ══════════════════════════════════════════
-async function loadActCategories() {
-  const container = document.getElementById("act-categories-list");
-  if (!container) return;
-  actCategoriesData = await getActivitiesCategories();
-  document.getElementById("act-categories-count").textContent = `${actCategoriesData.length} category(s)`;
-  renderActCategories();
+async function loadCommunityContent() {
+  const textarea = document.getElementById("community-intro-text");
+  if (!textarea) return;
+  communityContentData = await getCommunityContent();
+  textarea.value = communityContentData.introText || "";
 }
 
-function renderActCategories() {
-  const container = document.getElementById("act-categories-list");
+const communityIntroForm = document.getElementById("community-intro-form");
+communityIntroForm?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const introText = document.getElementById("community-intro-text").value.trim();
+  try {
+    await saveCommunityContent({ introText });
+    communityContentData.introText = introText;
+    showAlert(adminAlert, "Community Contributions text saved.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save text.");
+    console.error(err);
+  }
+});
+
+// ══════════════════════════════════════════
+// COMMUNITY CONTRIBUTIONS — photo collage
+// ══════════════════════════════════════════
+async function loadCommunityPhotos() {
+  const container = document.getElementById("community-photos-list");
   if (!container) return;
-  if (!actCategoriesData.length) {
-    container.innerHTML = `<p class="admin-hint">No categories yet. Add one to get started.</p>`;
+  communityPhotosData = await getCommunityPhotos();
+  communityPhotosData.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  document.getElementById("community-photos-count").textContent = `${communityPhotosData.length} photo(s)`;
+  renderCommunityPhotos();
+}
+
+function renderCommunityPhotos() {
+  const container = document.getElementById("community-photos-list");
+  if (!container) return;
+  if (!communityPhotosData.length) {
+    container.innerHTML = `<p class="admin-hint">No photos yet. Add one to get started.</p>`;
     return;
   }
-  container.innerHTML = actCategoriesData.map(cat => `
-    <div class="category-item" draggable="true" data-act-cat-id="${cat.id}">
+  container.innerHTML = communityPhotosData.map(photo => `
+    <div class="category-item" draggable="true" data-comm-photo-id="${photo.id}">
       <span class="drag-handle" title="Drag to reorder">⠿</span>
-      <span class="category-item-name">${esc(cat.name)}</span>
+      <span class="category-item-name">${esc(photo.title)}</span>
       <div class="category-item-actions">
-        <button class="btn btn-outline btn-sm" data-action="edit-act-cat" data-id="${cat.id}">Edit</button>
-        <button class="btn btn-danger btn-sm"  data-action="del-act-cat"  data-id="${cat.id}">Delete</button>
+        <button class="btn btn-outline btn-sm" data-action="edit-comm-photo" data-id="${photo.id}">Edit</button>
+        <button class="btn btn-danger btn-sm"  data-action="del-comm-photo"  data-id="${photo.id}">Delete</button>
       </div>
     </div>`).join("");
 
-  bindActCatDrag(container);
+  bindCommunityPhotoDrag(container);
 }
 
-document.getElementById("act-categories-list").addEventListener("click", e => {
+document.getElementById("community-photos-list")?.addEventListener("click", e => {
   const btn = e.target.closest("[data-action]");
   if (!btn) return;
-  if (btn.dataset.action === "edit-act-cat") openActCatModal(btn.dataset.id);
-  if (btn.dataset.action === "del-act-cat")  confirmDeleteActCat(btn.dataset.id);
+  if (btn.dataset.action === "edit-comm-photo") openCommunityPhotoModal(btn.dataset.id);
+  if (btn.dataset.action === "del-comm-photo")  confirmDeleteCommunityPhoto(btn.dataset.id);
 });
 
-function bindActCatDrag(container) {
+function bindCommunityPhotoDrag(container) {
   let dragSrc = null;
   container.querySelectorAll(".category-item").forEach(item => {
     item.addEventListener("dragstart", e => {
@@ -1018,14 +1048,14 @@ function bindActCatDrag(container) {
       const items   = [...container.querySelectorAll(".category-item")];
       const srcIdx  = items.indexOf(dragSrc);
       const tgtIdx  = items.indexOf(item);
-      const reorder = [...actCategoriesData];
+      const reorder = [...communityPhotosData];
       const [moved] = reorder.splice(srcIdx, 1);
       reorder.splice(tgtIdx, 0, moved);
-      actCategoriesData = reorder.map((c, i) => ({ ...c, order: i }));
-      renderActCategories();
+      communityPhotosData = reorder.map((p, i) => ({ ...p, order: i }));
+      renderCommunityPhotos();
       try {
-        await saveActivitiesCategories(actCategoriesData);
-        showAlert(adminAlert, "Category order saved.", "success");
+        await saveCommunityPhotosOrder(communityPhotosData);
+        showAlert(adminAlert, "Photo order saved.", "success");
       } catch (err) {
         showAlert(adminAlert, "Failed to save order.");
       }
@@ -1033,55 +1063,61 @@ function bindActCatDrag(container) {
   });
 }
 
-const actCatModal  = document.getElementById("act-category-modal");
-const actCatForm   = document.getElementById("act-category-form");
+const communityPhotoModal = document.getElementById("community-photo-modal");
+const communityPhotoForm  = document.getElementById("community-photo-form");
 
-function openActCatModal(id = null) {
-  const cat = id ? actCategoriesData.find(c => c.id === id) : null;
-  document.getElementById("act-category-modal-title").textContent = id ? "Edit Category" : "Add Category";
-  document.getElementById("act-category-id").value   = id || "";
-  document.getElementById("act-category-name").value = cat?.name || "";
-  actCatModal.classList.add("open");
+function openCommunityPhotoModal(id = null) {
+  const photo = id ? communityPhotosData.find(p => p.id === id) : null;
+  document.getElementById("community-photo-modal-title").textContent = id ? "Edit Photo" : "Add Photo";
+  document.getElementById("community-photo-id").value          = id || "";
+  document.getElementById("community-photo-title").value       = photo?.title || "";
+  document.getElementById("community-photo-description").value = photo?.description || "";
+  communityPhotoImgUpload?.setImageId(photo?.imageId || null);
+  communityPhotoModal.classList.add("open");
 }
 
-function closeActCatModal() {
-  actCatModal.classList.remove("open");
-  actCatForm.reset();
+function closeCommunityPhotoModal() {
+  communityPhotoModal.classList.remove("open");
+  communityPhotoForm.reset();
+  communityPhotoImgUpload?.setImageId(null);
 }
 
-document.getElementById("add-act-category-btn").addEventListener("click", () => openActCatModal());
-document.getElementById("act-category-modal-close").addEventListener("click", closeActCatModal);
-document.getElementById("act-category-modal-cancel").addEventListener("click", closeActCatModal);
-actCatModal.addEventListener("click", e => { if (e.target === actCatModal) closeActCatModal(); });
+document.getElementById("add-community-photo-btn")?.addEventListener("click", () => openCommunityPhotoModal());
+document.getElementById("community-photo-modal-close")?.addEventListener("click", closeCommunityPhotoModal);
+document.getElementById("community-photo-modal-cancel")?.addEventListener("click", closeCommunityPhotoModal);
+communityPhotoModal?.addEventListener("click", e => { if (e.target === communityPhotoModal) closeCommunityPhotoModal(); });
 
-actCatForm.addEventListener("submit", async e => {
+communityPhotoForm?.addEventListener("submit", async e => {
   e.preventDefault();
-  const id   = document.getElementById("act-category-id").value;
-  const name = document.getElementById("act-category-name").value.trim();
+  const id = document.getElementById("community-photo-id").value;
+  const payload = {
+    title:       document.getElementById("community-photo-title").value.trim(),
+    description: document.getElementById("community-photo-description").value.trim(),
+    imageId:     communityPhotoImgUpload?.getImageId() || null,
+    order:       id ? communityPhotosData.find(p => p.id === id)?.order ?? communityPhotosData.length : communityPhotosData.length,
+  };
   try {
-    if (id) await updateActivitiesCategory(id, { name });
-    else    await createActivitiesCategory({ name, order: actCategoriesData.length });
-    await loadActCategories();
-    closeActCatModal();
-    showAlert(adminAlert, "Category saved.", "success");
+    if (id) await updateCommunityPhoto(id, payload);
+    else    await createCommunityPhoto(payload);
+    await loadCommunityPhotos();
+    closeCommunityPhotoModal();
+    showAlert(adminAlert, "Photo saved.", "success");
   } catch (err) {
-    showAlert(adminAlert, "Failed to save category.");
+    showAlert(adminAlert, "Failed to save photo.");
     console.error(err);
   }
 });
 
-async function confirmDeleteActCat(id) {
-  if (activitiesData.some(a => a.categoryId === id)) {
-    showAlert(adminAlert, "Cannot delete: activities are still assigned to this category.");
-    return;
-  }
-  if (!(await confirmAction("Delete this category? This cannot be undone."))) return;
+async function confirmDeleteCommunityPhoto(id) {
+  if (!(await confirmAction("Delete this photo? This cannot be undone."))) return;
+  const photo = communityPhotosData.find(p => p.id === id);
   try {
-    await deleteActivitiesCategory(id);
-    await loadActCategories();
-    showAlert(adminAlert, "Category deleted.", "success");
+    if (photo?.imageId) await deleteImage(photo.imageId);
+    await deleteCommunityPhoto(id);
+    await loadCommunityPhotos();
+    showAlert(adminAlert, "Photo deleted.", "success");
   } catch (err) {
-    showAlert(adminAlert, "Failed to delete category.");
+    showAlert(adminAlert, "Failed to delete photo.");
   }
 }
 
@@ -1112,7 +1148,7 @@ async function loadActivities() {
       </td>
       <td>${esc(item.title)}</td>
       <td>${esc(item.subtitle || "—")}</td>
-      <td>${esc(getActCategoryName(item.categoryId))}</td>
+      <td>${esc(getActSectionLabel(item.section))}</td>
       <td>${item.imageId ? "Yes" : "—"}</td>
       <td>${formatUpdatedAt(item)}</td>
       <td>
@@ -1126,9 +1162,10 @@ async function loadActivities() {
   bindActivityDrag(tbody);
 }
 
-function getActCategoryName(id) {
-  if (!id) return "—";
-  return actCategoriesData.find(c => c.id === id)?.name || "—";
+const ACT_SECTIONS = { ministries: "Ministries", activities: "Activities" };
+
+function getActSectionLabel(section) {
+  return ACT_SECTIONS[section] || "—";
 }
 
 document.getElementById("add-activity-btn").addEventListener("click", () => openActivityModal());
@@ -1201,18 +1238,6 @@ function bindActivityDrag(tbody) {
 const activityModal = document.getElementById("activity-modal");
 const activityForm  = document.getElementById("activity-form");
 
-function populateActCatSelect(selectedId = "") {
-  const sel = document.getElementById("activity-category");
-  sel.innerHTML = `<option value="">— Select a category —</option>`;
-  actCategoriesData.forEach(cat => {
-    const opt = document.createElement("option");
-    opt.value = cat.id;
-    opt.textContent = cat.name;
-    if (cat.id === selectedId) opt.selected = true;
-    sel.appendChild(opt);
-  });
-}
-
 function openActivityModal(id = null) {
   const item = id ? activitiesData.find(a => a.id === id) : null;
   document.getElementById("activity-modal-title").textContent = id ? "Edit Activity" : "Add Activity";
@@ -1220,7 +1245,7 @@ function openActivityModal(id = null) {
   document.getElementById("activity-title").value       = item?.title || "";
   document.getElementById("activity-subtitle").value    = item?.subtitle || "";
   document.getElementById("activity-description").value = item?.description || "";
-  populateActCatSelect(item?.categoryId || "");
+  document.getElementById("activity-section").value     = item?.section || "";
   activityImgUpload?.setImageId(item?.imageId || null);
   activityModal.classList.add("open");
 }
@@ -1237,14 +1262,14 @@ activityModal.addEventListener("click", e => { if (e.target === activityModal) c
 
 activityForm.addEventListener("submit", async e => {
   e.preventDefault();
-  const id         = document.getElementById("activity-id").value;
-  const categoryId = document.getElementById("activity-category").value;
-  if (!categoryId) { showAlert(adminAlert, "Please select a category."); return; }
+  const id      = document.getElementById("activity-id").value;
+  const section = document.getElementById("activity-section").value;
+  if (!section) { showAlert(adminAlert, "Please select a section."); return; }
   const payload = {
     title:       document.getElementById("activity-title").value.trim(),
     subtitle:    document.getElementById("activity-subtitle").value.trim(),
     description: document.getElementById("activity-description").value.trim(),
-    categoryId,
+    section,
     imageId:     activityImgUpload?.getImageId() || null,
     order:       id ? activitiesData.find(a => a.id === id)?.order ?? activitiesData.length : activitiesData.length,
   };
