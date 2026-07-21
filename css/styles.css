@@ -811,6 +811,29 @@ a:hover {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
 }
 
+/* Drop image files with these exact names into /assets to activate each
+   page's hero banner: about-hero-image.png, activities-hero-image.png,
+   history-hero-image.png, organisation-hero-image.png */
+#about-hero.page-hero--has-bg {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35)),
+    url("../assets/about-hero-image.png");
+}
+
+#activities-hero.page-hero--has-bg {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35)),
+    url("../assets/activities-hero-image.png");
+}
+
+#history-hero.page-hero--has-bg {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35)),
+    url("../assets/history-hero-image.png");
+}
+
+#organisation-hero.page-hero--has-bg {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35)),
+    url("../assets/organisation-hero-image.png");
+}
+
 .page-hero h1 {
   font-family: var(--font-display);
   font-size: clamp(2rem, 5vw, 3rem);
