@@ -1213,6 +1213,23 @@ a:hover {
   display: block;
 }
 
+.leaders-category {
+  margin-bottom: 3.5rem;
+}
+
+.leaders-category:last-child {
+  margin-bottom: 0;
+}
+
+.leaders-category-title {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--marigold);
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
 .leaders-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
