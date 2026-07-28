@@ -210,8 +210,47 @@ async function renderUpdates(updates) {
     .join("");
 }
 
+let newsCarouselTimer = null;
+let newsCarouselIndex = 0;
+let newsCarouselItems = [];
+
+function openNewsModal(item) {
+  document.getElementById("news-modal-image").src = item.imageUrl || "";
+  document.getElementById("news-modal-image").alt = item.title;
+  document.getElementById("news-modal-title").textContent = item.title;
+  document.getElementById("news-modal-desc").textContent = item.content;
+  document.getElementById("news-modal-date").textContent = formatDate(item.date);
+  document.getElementById("news-modal").classList.add("open");
+}
+
+function closeNewsModal() {
+  document.getElementById("news-modal").classList.remove("open");
+}
+
+function goToNewsSlide(index) {
+  const track = document.getElementById("news-carousel-track");
+  if (!track) return;
+  newsCarouselIndex = (index + newsCarouselItems.length) % newsCarouselItems.length;
+  track.style.transform = `translateX(-${newsCarouselIndex * 100}%)`;
+  document.querySelectorAll(".news-carousel-dot").forEach((dot, i) => {
+    dot.classList.toggle("active", i === newsCarouselIndex);
+  });
+}
+
+function startNewsAutoAdvance() {
+  stopNewsAutoAdvance();
+  newsCarouselTimer = setInterval(() => {
+    goToNewsSlide(newsCarouselIndex + 1);
+  }, 5000);
+}
+
+function stopNewsAutoAdvance() {
+  if (newsCarouselTimer) clearInterval(newsCarouselTimer);
+  newsCarouselTimer = null;
+}
+
 async function renderNews(news) {
-  const container = document.getElementById("news-grid");
+  const container = document.getElementById("news-carousel");
   if (!container) return;
 
   if (!news.length) {
@@ -223,31 +262,74 @@ async function renderNews(news) {
     return;
   }
 
+  const capped = news.slice(0, 9);
   const items = await Promise.all(
-    news.map(async (item) => ({
+    capped.map(async (item) => ({
       ...item,
       imageUrl: item.imageId ? await getImageUrl(item.imageId) : null,
     }))
   );
+  newsCarouselItems = items;
+  newsCarouselIndex = 0;
 
-  container.innerHTML = items
-    .map(
-      (item) => `
-    <article class="card card--with-image">
-      ${
-        item.imageUrl
-          ? `<div class="card-image"><img src="${item.imageUrl}" alt="${escapeHtml(item.title)}" loading="lazy" /></div>`
-          : ""
-      }
-      <div class="card-content">
-        <time class="card-date">${escapeHtml(formatDate(item.date))}</time>
-        <h3 class="card-title">${escapeHtml(item.title)}</h3>
-        <p class="card-body">${escapeHtml(item.content)}</p>
+  container.innerHTML = `
+    <div class="news-carousel-viewport">
+      <div class="news-carousel-track" id="news-carousel-track">
+        ${items
+          .map(
+            (item, i) => `
+          <button type="button" class="news-carousel-slide" data-index="${i}" aria-label="View news: ${escapeHtml(item.title)}">
+            ${
+              item.imageUrl
+                ? `<img src="${item.imageUrl}" alt="${escapeHtml(item.title)}" loading="lazy" />`
+                : `<div class="news-carousel-noimg">${escapeHtml(item.title)}</div>`
+            }
+          </button>`
+          )
+          .join("")}
       </div>
-    </article>`
-    )
-    .join("");
+      <button type="button" class="news-carousel-arrow news-carousel-arrow--prev" aria-label="Previous news">‹</button>
+      <button type="button" class="news-carousel-arrow news-carousel-arrow--next" aria-label="Next news">›</button>
+    </div>
+    <div class="news-carousel-dots">
+      ${items.map((_, i) => `<span class="news-carousel-dot" data-index="${i}"></span>`).join("")}
+    </div>
+  `;
+
+  container.querySelectorAll(".news-carousel-slide").forEach((slide) => {
+    slide.addEventListener("click", () => {
+      const idx = parseInt(slide.dataset.index, 10);
+      openNewsModal(newsCarouselItems[idx]);
+    });
+  });
+
+  container.querySelector(".news-carousel-arrow--prev").addEventListener("click", () => {
+    goToNewsSlide(newsCarouselIndex - 1);
+    startNewsAutoAdvance();
+  });
+  container.querySelector(".news-carousel-arrow--next").addEventListener("click", () => {
+    goToNewsSlide(newsCarouselIndex + 1);
+    startNewsAutoAdvance();
+  });
+  container.querySelectorAll(".news-carousel-dot").forEach((dot) => {
+    dot.addEventListener("click", () => {
+      goToNewsSlide(parseInt(dot.dataset.index, 10));
+      startNewsAutoAdvance();
+    });
+  });
+
+  container.addEventListener("mouseenter", stopNewsAutoAdvance);
+  container.addEventListener("mouseleave", startNewsAutoAdvance);
+  container.addEventListener("touchstart", stopNewsAutoAdvance, { passive: true });
+
+  goToNewsSlide(0);
+  startNewsAutoAdvance();
 }
+
+document.getElementById("news-modal-close")?.addEventListener("click", closeNewsModal);
+document.getElementById("news-modal")?.addEventListener("click", (e) => {
+  if (e.target.id === "news-modal") closeNewsModal();
+});
 
 async function loadPage() {
   try {
