@@ -1008,14 +1008,14 @@ a:hover {
 }
 
 .page-hero h1 {
-  font-family: var(--font-display);
+  font-family: "Helvetica Neue Black Extended", var(--font-display), sans-serif;
   font-size: clamp(2rem, 5vw, 3rem);
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
 
 .page-hero p {
-  color: var(--text-muted);
+  color: #F2F0EF;
   font-size: 1.05rem;
 }
 
