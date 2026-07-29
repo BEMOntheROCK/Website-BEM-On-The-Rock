@@ -217,6 +217,10 @@ let newsCarouselItems = [];
 function openNewsModal(item) {
   document.getElementById("news-modal-image").src = item.imageUrl || "";
   document.getElementById("news-modal-image").alt = item.title;
+  document.getElementById("news-modal-image").parentElement.style.setProperty(
+    "--news-modal-bg-url",
+    item.imageUrl ? `url('${item.imageUrl}')` : "none"
+  );
   document.getElementById("news-modal-title").textContent = item.title;
   document.getElementById("news-modal-desc").textContent = item.content;
   document.getElementById("news-modal-date").textContent = formatDate(item.date);
@@ -281,7 +285,10 @@ async function renderNews(news) {
           <button type="button" class="news-carousel-slide" data-index="${i}" aria-label="View news: ${escapeHtml(item.title)}">
             ${
               item.imageUrl
-                ? `<img src="${item.imageUrl}" alt="${escapeHtml(item.title)}" loading="lazy" />`
+                ? `<div class="news-carousel-slide-media">
+                     <div class="news-carousel-backdrop" style="background-image: url('${item.imageUrl}')"></div>
+                     <img class="news-carousel-fg" src="${item.imageUrl}" alt="${escapeHtml(item.title)}" loading="lazy" />
+                   </div>`
                 : `<div class="news-carousel-noimg">${escapeHtml(item.title)}</div>`
             }
           </button>`
