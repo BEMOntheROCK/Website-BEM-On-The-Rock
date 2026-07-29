@@ -532,27 +532,17 @@ a:hover {
   max-width: 480px;
 }
 
-/* ── Livestream ── */
-/* ── News + Livestream combined row (1:2 ratio) ── */
-.news-livestream-grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 2.5rem;
-  align-items: start;
-}
-
-.news-carousel-col .section-header {
-  margin-bottom: 1rem;
-}
-
+/* ── News carousel (own full-width row) ── */
 .news-carousel {
   position: relative;
+  max-width: 900px;
+  margin-inline: auto;
 }
 
 .news-carousel-viewport {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1.414; /* A4 portrait ratio */
+  aspect-ratio: 16 / 9; /* landscape */
   overflow: hidden;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
@@ -666,21 +656,15 @@ a:hover {
   }
 }
 
-@media (max-width: 900px) {
-  .news-livestream-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* News item modal */
 .modal-news {
-  width: min(100%, 480px);
+  width: min(100%, 640px);
 }
 
 .news-modal-image-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1.414;
+  aspect-ratio: 16 / 9;
   border-radius: var(--radius-md);
   overflow: hidden;
   margin-bottom: 1rem;
@@ -720,7 +704,7 @@ a:hover {
 }
 
 
-.news-livestream-section {
+.livestream-section {
   background: var(--bg-elevated);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);

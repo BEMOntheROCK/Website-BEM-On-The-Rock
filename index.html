@@ -89,64 +89,62 @@
         </div>
       </section>
 
-      <section class="section news-livestream-section" id="news-livestream-row">
+      <section class="section news-section" id="news">
         <div class="container">
-          <div class="news-livestream-grid">
-            <div class="news-carousel-col">
-              <div class="section-header notranslate" translate="no">
-                <h2 class="section-title" data-i18n="home.news.title">News</h2>
-              </div>
-              <div class="news-carousel" id="news-carousel">
-                <div class="loading">Loading news…</div>
+          <div class="section-header notranslate" translate="no">
+            <h2 class="section-title" data-i18n="home.news.title">News</h2>
+          </div>
+          <div class="news-carousel" id="news-carousel">
+            <div class="loading">Loading news…</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section livestream-section" id="livestream">
+        <div class="container">
+          <div class="section-header notranslate" translate="no">
+            <div>
+              <h2 class="section-title" data-i18n="home.livestream.title">Sunday Service</h2>
+              <p class="section-subtitle" data-i18n="home.livestream.subtitle">
+                Join us live or catch up on our YouTube channel
+              </p>
+            </div>
+          </div>
+
+          <div class="livestream-card">
+            <div class="livestream-header notranslate" translate="no">
+              <span class="live-badge" data-i18n="home.livestream.badge">Live Stream</span>
+              <span id="service-times" class="section-subtitle"></span>
+            </div>
+            <div class="livestream-embed" id="livestream-embed">
+              <div class="livestream-placeholder notranslate" translate="no">
+                <span class="icon">▶</span>
+                <p data-i18n="home.livestream.placeholder">Sunday service livestream</p>
+                <a id="livestream-link" href="#" class="btn btn-primary" target="_blank" rel="noopener noreferrer" data-i18n="home.livestream.watchBtn">
+                  Watch Live on YouTube
+                </a>
               </div>
             </div>
+            <div class="livestream-footer notranslate" translate="no">
+              <p id="livestream-note" style="color: var(--text-muted); font-size: 0.9rem;" data-i18n="home.livestream.note">
+                Stream opens on our YouTube channel during service times.
+              </p>
+              <a
+                id="channel-link"
+                href="#"
+                class="btn btn-outline btn-sm"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-i18n="home.livestream.channelBtn"
+              >
+                Visit YouTube Channel
+              </a>
+            </div>
+          </div>
 
-            <div class="livestream-col">
-              <div class="section-header notranslate" translate="no">
-                <div>
-                  <h2 class="section-title" data-i18n="home.livestream.title">Sunday Service</h2>
-                  <p class="section-subtitle" data-i18n="home.livestream.subtitle">
-                    Join us live or catch up on our YouTube channel
-                  </p>
-                </div>
-              </div>
-
-              <div class="livestream-card">
-                <div class="livestream-header notranslate" translate="no">
-                  <span class="live-badge" data-i18n="home.livestream.badge">Live Stream</span>
-                  <span id="service-times" class="section-subtitle"></span>
-                </div>
-                <div class="livestream-embed" id="livestream-embed">
-                  <div class="livestream-placeholder notranslate" translate="no">
-                    <span class="icon">▶</span>
-                    <p data-i18n="home.livestream.placeholder">Sunday service livestream</p>
-                    <a id="livestream-link" href="#" class="btn btn-primary" target="_blank" rel="noopener noreferrer" data-i18n="home.livestream.watchBtn">
-                      Watch Live on YouTube
-                    </a>
-                  </div>
-                </div>
-                <div class="livestream-footer notranslate" translate="no">
-                  <p id="livestream-note" style="color: var(--text-muted); font-size: 0.9rem;" data-i18n="home.livestream.note">
-                    Stream opens on our YouTube channel during service times.
-                  </p>
-                  <a
-                    id="channel-link"
-                    href="#"
-                    class="btn btn-outline btn-sm"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-i18n="home.livestream.channelBtn"
-                  >
-                    Visit YouTube Channel
-                  </a>
-                </div>
-              </div>
-
-              <div class="video-carousel-wrap">
-                <div id="video-carousel" class="video-carousel">
-                  <div class="loading">Loading videos…</div>
-                </div>
-              </div>
+          <div class="video-carousel-wrap">
+            <div id="video-carousel" class="video-carousel">
+              <div class="loading">Loading videos…</div>
             </div>
           </div>
         </div>
