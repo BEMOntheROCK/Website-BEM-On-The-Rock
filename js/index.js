@@ -8,6 +8,7 @@ import {
 } from "./firebase-service.js";
 import { defaultYouTube } from "./firebase-config.js";
 import { getImageUrl } from "./image-service.js";
+import { mountCroppedImage, DEFAULT_CROP } from "./image-crop.js";
 
 document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -215,12 +216,16 @@ let newsCarouselIndex = 0;
 let newsCarouselItems = [];
 
 function openNewsModal(item) {
-  document.getElementById("news-modal-image").src = item.imageUrl || "";
-  document.getElementById("news-modal-image").alt = item.title;
-  document.getElementById("news-modal-image").parentElement.style.setProperty(
-    "--news-modal-bg-url",
-    item.imageUrl ? `url('${item.imageUrl}')` : "none"
-  );
+  const wrap = document.getElementById("news-modal-image").parentElement;
+  const imgEl = document.getElementById("news-modal-image");
+  imgEl.removeAttribute("style");
+  imgEl.alt = item.title;
+  if (item.imageUrl) {
+    imgEl.src = item.imageUrl;
+    mountCroppedImage(wrap, imgEl, item.crop || DEFAULT_CROP);
+  } else {
+    imgEl.src = "";
+  }
   document.getElementById("news-modal-title").textContent = item.title;
   document.getElementById("news-modal-desc").textContent = item.content;
   document.getElementById("news-modal-date").textContent = formatDate(item.date);
@@ -285,9 +290,8 @@ async function renderNews(news) {
           <button type="button" class="news-carousel-slide" data-index="${i}" aria-label="View news: ${escapeHtml(item.title)}">
             ${
               item.imageUrl
-                ? `<div class="news-carousel-slide-media">
-                     <div class="news-carousel-backdrop" style="background-image: url('${item.imageUrl}')"></div>
-                     <img class="news-carousel-fg" src="${item.imageUrl}" alt="${escapeHtml(item.title)}" loading="lazy" />
+                ? `<div class="news-carousel-slide-media" data-crop-container>
+                     <img class="news-carousel-fg" data-crop-img alt="${escapeHtml(item.title)}" loading="lazy" />
                    </div>`
                 : `<div class="news-carousel-noimg">${escapeHtml(item.title)}</div>`
             }
@@ -303,10 +307,16 @@ async function renderNews(news) {
     </div>
   `;
 
-  container.querySelectorAll(".news-carousel-slide").forEach((slide) => {
+  container.querySelectorAll(".news-carousel-slide").forEach((slide, i) => {
+    const item = items[i];
+    if (item.imageUrl) {
+      const mediaEl = slide.querySelector("[data-crop-container]");
+      const imgEl = slide.querySelector("[data-crop-img]");
+      imgEl.src = item.imageUrl;
+      mountCroppedImage(mediaEl, imgEl, item.crop || DEFAULT_CROP);
+    }
     slide.addEventListener("click", () => {
-      const idx = parseInt(slide.dataset.index, 10);
-      openNewsModal(newsCarouselItems[idx]);
+      openNewsModal(item);
     });
   });
 

@@ -22,7 +22,9 @@ import {
   formatDate, displayHistoryDate,
   extractDateYear, isAmbiguousGroup, computeBackfillOrder,
 } from "./firebase-service.js";
-import { bindImageUpload, deleteImage } from "./image-service.js";
+import { bindImageUpload, deleteImage, getImageUrl } from "./image-service.js";
+import { createCropEditor } from "./crop-editor.js";
+import { DEFAULT_CROP } from "./image-crop.js";
 
 // ── DOM refs ──
 const authScreen    = document.getElementById("auth-screen");
@@ -57,6 +59,7 @@ let carouselVideosData = [];
 let dataLoaded     = false;
 
 let crudImgUpload    = null;
+let cropEditor        = null;
 let leaderImgUpload  = null;
 let orgChartUpload   = null;
 let activityImgUpload = null;
@@ -193,7 +196,19 @@ document.querySelectorAll("[data-panel]").forEach(btn => {
 // ── Init ──
 async function initAll() {
   // Bind image uploads once
-  crudImgUpload   = safeBind("crud-image-upload",      { inputId: "crud-img-in",    label: "Article Image" });
+  const cropEditorContainer = document.getElementById("crud-crop-editor");
+  if (cropEditorContainer) {
+    cropEditor = createCropEditor(cropEditorContainer);
+  }
+  crudImgUpload   = safeBind("crud-image-upload",      {
+    inputId: "crud-img-in",
+    label: "Article Image",
+    onImageIdChange: async (newId) => {
+      if (!cropEditor) return;
+      const url = newId ? await getImageUrl(newId) : null;
+      cropEditor.setImage(url);
+    },
+  });
   leaderImgUpload = safeBind("leader-image-upload",    { inputId: "leader-img-in",  label: "Leader Photo" });
   orgChartUpload  = safeBind("org-chart-image-upload", { inputId: "org-img-in",     label: "Organisation Chart Image" });
   activityImgUpload = safeBind("activity-image-upload", { inputId: "act-img-in", label: "Activity Image" });
@@ -473,6 +488,20 @@ function openCrud(type, id = null) {
   if (type === "updates") document.getElementById("crud-priority").value = item?.priority || "normal";
 
   crudImgUpload?.setImageId(item?.imageId || null);
+
+  const cropEditorContainer = document.getElementById("crud-crop-editor");
+  if (cropEditorContainer) {
+    cropEditorContainer.style.display = type === "news" ? "block" : "none";
+    if (type === "news" && item?.imageId) {
+      getImageUrl(item.imageId).then(url => {
+        cropEditor?.setImage(url);
+        cropEditor?.setCrop(item?.crop || DEFAULT_CROP);
+      });
+    } else {
+      cropEditor?.setImage(null);
+    }
+  }
+
   crudModal.classList.add("open");
 }
 
@@ -480,6 +509,7 @@ function closeCrud() {
   crudModal.classList.remove("open");
   crudForm.reset();
   crudImgUpload?.setImageId(null);
+  cropEditor?.setImage(null);
 }
 
 document.getElementById("modal-close").addEventListener("click", closeCrud);
@@ -497,6 +527,7 @@ crudForm.addEventListener("submit", async e => {
     imageId: crudImgUpload?.getImageId() || null,
   };
   if (type === "updates") payload.priority = document.getElementById("crud-priority").value;
+  if (type === "news" && payload.imageId) payload.crop = cropEditor?.getCrop() || DEFAULT_CROP;
 
   try {
     if (type === "news") {
