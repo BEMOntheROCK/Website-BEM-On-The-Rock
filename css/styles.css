@@ -552,7 +552,7 @@ a:hover {
 }
 
 .news-carousel-slide {
-  flex: 0 0 33.3333%;
+  flex: 0 0 50%;
   padding: 0 0.6rem;
   box-sizing: border-box;
 }
@@ -571,7 +571,7 @@ a:hover {
 .news-card-media {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: var(--bg-muted);
 }
@@ -671,12 +671,6 @@ a:hover {
   }
 }
 
-@media (max-width: 979px) {
-  .news-carousel-slide {
-    flex: 0 0 50%;
-  }
-}
-
 @media (max-width: 639px) {
   .news-carousel-slide {
     flex: 0 0 100%;
@@ -691,7 +685,7 @@ a:hover {
 .news-modal-image-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 16 / 9;
   border-radius: var(--radius-md);
   overflow: hidden;
   margin-bottom: 1rem;
@@ -1131,7 +1125,7 @@ a:hover {
   position: relative;
   width: 100%;
   max-width: 400px;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);

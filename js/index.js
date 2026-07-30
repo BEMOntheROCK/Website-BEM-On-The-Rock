@@ -238,10 +238,7 @@ function closeNewsModal() {
 
 /** How many cards are visible at once, matching the CSS breakpoints. */
 function getNewsVisibleCount() {
-  const w = window.innerWidth;
-  if (w < 640) return 1;
-  if (w < 980) return 2;
-  return 3;
+  return window.innerWidth < 640 ? 1 : 2;
 }
 
 function goToNewsSlide(index) {
