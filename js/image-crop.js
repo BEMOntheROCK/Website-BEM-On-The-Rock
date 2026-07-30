@@ -1,5 +1,6 @@
 /**
- * Shared crop math for the fixed-16:9 pan+zoom cropper.
+ * Shared crop math for the fixed-aspect-ratio pan+zoom cropper (currently
+ * 1:1, set via CSS — this module doesn't hardcode a ratio itself).
  *
  * A crop is stored as: { zoom, x, y }
  *   zoom — multiplier on top of the minimum "cover" scale (1 = no extra zoom,

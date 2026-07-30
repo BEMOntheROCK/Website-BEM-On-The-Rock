@@ -1,7 +1,8 @@
 import { DEFAULT_CROP, MIN_ZOOM, MAX_ZOOM, applyCropToImage } from "./image-crop.js";
 
 /**
- * Mount an interactive 16:9 crop editor into `container`.
+ * Mount an interactive crop editor into `container` (aspect ratio is
+ * controlled by CSS on .crop-editor-box — currently 1:1).
  * Renders its own box + zoom slider. Call `.setImage(url)` when a new
  * image is uploaded, `.setCrop(crop)` to preload an existing crop,
  * `.getCrop()` to read the current value, and `.destroy()` to clean up.
