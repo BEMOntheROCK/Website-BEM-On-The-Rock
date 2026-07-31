@@ -143,7 +143,11 @@ document.addEventListener("invalid", e => {
 }, true);
 
 document.addEventListener("input", e => {
-  if (e.target.tagName === "INPUT") e.target.setCustomValidity("");
+  const tag = e.target.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA") e.target.setCustomValidity("");
+});
+document.addEventListener("change", e => {
+  if (e.target.tagName === "SELECT") e.target.setCustomValidity("");
 });
 
 /** Shows "Last edited" for a Firestore document, falling back to
