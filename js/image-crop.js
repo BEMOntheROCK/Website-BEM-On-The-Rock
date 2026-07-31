@@ -72,22 +72,35 @@ export function applyCropToImage(imgEl, containerEl, crop = DEFAULT_CROP) {
 }
 
 /** Load an image and apply the crop once ready; re-applies on container
-    resize via ResizeObserver so it stays correct responsively. */
+    resize via ResizeObserver so it stays correct responsively. Also
+    re-verifies shortly after the initial mount and on window "load", since
+    a container's layout (especially with CSS aspect-ratio) isn't always
+    fully settled at the exact instant the image's own load event fires. */
 export function mountCroppedImage(containerEl, imgEl, crop = DEFAULT_CROP) {
   const apply = () => {
     if (imgEl.naturalWidth) applyCropToImage(imgEl, containerEl, crop);
   };
 
-  if (imgEl.complete && imgEl.naturalWidth) {
+  const applySoon = () => {
     apply();
+    requestAnimationFrame(() => requestAnimationFrame(apply));
+  };
+
+  if (imgEl.complete && imgEl.naturalWidth) {
+    applySoon();
   } else {
-    imgEl.addEventListener("load", apply, { once: true });
+    imgEl.addEventListener("load", applySoon, { once: true });
   }
+
+  window.addEventListener("load", apply);
 
   if (window.ResizeObserver) {
     const ro = new ResizeObserver(apply);
     ro.observe(containerEl);
-    return () => ro.disconnect();
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("load", apply);
+    };
   }
-  return () => {};
+  return () => window.removeEventListener("load", apply);
 }
