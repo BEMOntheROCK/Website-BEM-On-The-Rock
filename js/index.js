@@ -264,11 +264,6 @@ function stopNewsAutoAdvance() {
   newsCarouselTimer = null;
 }
 
-function newsExcerpt(text, max = 110) {
-  const clean = (text || "").trim();
-  return clean.length > max ? `${clean.slice(0, max).trim()}…` : clean;
-}
-
 async function renderNews(news) {
   const container = document.getElementById("news-carousel");
   if (!container) return;
@@ -299,7 +294,7 @@ async function renderNews(news) {
           .map(
             (item, i) => `
           <div class="news-carousel-slide" data-index="${i}">
-            <article class="news-card">
+            <button type="button" class="news-card" data-index="${i}" aria-label="View news: ${escapeHtml(item.title)}">
               <div class="news-card-media" data-crop-container>
                 ${
                   item.imageUrl
@@ -307,13 +302,7 @@ async function renderNews(news) {
                     : `<div class="news-carousel-noimg">${escapeHtml(item.title)}</div>`
                 }
               </div>
-              <div class="news-card-body">
-                <time class="card-date">${escapeHtml(formatDate(item.date))}</time>
-                <h3 class="news-card-title">${escapeHtml(item.title)}</h3>
-                <p class="news-card-excerpt">${escapeHtml(newsExcerpt(item.content))}</p>
-                <button type="button" class="btn btn-primary news-card-readmore" data-index="${i}">Read More</button>
-              </div>
-            </article>
+            </button>
           </div>`
           )
           .join("")}
@@ -336,9 +325,9 @@ async function renderNews(news) {
     }
   });
 
-  container.querySelectorAll(".news-card-readmore").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const idx = parseInt(btn.dataset.index, 10);
+  container.querySelectorAll(".news-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const idx = parseInt(card.dataset.index, 10);
       openNewsModal(newsCarouselItems[idx]);
     });
   });
