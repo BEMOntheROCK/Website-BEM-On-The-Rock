@@ -532,6 +532,14 @@ a:hover {
   padding: 1.5rem 0;
 }
 
+.explore-links-title {
+  font-family: "Helvetica Neue Black Extended", var(--font-display), sans-serif;
+  font-size: 1.5rem;
+  color: var(--marigold);
+  text-align: center;
+  margin: 0 0 1.25rem;
+}
+
 .explore-links {
   display: flex;
   flex-wrap: wrap;
