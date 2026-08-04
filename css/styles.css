@@ -490,9 +490,22 @@ a:hover {
 
 .hero-actions {
   display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.hero-actions-row {
+  display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: center;
+}
+
+.hero-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* ── Sections ── */
