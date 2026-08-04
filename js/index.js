@@ -64,9 +64,6 @@ function embedNextServicePlaceholder(serviceTimesText, liveUrl) {
           ? `<p class="livestream-placeholder-schedule">We will be live again ${escapeHtml(serviceTimesText)}</p>`
           : ""
       }
-      <a href="${escapeHtml(liveUrl)}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-        Visit Our YouTube Channel
-      </a>
     </div>`;
 }
 
