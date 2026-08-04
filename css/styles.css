@@ -740,6 +740,16 @@ a:hover {
   animation: pulse 1.5s infinite;
 }
 
+.live-badge--offline {
+  background: var(--bg-muted);
+  color: var(--text-muted);
+}
+
+.live-badge--offline::before {
+  animation: none;
+  opacity: 0.6;
+}
+
 @keyframes pulse {
   0%,
   100% {
@@ -2698,4 +2708,4 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-} 
+}

@@ -107,6 +107,12 @@ async function renderLivestream(settings) {
 
   const { live, videoId } = await checkYoutubeLive(liveUrl);
 
+  const statusBadge = document.getElementById("livestream-status-badge");
+  if (statusBadge) {
+    statusBadge.textContent = live ? "Live Stream" : "Offline";
+    statusBadge.classList.toggle("live-badge--offline", !live);
+  }
+
   if (live && videoId) {
     embedVideo(videoId, "BEM On The Rock — Live Now");
   } else {
