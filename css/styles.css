@@ -528,6 +528,50 @@ a:hover {
   }
 }
 
+.explore-links-section {
+  padding: 1.5rem 0;
+}
+
+.explore-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.explore-links .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.explore-link-short {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .explore-links {
+    gap: 0.5rem;
+  }
+
+  .explore-links .btn {
+    padding: 0.5rem 0.9rem;
+    font-size: 0.78rem;
+  }
+
+  .explore-links .btn i {
+    display: none;
+  }
+
+  .explore-link-full {
+    display: none;
+  }
+
+  .explore-link-short {
+    display: inline;
+  }
+}
+
 /* ── Sections ── */
 .section {
   padding: 3rem 0;
