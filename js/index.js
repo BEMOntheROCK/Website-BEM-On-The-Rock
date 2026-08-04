@@ -41,8 +41,6 @@ async function renderHero(settings) {
   if (taglineWrap) taglineWrap.classList.add("tagline-ready");
 }
 
-let fallbackVideoId = null;
-
 function embedVideo(videoId, title = "BEM On The Rock Sunday Service") {
   const embed = document.getElementById("livestream-embed");
   if (!embed || !videoId) return;
@@ -54,28 +52,17 @@ function embedVideo(videoId, title = "BEM On The Rock Sunday Service") {
   ></iframe>`;
 }
 
-function embedAutoLive(channelId) {
-  const embed = document.getElementById("livestream-embed");
-  if (!embed || !channelId) return;
-  embed.innerHTML = `<iframe
-    src="https://www.youtube.com/embed/live_stream?channel=${escapeHtml(channelId)}"
-    title="BEM On The Rock Live"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen
-  ></iframe>`;
-}
-
 function embedNextServicePlaceholder(serviceTimesText, liveUrl) {
   const embed = document.getElementById("livestream-embed");
   if (!embed) return;
   embed.innerHTML = `
     <div class="livestream-placeholder livestream-placeholder--next">
       <span class="icon">▶</span>
-      <p class="livestream-placeholder-title">We're not live right now</p>
+      <p class="livestream-placeholder-title">We're not currently live, check out the videos below or watch more on BEM On The ROCK YouTube Channel</p>
       ${
         serviceTimesText
-          ? `<p class="livestream-placeholder-subtitle">Join our next livestream ${escapeHtml(serviceTimesText)}</p>`
-          : `<p class="livestream-placeholder-subtitle">Check back during our next service.</p>`
+          ? `<p class="livestream-placeholder-schedule">We will be live again ${escapeHtml(serviceTimesText)}</p>`
+          : ""
       }
       <a href="${escapeHtml(liveUrl)}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
         Visit Our YouTube Channel
@@ -83,11 +70,30 @@ function embedNextServicePlaceholder(serviceTimesText, liveUrl) {
     </div>`;
 }
 
-function renderLivestream(settings) {
+// No API key required: YouTube's oEmbed endpoint only resolves successfully
+// for a URL that currently points at a playable video. When a channel's
+// "/live" URL isn't actively broadcasting, the oEmbed request fails —
+// which is what we use as our live/offline signal.
+async function checkYoutubeLive(liveUrl) {
+  try {
+    const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(liveUrl)}&format=json`;
+    const res = await fetch(oembedUrl);
+    if (!res.ok) return { live: false, videoId: null };
+
+    const data = await res.json();
+    const match = data.html && data.html.match(/embed\/([a-zA-Z0-9_-]+)/);
+    const videoId = match ? match[1] : null;
+
+    return { live: !!videoId, videoId };
+  } catch (err) {
+    console.error("Live check failed:", err);
+    return { live: false, videoId: null };
+  }
+}
+
+async function renderLivestream(settings) {
   const liveUrl = settings.youtubeLiveUrl || defaultYouTube.liveUrl;
   const channelUrl = settings.youtubeChannelUrl || defaultYouTube.channelUrl;
-  const channelId = settings.youtubeChannelId || defaultYouTube.channelId;
-  fallbackVideoId = settings.youtubeFallbackVideoId;
 
   setLink("livestream-link", liveUrl);
   setLink("channel-link", channelUrl);
@@ -99,21 +105,18 @@ function renderLivestream(settings) {
     serviceTimes.textContent = settings.serviceTimes;
   }
 
-  // Admin controls this with a simple toggle in the dashboard:
-  // - "We are live right now" ON  → embed the auto-live channel feed
-  // - toggle OFF + fallback set   → embed the fallback video (last service's recording)
-  // - toggle OFF + no fallback    → show our own "next livestream" placeholder,
-  //                                  rather than YouTube's generic "not live" screen
-  if (settings.isLive && channelId) {
-    embedAutoLive(channelId);
-  } else if (fallbackVideoId) {
-    embedVideo(fallbackVideoId, "BEM On The Rock — Recent Service");
+  const { live, videoId } = await checkYoutubeLive(liveUrl);
+
+  if (live && videoId) {
+    embedVideo(videoId, "BEM On The Rock — Live Now");
   } else {
     embedNextServicePlaceholder(settings.serviceTimes, liveUrl);
   }
+
+  return { live, videoId };
 }
 
-async function renderCarousel(videos, channelId, isLive, serviceTimesText, liveUrl) {
+async function renderCarousel(videos, isLive, liveVideoId, serviceTimesText, liveUrl) {
   const container = document.getElementById("video-carousel");
   if (!container) return;
 
@@ -122,10 +125,10 @@ async function renderCarousel(videos, channelId, isLive, serviceTimesText, liveU
   const liveCardHtml = `
     <button type="button" class="carousel-card carousel-card--live active" data-live="true" data-title="Live Now">
       <div class="carousel-card-thumb carousel-card-thumb--live">
-        <span class="live-badge carousel-live-badge">${isLive ? "● Live" : "▶ Latest"}</span>
+        <span class="live-badge carousel-live-badge">${isLive ? "● Live" : "Offline"}</span>
       </div>
       <div class="carousel-card-body">
-        <h4>${isLive ? "Live Now" : "Watch Latest Service"}</h4>
+        <h4>${isLive ? "Live Now" : "Currently Offline"}</h4>
       </div>
     </button>`;
 
@@ -152,10 +155,8 @@ async function renderCarousel(videos, channelId, isLive, serviceTimesText, liveU
       const isLiveCard = card.getAttribute("data-live") === "true";
 
       if (isLiveCard) {
-        if (isLive && channelId) {
-          embedAutoLive(channelId);
-        } else if (fallbackVideoId) {
-          embedVideo(fallbackVideoId, "BEM On The Rock — Recent Service");
+        if (isLive && liveVideoId) {
+          embedVideo(liveVideoId, "BEM On The Rock — Live Now");
         } else {
           embedNextServicePlaceholder(serviceTimesText, liveUrl);
         }
@@ -376,10 +377,9 @@ async function loadPage() {
     ]);
 
     await renderHero(settings);
-    renderLivestream(settings);
-    const channelId = settings.youtubeChannelId || defaultYouTube.channelId;
+    const { live, videoId } = await renderLivestream(settings);
     const liveUrl = settings.youtubeLiveUrl || defaultYouTube.liveUrl;
-    await renderCarousel(carouselVideos, channelId, settings.isLive, settings.serviceTimes, liveUrl);
+    await renderCarousel(carouselVideos, live, videoId, settings.serviceTimes, liveUrl);
     await renderUpdates(updates);
     await renderNews(news);
   } catch (err) {

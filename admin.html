@@ -480,7 +480,7 @@
         <!-- Settings panel -->
         <section id="panel-settings" class="admin-panel">
           <h2>Church Contact &amp; Settings</h2>
-          <p class="admin-panel-intro">General church details shown across the website — church name, tagline, service times, address, and the homepage's YouTube livestream settings. Changes here affect the whole site, not just one page.</p>
+          <p class="admin-panel-intro">General church details shown across the website — church name, tagline, service times, address, and the homepage's YouTube livestream settings. Changes here affect the whole site, not just one page. Live status on the homepage is detected automatically — there's nothing to toggle here.</p>
           <form id="settings-form">
             <div class="form-row">
               <div class="form-group">
@@ -503,26 +503,10 @@
               </div>
             </div>
 
-            <div class="form-group live-toggle-group">
-              <label class="live-toggle-label">
-                <span>We are live right now</span>
-                <span class="live-toggle-switch">
-                  <input type="checkbox" id="settings-is-live" />
-                  <span class="live-toggle-slider"></span>
-                </span>
-              </label>
-              <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
-                Turn this ON right before service starts — the home page will show the live broadcast. Turn it OFF after service ends — the home page will show the fallback video below instead.
-              </small>
-            </div>
+            <p class="admin-hint" style="margin-top: -0.5rem;">
+              Live status is now detected automatically from your YouTube channel — no manual toggle needed. When you're not live, the home page shows a "we'll be live again" message using the service time below.
+            </p>
 
-            <div class="form-group">
-              <label for="settings-youtube-fallback-id">Fallback Video <span style="color:var(--text-muted);font-weight:400;">(shown when the toggle above is off)</span></label>
-              <input type="text" id="settings-youtube-fallback-id" placeholder="e.g. dQw4w9WgXcQ" />
-              <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
-                Update this after each service — it's the same video ID that was just live, now playable as the recording.
-              </small>
-            </div>
             <div class="form-row">
               <div class="form-group">
                 <label for="settings-service-times">Service Times</label>
