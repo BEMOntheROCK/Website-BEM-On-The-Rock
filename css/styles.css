@@ -633,6 +633,7 @@ a:hover {
   position: relative;
   width: 100%;
   overflow: hidden;
+  touch-action: pan-y;
 }
 
 .news-carousel-track {

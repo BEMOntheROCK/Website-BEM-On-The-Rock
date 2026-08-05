@@ -355,6 +355,53 @@ async function renderNews(news) {
   container.addEventListener("mouseleave", startNewsAutoAdvance);
   container.addEventListener("touchstart", stopNewsAutoAdvance, { passive: true });
 
+  // Swipe support for touch devices — arrows are hidden on mobile, so this
+  // is the primary way to navigate the carousel there.
+  const viewport = container.querySelector(".news-carousel-viewport");
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchDeltaX = 0;
+  let isSwiping = false;
+
+  viewport.addEventListener(
+    "touchstart",
+    (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchDeltaX = 0;
+      isSwiping = true;
+    },
+    { passive: true }
+  );
+
+  viewport.addEventListener(
+    "touchmove",
+    (e) => {
+      if (!isSwiping) return;
+      const dx = e.touches[0].clientX - touchStartX;
+      const dy = e.touches[0].clientY - touchStartY;
+      // Only hijack the gesture once it's clearly more horizontal than
+      // vertical, so normal page scrolling still works.
+      if (Math.abs(dx) > Math.abs(dy)) {
+        touchDeltaX = dx;
+        e.preventDefault();
+      }
+    },
+    { passive: false }
+  );
+
+  viewport.addEventListener("touchend", () => {
+    if (!isSwiping) return;
+    isSwiping = false;
+    const SWIPE_THRESHOLD = 40;
+    if (touchDeltaX > SWIPE_THRESHOLD) {
+      goToNewsSlide(newsCarouselIndex - 1);
+    } else if (touchDeltaX < -SWIPE_THRESHOLD) {
+      goToNewsSlide(newsCarouselIndex + 1);
+    }
+    startNewsAutoAdvance();
+  });
+
   let resizeTimer = null;
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
