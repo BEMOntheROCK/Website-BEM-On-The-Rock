@@ -548,10 +548,6 @@ a:hover {
   margin-bottom: 0;
 }
 
-.news-section {
-  padding-top: 1rem;
-}
-
 .explore-links .btn {
   display: inline-flex;
   align-items: center;
@@ -588,6 +584,10 @@ a:hover {
 /* ── Sections ── */
 .section {
   padding: 3rem 0;
+}
+
+.news-section {
+  padding-top: 1rem;
 }
 
 .section-header {
