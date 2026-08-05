@@ -529,7 +529,7 @@ a:hover {
 }
 
 .explore-links-section {
-  padding: 1.5rem 0 0;
+  padding: 1rem 0 0;
 }
 
 .explore-links-title {
@@ -545,6 +545,11 @@ a:hover {
   flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: center;
+  margin-bottom: 0;
+}
+
+.news-section {
+  padding-top: 1rem;
 }
 
 .explore-links .btn {
