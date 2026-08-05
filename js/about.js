@@ -36,7 +36,7 @@ function renderGeneralInfo(about) {
   if (!container) return;
 
   const details = [
-    { label: "Full Name", value: about.fullName },
+    { label: "Full Name", value: about.fullName, protect: true },
     { label: "Denomination", value: about.denomination },
     { label: "Registration No.", value: about.registrationNumber },
   ].filter((d) => d.value);
@@ -58,7 +58,7 @@ function renderGeneralInfo(about) {
             (d) => `
           <div class="info-row">
             <dt>${escapeHtml(d.label)}</dt>
-            <dd>${escapeHtml(d.value)}</dd>
+            <dd${d.protect ? ' class="notranslate" translate="no"' : ""}>${escapeHtml(d.value)}</dd>
           </div>`
           )
           .join("")}

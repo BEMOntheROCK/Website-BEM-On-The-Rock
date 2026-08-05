@@ -75,7 +75,7 @@ async function setGoogleTranslateLanguage(lang) {
   const tryApply = (attemptsLeft) => {
     const combo = document.querySelector(".goog-te-combo");
     if (combo) {
-      combo.value = lang === "ms" ? "ms" : "en";
+      combo.value = lang === "ms" ? "ms" : "";
       combo.dispatchEvent(new Event("change"));
       return;
     }
