@@ -36,13 +36,17 @@ jobs:
           fi
           python3 -c "
           import os
+          key = os.environ['FIREBASE_API_KEY'].strip().strip('\"').strip(\"'\")
           with open('js/firebase-config.template.js') as f:
               content = f.read()
-          content = content.replace('__FIREBASE_API_KEY__', os.environ['FIREBASE_API_KEY'])
+          content = content.replace('__FIREBASE_API_KEY__', key)
           with open('js/firebase-config.js', 'w') as f:
               f.write(content)
           print('firebase-config.js generated')
           "
+
+      - name: Verify generated file is valid JavaScript
+        run: node --check js/firebase-config.js
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
