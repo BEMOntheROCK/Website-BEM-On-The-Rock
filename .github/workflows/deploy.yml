@@ -34,8 +34,15 @@ jobs:
             echo "::error::FIREBASE_API_KEY repository secret is not set. Add it under Settings > Secrets and variables > Actions."
             exit 1
           fi
-          sed "s|__FIREBASE_API_KEY__|$FIREBASE_API_KEY|g" \
-            js/firebase-config.template.js > js/firebase-config.js
+          python3 -c "
+          import os
+          with open('js/firebase-config.template.js') as f:
+              content = f.read()
+          content = content.replace('__FIREBASE_API_KEY__', os.environ['FIREBASE_API_KEY'])
+          with open('js/firebase-config.js', 'w') as f:
+              f.write(content)
+          print('firebase-config.js generated')
+          "
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
