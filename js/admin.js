@@ -157,6 +157,24 @@ function formatUpdatedAt(item) {
   if (!ts?.toDate) return "—";
   return ts.toDate().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
+
+/** Resolve image URLs for a batch of items in parallel (dedupes by imageId).
+    Returns a Map<imageId, url|null> for use with thumbCell(). */
+async function buildThumbMap(items) {
+  const ids = [...new Set(items.map(i => i?.imageId).filter(Boolean))];
+  const entries = await Promise.all(ids.map(async id => [id, await getImageUrl(id).catch(() => null)]));
+  return new Map(entries);
+}
+
+/** Render a <td> thumbnail cell — an actual image preview if one exists,
+    otherwise a placeholder icon, so admins can recognize items at a glance. */
+function thumbCell(imageId, thumbMap, alt = "") {
+  const url = imageId ? thumbMap.get(imageId) : null;
+  if (url) {
+    return `<td class="admin-thumb-cell"><img class="admin-thumb" src="${url}" alt="${esc(alt)}" loading="lazy" /></td>`;
+  }
+  return `<td class="admin-thumb-cell"><span class="admin-thumb-placeholder" title="No image uploaded"><i class="fa-solid fa-image"></i></span></td>`;
+}
 loginForm.addEventListener("submit", async e => {
   e.preventDefault();
   const email    = document.getElementById("login-email").value.trim();
@@ -247,17 +265,19 @@ async function initAll() {
 // ══════════════════════════════════════════
 async function loadNews() {
   const tbody = document.getElementById("news-table-body");
-  tbody.innerHTML = `<tr><td colspan="4" class="loading">Loading…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="5" class="loading">Loading…</td></tr>`;
   newsData = await getNews();
   document.getElementById("news-count").textContent = `${newsData.length} article(s)`;
 
   if (!newsData.length) {
-    tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No news yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No news yet.</td></tr>`;
     return;
   }
+  const thumbs = await buildThumbMap(newsData);
   tbody.innerHTML = newsData.map(item => `
     <tr>
-      <td>${esc(item.title)}${item.imageId ? " 🖼" : ""}</td>
+      ${thumbCell(item.imageId, thumbs, item.title)}
+      <td>${esc(item.title)}</td>
       <td>${esc(formatDate(item.date))}</td>
       <td>${formatUpdatedAt(item)}</td>
       <td>
@@ -283,17 +303,19 @@ document.getElementById("news-table-body").addEventListener("click", e => {
 // ══════════════════════════════════════════
 async function loadUpdates() {
   const tbody = document.getElementById("updates-table-body");
-  tbody.innerHTML = `<tr><td colspan="5" class="loading">Loading…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="6" class="loading">Loading…</td></tr>`;
   updatesData = await getUpdates();
   document.getElementById("updates-count").textContent = `${updatesData.length} update(s)`;
 
   if (!updatesData.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No updates yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No updates yet.</td></tr>`;
     return;
   }
+  const thumbs = await buildThumbMap(updatesData);
   tbody.innerHTML = updatesData.map(item => `
     <tr>
-      <td>${esc(item.title)}${item.imageId ? " 🖼" : ""}</td>
+      ${thumbCell(item.imageId, thumbs, item.title)}
+      <td>${esc(item.title)}</td>
       <td>${esc(formatDate(item.date))}</td>
       <td>${esc(item.priority || "normal")}</td>
       <td>${formatUpdatedAt(item)}</td>
@@ -336,6 +358,7 @@ async function loadHistory() {
     (yearGroups[year] ??= []).push(item);
   });
 
+  const thumbs = await buildThumbMap(historyData);
   tbody.innerHTML = historyData.map(item => {
     const year = extractDateYear(item.date) ?? "unknown";
     const group = yearGroups[year];
@@ -350,9 +373,9 @@ async function loadHistory() {
           <button type="button" class="reorder-btn" data-reorder="history-down" data-id="${item.id}" ${groupIdx === group.length - 1 ? "disabled" : ""} aria-label="Move down">▼</button>
         </span>` : ""}
       </td>
+      ${thumbCell(item.imageId, thumbs, item.title)}
       <td>${esc(item.title)}</td>
       <td>${esc(displayHistoryDate(item.date))}</td>
-      <td>${item.imageId ? "Yes" : "—"}</td>
       <td>${formatUpdatedAt(item)}</td>
       <td>
         <div class="table-actions">
@@ -706,6 +729,7 @@ async function loadLeaders() {
     tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No leaders yet.</td></tr>`;
     return;
   }
+  const thumbs = await buildThumbMap(leadersData);
   tbody.innerHTML = leadersData.map((item, idx) => `
     <tr draggable="true" data-leader-id="${item.id}">
       <td>
@@ -718,7 +742,7 @@ async function loadLeaders() {
       <td>${esc(item.name)}</td>
       <td>${esc(item.title)}</td>
       <td>${esc(getCategoryName(item.categoryId))}</td>
-      <td>${item.imageId ? "Yes" : "—"}</td>
+      ${thumbCell(item.imageId, thumbs, item.name)}
       <td>${formatUpdatedAt(item)}</td>
       <td>
         <div class="table-actions">
@@ -1028,22 +1052,30 @@ async function loadCommunityPhotos() {
   renderCommunityPhotos();
 }
 
-function renderCommunityPhotos() {
+async function renderCommunityPhotos() {
   const container = document.getElementById("community-photos-list");
   if (!container) return;
   if (!communityPhotosData.length) {
     container.innerHTML = `<p class="admin-hint">No photos yet. Add one to get started.</p>`;
     return;
   }
-  container.innerHTML = communityPhotosData.map(photo => `
+  const thumbs = await buildThumbMap(communityPhotosData);
+  container.innerHTML = communityPhotosData.map(photo => {
+    const url = photo.imageId ? thumbs.get(photo.imageId) : null;
+    const thumbHtml = url
+      ? `<img class="admin-thumb" src="${url}" alt="${esc(photo.title)}" loading="lazy" />`
+      : `<span class="admin-thumb-placeholder" title="No image uploaded"><i class="fa-solid fa-image"></i></span>`;
+    return `
     <div class="category-item" draggable="true" data-comm-photo-id="${photo.id}">
       <span class="drag-handle" title="Drag to reorder">⠿</span>
+      ${thumbHtml}
       <span class="category-item-name">${esc(photo.title)}</span>
       <div class="category-item-actions">
         <button class="btn btn-outline btn-sm" data-action="edit-comm-photo" data-id="${photo.id}">Edit</button>
         <button class="btn btn-danger btn-sm"  data-action="del-comm-photo"  data-id="${photo.id}">Delete</button>
       </div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 
   bindCommunityPhotoDrag(container);
 }
@@ -1167,6 +1199,7 @@ async function loadActivities() {
     return;
   }
 
+  const thumbs = await buildThumbMap(activitiesData);
   tbody.innerHTML = activitiesData.map((item, idx) => `
     <tr draggable="true" data-activity-id="${item.id}">
       <td>
@@ -1179,7 +1212,7 @@ async function loadActivities() {
       <td>${esc(item.title)}</td>
       <td>${esc(item.subtitle || "—")}</td>
       <td>${esc(getActSectionLabel(item.section))}</td>
-      <td>${item.imageId ? "Yes" : "—"}</td>
+      ${thumbCell(item.imageId, thumbs, item.title)}
       <td>${formatUpdatedAt(item)}</td>
       <td>
         <div class="table-actions">
@@ -1334,19 +1367,26 @@ async function confirmDeleteActivity(id) {
 async function loadCarouselVideos() {
   const tbody = document.getElementById("carousel-videos-table-body");
   if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="6" class="loading">Loading…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="7" class="loading">Loading…</td></tr>`;
   carouselVideosData = await getCarouselVideos();
   carouselVideosData.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   document.getElementById("carousel-videos-count").textContent = `${carouselVideosData.length} video(s)`;
 
   if (!carouselVideosData.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No videos added yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No videos added yet.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = carouselVideosData.map(item => `
+  // Videos have no uploaded imageId — use YouTube's own thumbnail so staff
+  // can recognize the clip at a glance, same as other panels.
+  tbody.innerHTML = carouselVideosData.map(item => {
+    const ytThumb = item.videoId
+      ? `<img class="admin-thumb" src="https://img.youtube.com/vi/${esc(item.videoId)}/default.jpg" alt="${esc(item.title)}" loading="lazy" />`
+      : `<span class="admin-thumb-placeholder" title="No video ID"><i class="fa-solid fa-image"></i></span>`;
+    return `
     <tr draggable="true" data-cvid="${item.id}">
       <td><span class="drag-handle">⠿</span></td>
+      <td class="admin-thumb-cell">${ytThumb}</td>
       <td>${esc(item.title)}</td>
       <td>${item.date ? esc(formatDate(item.date)) : "—"}</td>
       <td>${esc(item.videoId)}</td>
@@ -1357,7 +1397,8 @@ async function loadCarouselVideos() {
           <button class="btn btn-danger btn-sm"  data-action="del-cv"  data-id="${item.id}">Delete</button>
         </div>
       </td>
-    </tr>`).join("");
+    </tr>`;
+  }).join("");
 
   bindCarouselVideoDrag(tbody);
 }

@@ -2143,6 +2143,41 @@ a:hover {
   gap: 0.4rem;
 }
 
+/* ── Admin thumbnails ── */
+.admin-thumb-cell {
+  width: 60px;
+}
+
+.admin-thumb {
+  display: block;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  object-fit: cover;
+}
+
+.admin-thumb-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
+  background: var(--bg-muted);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* Thumbnail inside the drag-reorderable Category / Community Photo list items */
+.category-item .admin-thumb,
+.category-item .admin-thumb-placeholder {
+  width: 36px;
+  height: 36px;
+  margin-right: 0.25rem;
+}
+
 /* ── Modal ── */
 .modal-overlay {
   position: fixed;
