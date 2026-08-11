@@ -186,6 +186,20 @@ loginForm.addEventListener("submit", async e => {
   }
 });
 
+// ── Show/hide password toggle on the login screen ──
+const loginPasswordInput = document.getElementById("login-password");
+const loginPasswordToggle = document.getElementById("login-password-toggle");
+loginPasswordToggle?.addEventListener("click", () => {
+  const isHidden = loginPasswordInput.type === "password";
+  loginPasswordInput.type = isHidden ? "text" : "password";
+  loginPasswordToggle.setAttribute("aria-pressed", String(isHidden));
+  loginPasswordToggle.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+  loginPasswordToggle.innerHTML = isHidden
+    ? `<i class="fa-solid fa-eye-slash"></i>`
+    : `<i class="fa-solid fa-eye"></i>`;
+  loginPasswordInput.focus();
+});
+
 logoutBtn.addEventListener("click", () => {
   dataLoaded = false;
   signOut(auth);
