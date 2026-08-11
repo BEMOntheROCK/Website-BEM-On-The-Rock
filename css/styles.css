@@ -295,6 +295,18 @@ a:hover {
   color: #fff;
 }
 
+@media (max-width: 768px) {
+  /* On narrow screens, background-size: cover crops the wide desktop photo
+     along the opposite axis (left/right instead of top/bottom), which
+     leaves almost no vertical cropping room and makes the peak sit right
+     behind the title. This dedicated portrait crop places the peak lower
+     in frame on purpose, and is also a much smaller file for mobile data. */
+  .hero--default-bg {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35)),
+      url("../assets/index-hero-background-image-mobile.jpg");
+  }
+}
+
 .hero--default-bg::before {
   display: none;
 }
