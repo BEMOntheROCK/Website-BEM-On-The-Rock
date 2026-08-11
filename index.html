@@ -1,7 +1,17 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
   <head>
-    <meta name="google-site-verification" content="tcOg8HeQt3iCk8v2SrqXJ8tja8d3EKZt7eW8MbkIR7k" />
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('bem-theme');
+          var theme = stored === 'light' || stored === 'dark'
+            ? stored
+            : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
