@@ -120,8 +120,22 @@
             <h2 class="section-title" data-i18n="org.leadership.title">Leadership</h2>
             <p class="section-subtitle" data-i18n="org.leadership.subtitle">Meet the leaders who guide our church family.</p>
           </div>
+          <div class="leader-search-wrap">
+            <i class="fa-solid fa-magnifying-glass leader-search-icon"></i>
+            <input
+              type="search"
+              id="leader-search"
+              class="leader-search-input"
+              data-i18n-attr="placeholder:org.leadership.searchPlaceholder"
+              placeholder="Search by name or title…"
+              autocomplete="off"
+            />
+          </div>
           <div id="leaders-list">
             <div class="loading">Loading leaders…</div>
+          </div>
+          <div id="leaders-no-results" class="empty-state" hidden>
+            <p data-i18n="org.leadership.noResults">No leaders match your search.</p>
           </div>
         </div>
 

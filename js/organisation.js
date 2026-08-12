@@ -33,9 +33,11 @@ async function renderChart(org) {
 
 async function renderLeaders(leaders, categories) {
   const container = document.getElementById("leaders-list");
+  const searchWrap = document.querySelector(".leader-search-wrap");
   if (!container) return;
 
   if (!leaders.length) {
+    if (searchWrap) searchWrap.hidden = true;
     container.innerHTML = `
       <div class="empty-state">
         <p>Leadership information will be added soon.</p>
@@ -99,9 +101,15 @@ async function renderLeaders(leaders, categories) {
   container.innerHTML = html || `<div class="empty-state"><p>Leadership information will be added soon.</p></div>`;
 }
 
+function escapeAttr(text) {
+  return escapeHtml(text).replace(/"/g, "&quot;");
+}
+
 function leaderCardHtml(leader) {
+  const name = leader.name || "";
+  const title = leader.title || "";
   return `
-    <article class="leader-card">
+    <article class="leader-card" data-name="${escapeAttr(name.toLowerCase())}" data-title="${escapeAttr(title.toLowerCase())}">
       <div class="leader-photo">
         ${
           leader.imageUrl
@@ -114,6 +122,37 @@ function leaderCardHtml(leader) {
         <p>${escapeHtml(leader.title)}</p>
       </div>
     </article>`;
+}
+
+function bindLeaderSearch() {
+  const input = document.getElementById("leader-search");
+  const list = document.getElementById("leaders-list");
+  const noResults = document.getElementById("leaders-no-results");
+  if (!input || !list) return;
+
+  input.addEventListener("input", () => {
+    const query = input.value.trim().toLowerCase();
+    const cards = list.querySelectorAll(".leader-card");
+    let anyVisible = false;
+
+    cards.forEach((card) => {
+      const matches =
+        !query ||
+        card.dataset.name.includes(query) ||
+        card.dataset.title.includes(query);
+      card.hidden = !matches;
+      if (matches) anyVisible = true;
+    });
+
+    // Hide a whole category block (title + grid) if every card in it got
+    // filtered out, so search doesn't leave behind empty category headings.
+    list.querySelectorAll(".leaders-category").forEach((group) => {
+      const hasVisibleCard = group.querySelector(".leader-card:not([hidden])");
+      group.hidden = !hasVisibleCard;
+    });
+
+    if (noResults) noResults.hidden = !(cards.length && !anyVisible);
+  });
 }
 
 function bindOrgTabs() {
@@ -147,6 +186,7 @@ async function loadPage() {
     ]);
     await renderChart(org);
     await renderLeaders(leaders, categories);
+    bindLeaderSearch();
   } catch (err) {
     console.error("Failed to load organisation page:", err);
   }

@@ -62,5 +62,7 @@
   "org.hero.subtitle": "Pasukan kepimpinan kami dan cara kami berkhidmat bersama.",
   "org.chart.title": "Carta Organisasi",
   "org.leadership.title": "Kepimpinan",
-  "org.leadership.subtitle": "Kenali para pemimpin yang membimbing keluarga gereja kami."
+  "org.leadership.subtitle": "Kenali para pemimpin yang membimbing keluarga gereja kami.",
+  "org.leadership.searchPlaceholder": "Cari mengikut nama atau jawatan…",
+  "org.leadership.noResults": "Tiada pemimpin sepadan dengan carian anda."
 }
