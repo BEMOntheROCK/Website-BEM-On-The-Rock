@@ -15,8 +15,10 @@ function escapeAttr(text) {
 }
 
 function serviceCardHtml(service) {
+  const title = service.title || "";
+  const description = service.description || "";
   return `
-    <article class="service-card">
+    <article class="service-card" data-title="${escapeAttr(title.toLowerCase())}" data-description="${escapeAttr(description.toLowerCase())}">
       <div class="service-card-image">
         ${
           service.imageUrl
@@ -40,12 +42,38 @@ function serviceCardHtml(service) {
     </article>`;
 }
 
+function bindServiceSearch() {
+  const input = document.getElementById("service-search");
+  const grid = document.querySelector(".services-grid");
+  const noResults = document.getElementById("services-no-results");
+  if (!input || !grid) return;
+
+  input.addEventListener("input", () => {
+    const query = input.value.trim().toLowerCase();
+    const cards = grid.querySelectorAll(".service-card");
+    let anyVisible = false;
+
+    cards.forEach((card) => {
+      const matches =
+        !query ||
+        card.dataset.title.includes(query) ||
+        card.dataset.description.includes(query);
+      card.hidden = !matches;
+      if (matches) anyVisible = true;
+    });
+
+    if (noResults) noResults.hidden = !(cards.length && !anyVisible);
+  });
+}
+
 async function loadPage() {
   const container = document.getElementById("services-content");
+  const searchWrap = document.getElementById("service-search")?.closest(".search-wrap");
   try {
     const services = await getServices();
 
     if (!services.length) {
+      if (searchWrap) searchWrap.hidden = true;
       container.innerHTML = `
         <div class="empty-state">
           <div class="icon">🔗</div>
@@ -67,6 +95,7 @@ async function loadPage() {
       <div class="services-grid">
         ${withImages.map(serviceCardHtml).join("")}
       </div>`;
+    bindServiceSearch();
   } catch (err) {
     console.error(err);
     container.innerHTML = `

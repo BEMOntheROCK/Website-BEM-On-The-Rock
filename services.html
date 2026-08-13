@@ -85,8 +85,22 @@
       </section>
 
       <section class="container section">
+        <div class="search-wrap">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input
+            type="search"
+            id="service-search"
+            class="search-input"
+            data-i18n-attr="placeholder:services.searchPlaceholder"
+            placeholder="Search services…"
+            autocomplete="off"
+          />
+        </div>
         <div id="services-content">
           <div class="loading">Loading services…</div>
+        </div>
+        <div id="services-no-results" class="empty-state" hidden>
+          <p data-i18n="services.noResults">No services match your search.</p>
         </div>
       </section>
     </main>
