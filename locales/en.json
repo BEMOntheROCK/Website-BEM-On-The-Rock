@@ -4,6 +4,7 @@
   "nav.history": "History",
   "nav.org": "Organisation",
   "nav.activities": "Ministries & Activities",
+  "nav.services": "Services",
   "nav.admin": "Admin",
 
   "header.themeToggle": "Toggle dark or light mode",
@@ -24,6 +25,8 @@
   "home.hero.historyBtnShort": "Our History",
   "home.hero.leadersBtnShort": "Our Leader",
   "home.hero.ministriesBtnShort": "Our Ministries",
+  "home.hero.servicesBtn": "Our Services",
+  "home.hero.servicesBtnShort": "Our Services",
 
   "home.exploreMore.title": "Learn More About Our Church",
 
@@ -62,7 +65,5 @@
   "org.hero.subtitle": "Our leadership team and how we serve together.",
   "org.chart.title": "Organisation Chart",
   "org.leadership.title": "Leadership",
-  "org.leadership.subtitle": "Meet the leaders who guide our church family.",
-  "org.leadership.searchPlaceholder": "Search by name or title…",
-  "org.leadership.noResults": "No leaders match your search."
+  "org.leadership.subtitle": "Meet the leaders who guide our church family."
 }

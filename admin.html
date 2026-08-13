@@ -41,6 +41,7 @@
             <li><a href="history.html">History</a></li>
             <li><a href="organisation-structure.html">Organisation</a></li>
             <li><a href="activities.html">Activities</a></li>
+            <li><a href="services.html">Services</a></li>
             <li><a href="admin.html" class="active">Admin</a></li>
           </ul>
         </nav>
@@ -159,6 +160,15 @@
                 <span class="admin-nav-text">
                   <span class="admin-nav-label">Ministries &amp; Activities</span>
                   <span class="admin-nav-sub">Ministries and activities listed on the Activities page</span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button type="button" data-panel="services">
+                <i class="fa-solid fa-arrow-up-right-from-square admin-nav-icon"></i>
+                <span class="admin-nav-text">
+                  <span class="admin-nav-label">Services</span>
+                  <span class="admin-nav-sub">External service links listed on the Services page</span>
                 </span>
               </button>
             </li>
@@ -495,6 +505,34 @@
           </div>
         </section>
 
+        <!-- Services panel -->
+        <section id="panel-services" class="admin-panel">
+          <h2>Services</h2>
+          <p class="admin-panel-intro">Links shown on the Services page — each one sends visitors to an external website (e.g. hall booking, membership registration). Drag the ⠿ handle to reorder.</p>
+          <div class="admin-toolbar">
+            <span id="services-count"></span>
+            <button type="button" class="btn btn-primary btn-sm" id="add-service-btn">+ Add Service</button>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;"></th>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>Link</th>
+                  <th>Image</th>
+                  <th>Last Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="services-table-body">
+                <tr><td colspan="7" class="loading">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <!-- Settings panel -->
         <section id="panel-settings" class="admin-panel">
           <h2>Church Contact &amp; Settings</h2>
@@ -744,6 +782,38 @@
             <div class="form-actions">
               <button type="submit" class="btn btn-primary">Save</button>
               <button type="button" class="btn btn-outline" id="activity-modal-cancel">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service modal -->
+    <div id="service-modal" class="modal-overlay" role="dialog" aria-modal="true">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="service-modal-title">Add Service</h3>
+          <button type="button" class="modal-close" id="service-modal-close" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="service-form">
+            <input type="hidden" id="service-id" />
+            <div class="form-group">
+              <label for="service-title">Title</label>
+              <input type="text" id="service-title" required />
+            </div>
+            <div class="form-group">
+              <label for="service-description">Description <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+              <textarea id="service-description" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="service-link">Link URL</label>
+              <input type="url" id="service-link" placeholder="https://…" required />
+            </div>
+            <div id="service-image-upload"></div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="button" class="btn btn-outline" id="service-modal-cancel">Cancel</button>
             </div>
           </form>
         </div>

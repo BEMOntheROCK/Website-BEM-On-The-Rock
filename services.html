@@ -16,9 +16,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Learn about BEM On The Rock — our history, mission, and vision."
+      content="Links to BEM On The Rock's church services, such as hall booking and membership registration."
     />
-    <title>About Us — BEM On The Rock</title>
+    <title>Services — BEM On The Rock</title>
     <link rel="icon" type="image/png" href="assets/favicon.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="css/styles.css" />
@@ -39,11 +39,11 @@
         <nav>
           <ul class="nav-links">
             <li><a href="index.html" data-i18n="nav.home">Home</a></li>
-            <li><a href="about.html" class="active" data-i18n="nav.about">About Us</a></li>
+            <li><a href="about.html" data-i18n="nav.about">About Us</a></li>
             <li><a href="history.html" data-i18n="nav.history">History</a></li>
             <li><a href="organisation-structure.html" data-i18n="nav.org">Organisation</a></li>
             <li><a href="activities.html" data-i18n="nav.activities">Activities</a></li>
-            <li><a href="services.html" data-i18n="nav.services">Services</a></li>
+            <li><a href="services.html" class="active" data-i18n="nav.services">Services</a></li>
             <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
             <li class="lang-toggle-item">
               <div class="lang-toggle" role="group" aria-label="Language">
@@ -77,37 +77,16 @@
     </header>
 
     <main>
-      <section class="page-hero page-hero--has-bg notranslate" translate="no" id="about-hero">
+      <section class="page-hero page-hero--has-bg notranslate" translate="no" id="services-hero">
         <div class="container">
-          <h1 data-i18n="about.hero.title">About BEM On The Rock</h1>
-          <p data-i18n="about.hero.subtitle">Our mission, vision, and the heart behind our church family.</p>
+          <h1 data-i18n="services.hero.title">Services</h1>
+          <p data-i18n="services.hero.subtitle">Quick links to the tools and forms our church family uses most.</p>
         </div>
       </section>
 
       <section class="container section">
-        <div id="general-info">
-          <div class="loading">Loading general information…</div>
-        </div>
-
-        <div id="founder-section"></div>
-
-        <div id="about-content">
-          <div class="loading">Loading church information…</div>
-        </div>
-
-        <div class="contact-bar" id="contact-bar">
-          <div>
-            <h2 class="notranslate" translate="no" data-i18n="about.visit.title">Visit Us</h2>
-            <p id="contact-note" style="font-size: 0.9rem; margin-top: 0.35rem; opacity: 0.85;">
-              We welcome visitors and newcomers.
-            </p>
-          </div>
-          <div class="contact-details">
-            <span id="contact-address"></span>
-            <span id="contact-phone"></span>
-            <span id="contact-email"></span>
-            <span id="contact-service"></span>
-          </div>
+        <div id="services-content">
+          <div class="loading">Loading services…</div>
         </div>
       </section>
     </main>
@@ -136,7 +115,7 @@
                 <li><a href="history.html" data-i18n="nav.history">History</a></li>
                 <li><a href="organisation-structure.html" data-i18n="nav.org">Organisation</a></li>
                 <li><a href="activities.html" data-i18n="nav.activities">Activities</a></li>
-            <li><a href="services.html" data-i18n="nav.services">Services</a></li>
+                <li><a href="services.html" data-i18n="nav.services">Services</a></li>
                 <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
               </ul>
             </div>
@@ -148,8 +127,10 @@
       </div>
     </footer>
 
+    <button id="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
     <div id="google_translate_element"></div>
     <script type="module" src="js/i18n.js"></script>
-    <script type="module" src="js/about.js"></script>
+    <script type="module" src="js/scroll-effects.js"></script>
+    <script type="module" src="js/services.js"></script>
   </body>
 </html>

@@ -262,6 +262,33 @@ export async function deleteActivity(id) {
   await deleteDoc(doc(db, "activities", id));
 }
 
+// ── Services ──
+
+export async function getServices() {
+  const q = query(collection(db, "services"), orderBy("order", "asc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function createService(data) {
+  const ref = await addDoc(collection(db, "services"), {
+    ...data,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateService(id, data) {
+  await updateDoc(doc(db, "services", id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteService(id) {
+  await deleteDoc(doc(db, "services", id));
+}
+
 // ── Leaders ──
 
 export async function getLeaders() {

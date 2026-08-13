@@ -4,6 +4,7 @@
   "nav.history": "Sejarah",
   "nav.org": "Organisasi",
   "nav.activities": "Pelayanan & Aktiviti",
+  "nav.services": "Perkhidmatan",
   "nav.admin": "Admin",
 
   "header.themeToggle": "Tukar mod gelap atau terang",
@@ -24,6 +25,8 @@
   "home.hero.historyBtnShort": "Sejarah Kami",
   "home.hero.leadersBtnShort": "Pemimpin Kami",
   "home.hero.ministriesBtnShort": "Pelayanan Kami",
+  "home.hero.servicesBtn": "Perkhidmatan Kami",
+  "home.hero.servicesBtnShort": "Perkhidmatan Kami",
 
   "home.exploreMore.title": "Ketahui Lebih Lanjut Tentang Gereja Kami",
 
@@ -62,7 +65,5 @@
   "org.hero.subtitle": "Pasukan kepimpinan kami dan cara kami berkhidmat bersama.",
   "org.chart.title": "Carta Organisasi",
   "org.leadership.title": "Kepimpinan",
-  "org.leadership.subtitle": "Kenali para pemimpin yang membimbing keluarga gereja kami.",
-  "org.leadership.searchPlaceholder": "Cari mengikut nama atau jawatan…",
-  "org.leadership.noResults": "Tiada pemimpin sepadan dengan carian anda."
+  "org.leadership.subtitle": "Kenali para pemimpin yang membimbing keluarga gereja kami."
 }

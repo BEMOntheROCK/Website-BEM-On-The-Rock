@@ -15,6 +15,7 @@ import {
   getCommunityContent, saveCommunityContent,
   getCommunityPhotos, createCommunityPhoto, updateCommunityPhoto, deleteCommunityPhoto, saveCommunityPhotosOrder,
   getActivities, createActivity, updateActivity, deleteActivity,
+  getServices, createService, updateService, deleteService,
   getCarouselVideos, createCarouselVideo, updateCarouselVideo, deleteCarouselVideo, saveCarouselVideosOrder,
   getNews, createNews, updateNews, deleteNews,
   getUpdates, createUpdate, updateUpdate, deleteUpdate,
@@ -53,6 +54,7 @@ let historyData    = [];
 let leadersData    = [];
 let categoriesData = [];
 let activitiesData    = [];
+let servicesData      = [];
 let communityContentData = { introText: "" };
 let communityPhotosData  = [];
 let carouselVideosData = [];
@@ -63,6 +65,7 @@ let cropEditor        = null;
 let leaderImgUpload  = null;
 let orgChartUpload   = null;
 let activityImgUpload = null;
+let serviceImgUpload = null;
 let communityPhotoImgUpload = null;
 let aboutUploads     = {};
 
@@ -248,6 +251,7 @@ async function initAll() {
   leaderImgUpload = safeBind("leader-image-upload",    { inputId: "leader-img-in",  label: "Leader Photo" });
   orgChartUpload  = safeBind("org-chart-image-upload", { inputId: "org-img-in",     label: "Organisation Chart Image" });
   activityImgUpload = safeBind("activity-image-upload", { inputId: "act-img-in", label: "Activity Image" });
+  serviceImgUpload = safeBind("service-image-upload", { inputId: "service-img-in", label: "Service Image" });
   communityPhotoImgUpload = safeBind("community-photo-image-upload", { inputId: "comm-img-in", label: "Photo" });
   aboutUploads = {
     hero:    safeBind("about-hero-image-upload",    { inputId: "ab-hero-in",    label: "Hero Background" }),
@@ -271,6 +275,7 @@ async function initAll() {
   // Leaders and activities depend on their categories being loaded first
   await loadLeaders();
   await loadActivities();
+  await loadServices();
   await loadCarouselVideos();
 }
 
@@ -1372,6 +1377,175 @@ async function confirmDeleteActivity(id) {
     showAlert(adminAlert, "Activity deleted.", "success");
   } catch (err) {
     showAlert(adminAlert, "Failed to delete activity.");
+  }
+}
+
+// ══════════════════════════════════════════
+// SERVICES
+// ══════════════════════════════════════════
+async function loadServices() {
+  const tbody = document.getElementById("services-table-body");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="7" class="loading">Loading…</td></tr>`;
+  servicesData = await getServices();
+  servicesData.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  document.getElementById("services-count").textContent = `${servicesData.length} service(s)`;
+
+  if (!servicesData.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No services yet.</td></tr>`;
+    return;
+  }
+
+  const thumbs = await buildThumbMap(servicesData);
+  tbody.innerHTML = servicesData.map((item, idx) => `
+    <tr draggable="true" data-service-id="${item.id}">
+      <td>
+        <span class="drag-handle">⠿</span>
+        <span class="reorder-btns">
+          <button type="button" class="reorder-btn" data-reorder="service-up" data-id="${item.id}" ${idx === 0 ? "disabled" : ""} aria-label="Move up">▲</button>
+          <button type="button" class="reorder-btn" data-reorder="service-down" data-id="${item.id}" ${idx === servicesData.length - 1 ? "disabled" : ""} aria-label="Move down">▼</button>
+        </span>
+      </td>
+      <td>${esc(item.title)}</td>
+      <td>${esc((item.description || "—").slice(0, 60))}</td>
+      <td><a href="${esc(item.link)}" target="_blank" rel="noopener noreferrer">${esc((item.link || "").slice(0, 40))}</a></td>
+      ${thumbCell(item.imageId, thumbs, item.title)}
+      <td>${formatUpdatedAt(item)}</td>
+      <td>
+        <div class="table-actions">
+          <button class="btn btn-outline btn-sm" data-action="edit-service" data-id="${item.id}">Edit</button>
+          <button class="btn btn-danger btn-sm"  data-action="del-service"  data-id="${item.id}">Delete</button>
+        </div>
+      </td>
+    </tr>`).join("");
+
+  bindServiceDrag(tbody);
+}
+
+document.getElementById("add-service-btn").addEventListener("click", () => openServiceModal());
+
+document.getElementById("services-table-body").addEventListener("click", async e => {
+  const btn = e.target.closest("[data-action]");
+  if (btn) {
+    if (btn.dataset.action === "edit-service") openServiceModal(btn.dataset.id);
+    if (btn.dataset.action === "del-service")  confirmDeleteService(btn.dataset.id);
+    return;
+  }
+  const reorderBtn = e.target.closest("[data-reorder]");
+  if (!reorderBtn || reorderBtn.disabled) return;
+  const id  = reorderBtn.dataset.id;
+  const dir = reorderBtn.dataset.reorder === "service-up" ? -1 : 1;
+  const idx = servicesData.findIndex(s => s.id === id);
+  const swapIdx = idx + dir;
+  if (swapIdx < 0 || swapIdx >= servicesData.length) return;
+  const reorder = [...servicesData];
+  [reorder[idx], reorder[swapIdx]] = [reorder[swapIdx], reorder[idx]];
+  const reordered = reorder.map((s, i) => ({ ...s, order: i }));
+  try {
+    await Promise.all(reordered.map(s => updateService(s.id, { order: s.order })));
+    showAlert(adminAlert, "Service order saved.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save service order.");
+  }
+  await loadServices();
+});
+
+function bindServiceDrag(tbody) {
+  let dragSrc = null;
+  tbody.querySelectorAll("tr[data-service-id]").forEach(row => {
+    row.addEventListener("dragstart", e => {
+      dragSrc = row;
+      e.dataTransfer.effectAllowed = "move";
+      row.classList.add("dragging");
+    });
+    row.addEventListener("dragend", () => {
+      row.classList.remove("dragging");
+      tbody.querySelectorAll("tr").forEach(r => r.classList.remove("drag-over"));
+      dragSrc = null;
+    });
+    row.addEventListener("dragover", e => {
+      e.preventDefault();
+      tbody.querySelectorAll("tr").forEach(r => r.classList.remove("drag-over"));
+      if (row !== dragSrc) row.classList.add("drag-over");
+    });
+    row.addEventListener("drop", async e => {
+      e.preventDefault();
+      if (!dragSrc || dragSrc === row) return;
+      const rows   = [...tbody.querySelectorAll("tr[data-service-id]")];
+      const srcIdx = rows.indexOf(dragSrc);
+      const tgtIdx = rows.indexOf(row);
+      const reorder = [...servicesData];
+      const [moved] = reorder.splice(srcIdx, 1);
+      reorder.splice(tgtIdx, 0, moved);
+      const reordered = reorder.map((s, i) => ({ ...s, order: i }));
+      try {
+        await Promise.all(reordered.map(s => updateService(s.id, { order: s.order })));
+        showAlert(adminAlert, "Service order saved.", "success");
+      } catch (err) {
+        showAlert(adminAlert, "Failed to save service order.");
+      }
+      await loadServices();
+    });
+  });
+}
+
+const serviceModal = document.getElementById("service-modal");
+const serviceForm  = document.getElementById("service-form");
+
+function openServiceModal(id = null) {
+  const item = id ? servicesData.find(s => s.id === id) : null;
+  document.getElementById("service-modal-title").textContent = id ? "Edit Service" : "Add Service";
+  document.getElementById("service-id").value          = id || "";
+  document.getElementById("service-title").value       = item?.title || "";
+  document.getElementById("service-description").value = item?.description || "";
+  document.getElementById("service-link").value         = item?.link || "";
+  serviceImgUpload?.setImageId(item?.imageId || null);
+  serviceModal.classList.add("open");
+}
+
+function closeServiceModal() {
+  serviceModal.classList.remove("open");
+  serviceForm.reset();
+  serviceImgUpload?.setImageId(null);
+}
+
+document.getElementById("service-modal-close").addEventListener("click", closeServiceModal);
+document.getElementById("service-modal-cancel").addEventListener("click", closeServiceModal);
+serviceModal.addEventListener("click", e => { if (e.target === serviceModal) closeServiceModal(); });
+
+serviceForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  const id   = document.getElementById("service-id").value;
+  const link = document.getElementById("service-link").value.trim();
+  const payload = {
+    title:       document.getElementById("service-title").value.trim(),
+    description: document.getElementById("service-description").value.trim(),
+    link,
+    imageId:     serviceImgUpload?.getImageId() || null,
+    order:       id ? servicesData.find(s => s.id === id)?.order ?? servicesData.length : servicesData.length,
+  };
+  try {
+    if (id) await updateService(id, payload);
+    else    await createService(payload);
+    await loadServices();
+    closeServiceModal();
+    showAlert(adminAlert, "Service saved.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save service.");
+    console.error(err);
+  }
+});
+
+async function confirmDeleteService(id) {
+  if (!(await confirmAction("Delete this service? This cannot be undone."))) return;
+  const item = servicesData.find(s => s.id === id);
+  try {
+    await deleteService(id);
+    if (item?.imageId) await deleteImage(item.imageId).catch(() => {});
+    await loadServices();
+    showAlert(adminAlert, "Service deleted.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to delete service.");
   }
 }
 
