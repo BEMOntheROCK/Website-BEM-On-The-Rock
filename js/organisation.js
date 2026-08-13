@@ -10,6 +10,10 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+function escapeAttr(text) {
+  return escapeHtml(text).replace(/"/g, "&quot;");
+}
+
 async function renderChart(org) {
   const container = document.getElementById("org-chart");
   if (!container) return;
@@ -33,7 +37,7 @@ async function renderChart(org) {
 
 async function renderLeaders(leaders, categories) {
   const container = document.getElementById("leaders-list");
-  const searchWrap = document.querySelector(".leader-search-wrap");
+  const searchWrap = document.getElementById("leader-search")?.closest(".search-wrap");
   if (!container) return;
 
   if (!leaders.length) {
@@ -99,10 +103,6 @@ async function renderLeaders(leaders, categories) {
   }
 
   container.innerHTML = html || `<div class="empty-state"><p>Leadership information will be added soon.</p></div>`;
-}
-
-function escapeAttr(text) {
-  return escapeHtml(text).replace(/"/g, "&quot;");
 }
 
 function leaderCardHtml(leader) {

@@ -1148,6 +1148,13 @@ a:hover {
     url("../assets/organisation-hero-image.png");
 }
 
+/* Note: named services-hero.png rather than services-hero-image.png to
+   match what was requested, unlike the other hero images above. */
+#services-hero.page-hero--has-bg {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35)),
+    url("../assets/services-hero.png");
+}
+
 .page-hero h1 {
   font-family: "Helvetica Neue Black Extended", var(--font-display), sans-serif;
   font-size: clamp(2rem, 5vw, 3rem);
@@ -1576,6 +1583,49 @@ a:hover {
 
 .leaders-category:last-child {
   margin-bottom: 0;
+}
+
+/* Reusable search box — used by Leadership and Services pages */
+.search-wrap {
+  position: relative;
+  max-width: 380px;
+  margin: 0 0 2rem;
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.9rem;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem 0.65rem 2.4rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text);
+  transition: border-color var(--transition);
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--marigold);
+  box-shadow: 0 0 0 3px var(--marigold-glow);
+}
+
+.search-input::-webkit-search-cancel-button {
+  cursor: pointer;
 }
 
 .leaders-category-title {
