@@ -449,7 +449,9 @@ a:hover {
 
 .tagline-wrap {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 1.75rem;
   opacity: 0;
   transition: opacity 0.4s ease;
@@ -481,7 +483,9 @@ a:hover {
 .aurora-title {
   position: relative;
   z-index: 2;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: "Helvetica Neue Black Extended", var(--font-display), sans-serif;
   font-size: clamp(1.8rem, 4.5vw, 2.8rem);
   font-weight: 900;
@@ -489,7 +493,7 @@ a:hover {
   text-transform: uppercase;
   margin: 0;
   padding: 0.6rem 2rem;
-  line-height: 1.1;
+  line-height: 1;
   background-image: url(../assets/aurora.gif);
   background-size: 200% 200%;
   background-position: 30% 40%;
