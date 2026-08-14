@@ -494,6 +494,11 @@ a:hover {
   margin: 0;
   padding: 0.6rem 2rem;
   line-height: 1;
+  /* This font's descender space (below the baseline) is entirely unused by
+     this all-caps text, so centering the line-box leaves the visible glyphs
+     sitting above true center by exactly half the descender height
+     (measured from the font file: 143/1000 em). Nudge down to compensate. */
+  transform: translateY(0.143em);
   background-image: url(../assets/aurora.gif);
   background-size: 200% 200%;
   background-position: 30% 40%;
