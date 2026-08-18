@@ -91,6 +91,7 @@ async function checkYoutubeLive(liveUrl) {
 async function renderLivestream(settings) {
   const liveUrl = settings.youtubeLiveUrl || defaultYouTube.liveUrl;
   const channelUrl = settings.youtubeChannelUrl || defaultYouTube.channelUrl;
+  const channelId = settings.youtubeChannelId || defaultYouTube.channelId;
 
   setLink("livestream-link", liveUrl);
   setLink("channel-link", channelUrl);
@@ -102,7 +103,17 @@ async function renderLivestream(settings) {
     serviceTimes.textContent = settings.serviceTimes;
   }
 
-  const { live, videoId } = await checkYoutubeLive(liveUrl);
+  // YouTube's oEmbed endpoint only reliably resolves "/live" through the
+  // Channel ID URL (youtube.com/channel/UC.../live). The @handle form
+  // (youtube.com/@handle/live) is documented by YouTube as unreliable for
+  // this redirect and frequently fails to resolve even while actually live.
+  // Prefer the Channel ID for the automated live-check; fall back to the
+  // configured liveUrl (handle form) only if no Channel ID is set.
+  const checkUrl = channelId
+    ? `https://www.youtube.com/channel/${channelId}/live`
+    : liveUrl;
+
+  const { live, videoId } = await checkYoutubeLive(checkUrl);
 
   const statusBadge = document.getElementById("livestream-status-badge");
   if (statusBadge) {

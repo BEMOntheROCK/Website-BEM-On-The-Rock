@@ -560,7 +560,7 @@
             </div>
 
             <p class="admin-hint" style="margin-top: -0.5rem;">
-              Live status is now detected automatically from your YouTube channel — no manual toggle needed. When you're not live, the home page shows a "we'll be live again" message using the service time below.
+              Live status is detected automatically from your YouTube channel — no manual toggle needed. When you're not live, the home page shows a "we'll be live again" message using the service time below. For this to work reliably, set the <strong>YouTube Channel ID</strong> under "Advanced" below — YouTube's "@handle/live" links are not dependable for automatic detection.
             </p>
 
             <div class="form-row">
@@ -588,10 +588,10 @@
               <summary>Advanced (rarely needed)</summary>
               <div class="admin-advanced-body">
                 <div class="form-group">
-                  <label for="settings-youtube-channel-id">YouTube Channel ID <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+                  <label for="settings-youtube-channel-id">YouTube Channel ID <span style="color:var(--text-muted);font-weight:400;">(recommended)</span></label>
                   <input type="text" id="settings-youtube-channel-id" placeholder="e.g. UCokmjLYT92F1EDik5Gvx8Kw" />
                   <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
-                    Found in the channel's About page. Leave blank to use the default configured channel.
+                    This is what automatic live detection actually uses to check YouTube — the "YouTube Live URL" field above is only used for the "Watch on YouTube" button link. Find your Channel ID on the channel's About page ("Share channel" → "Copy channel ID"). Leave blank to fall back to the site's default configured channel.
                   </small>
                 </div>
               </div>
