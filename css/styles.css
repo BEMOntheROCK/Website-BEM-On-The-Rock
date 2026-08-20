@@ -3127,10 +3127,10 @@ body {
 }
 
 .page-loading-verse {
-  font-family: var(--font-display);
-  font-size: clamp(1.15rem, 2.4vw, 1.5rem);
-  font-style: italic;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  font-size: clamp(1.6rem, 3.4vw, 2.3rem);
+  font-weight: 500;
+  line-height: 1.4;
   color: var(--text);
   opacity: 0;
   animation: fadeIn 0.6s ease forwards;
@@ -3138,9 +3138,8 @@ body {
 }
 
 .page-loading-reference {
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-family: "Helvetica Neue Black Extended", var(--font-display), sans-serif;
+  font-size: 1.05rem;
   letter-spacing: 0.03em;
   color: var(--marigold-dark);
   text-transform: uppercase;
