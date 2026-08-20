@@ -26,7 +26,7 @@ export async function getSiteSettings() {
     return { id: snap.id, ...snap.data() };
   }
   return {
-    churchName: "BEM On The Rock",
+    churchName: "BEM On The ROCK",
     tagline: "Building lives on the solid foundation of Christ",
     youtubeChannelUrl: defaultYouTube.channelUrl,
     youtubeLiveUrl: defaultYouTube.liveUrl,
@@ -46,7 +46,7 @@ export async function saveSiteSettings(data) {
 }
 
 const DEFAULT_ABOUT = {
-  fullName: "BEM On The Rock",
+  fullName: "BEM On The ROCK",
   denomination: "",
   registrationNumber: "",
   officeHours: "",

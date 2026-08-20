@@ -1,5 +1,5 @@
 /**
- * Firebase configuration TEMPLATE for BEM On The Rock
+ * Firebase configuration TEMPLATE for BEM On The ROCK
  *
  * This file is safe to commit — it contains no real credentials.
  * __FIREBASE_API_KEY__ gets swapped for the real key at deploy time by

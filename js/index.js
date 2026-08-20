@@ -41,7 +41,7 @@ async function renderHero(settings) {
   if (taglineWrap) taglineWrap.classList.add("tagline-ready");
 }
 
-function embedVideo(videoId, title = "BEM On The Rock Sunday Service") {
+function embedVideo(videoId, title = "BEM On The ROCK Sunday Service") {
   const embed = document.getElementById("livestream-embed");
   if (!embed || !videoId) return;
   embed.innerHTML = `<iframe
@@ -122,7 +122,7 @@ async function renderLivestream(settings) {
   }
 
   if (live && videoId) {
-    embedVideo(videoId, "BEM On The Rock — Live Now");
+    embedVideo(videoId, "BEM On The ROCK — Live Now");
   } else {
     embedNextServicePlaceholder(settings.serviceTimes, liveUrl);
   }
@@ -170,7 +170,7 @@ async function renderCarousel(videos, isLive, liveVideoId, serviceTimesText, liv
 
       if (isLiveCard) {
         if (isLive && liveVideoId) {
-          embedVideo(liveVideoId, "BEM On The Rock — Live Now");
+          embedVideo(liveVideoId, "BEM On The ROCK — Live Now");
         } else {
           embedNextServicePlaceholder(serviceTimesText, liveUrl);
         }
