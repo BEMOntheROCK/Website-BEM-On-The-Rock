@@ -31,7 +31,7 @@ async function renderHero(settings) {
   if (title && settings.churchName) {
     const parts = settings.churchName.split(" ");
     const last = parts.pop();
-    title.innerHTML = `<span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The <em>Rock</em></span>`;
+    title.innerHTML = `<span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The <em>ROCK</em></span>`;
   }
 
   if (tagline && settings.tagline) tagline.textContent = settings.tagline;

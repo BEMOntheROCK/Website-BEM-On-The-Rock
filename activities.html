@@ -32,7 +32,7 @@
             <img src="assets/ontherock-logo.png" alt="BEM On The ROCK logo" />
           </div>
           <div class="logo-text">
-            <span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The Rock</span>
+            <span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The ROCK</span>
           </div>
         </a>
 
@@ -101,7 +101,142 @@
             <img src="assets/ontherock-logo.png" alt="BEM On The ROCK logo" />
           </div>
               <div class="logo-text">
-                <span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The Rock</span>
+                <span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The ROCK</span>
+              </div>
+            </a>
+            <p class="notranslate" translate="no">Building lives on the solid foundation of Christ.</p>
+          </div>
+          <div class="footer-links">
+            <div class="footer-col">
+              <h4 data-i18n="footer.pages">Pages</h4>
+              <ul>
+                <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+                <li><a href="about.html" data-i18n="nav.about">About Us</a></li>
+                <li><a href="history.html" data-i18n="nav.history">History</a></li>
+                <li><a href="organisation-structure.html" data-i18n="nav.org">Organisation</a></li>
+                <li><a href="activities.html" data-i18n="nav.activities">Activities</a></li>
+            <li><a href="services.html" data-i18n="nav.services">Services</a></li>
+                <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© <span id="year"></span> <span class="notranslate" translate="no">BEM On The ROCK</span>. <span data-i18n="footer.rights">All rights reserved.</span></span>
+        </div>
+      </div>
+    </footer>
+
+    <button id="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
+    <div id="google_translate_element"></div>
+    <script type="module" src="js/i18n.js"></script>
+    <script type="module" src="js/scroll-effects.js"></script>
+    <script type="module" src="js/activities.js"></script>
+  </body>
+</html><!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('bem-theme');
+          var theme = stored === 'light' || stored === 'dark'
+            ? stored
+            : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Activities and ministries at BEM On The ROCK Church."
+    />
+    <title>Activities &amp; Ministries — BEM On The ROCK</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header notranslate" translate="no">
+      <div class="container header-inner">
+        <a href="index.html" class="logo">
+          <div class="logo-marks">
+            <img src="assets/sib-logo.png" alt="S.I.B logo" />
+            <img src="assets/ontherock-logo.png" alt="BEM On The ROCK logo" />
+          </div>
+          <div class="logo-text">
+            <span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The ROCK</span>
+          </div>
+        </a>
+
+        <nav>
+          <ul class="nav-links">
+            <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+            <li><a href="about.html" data-i18n="nav.about">About Us</a></li>
+            <li><a href="history.html" data-i18n="nav.history">History</a></li>
+            <li><a href="organisation-structure.html" data-i18n="nav.org">Organisation</a></li>
+            <li><a href="activities.html" class="active" data-i18n="nav.activities">Activities</a></li>
+            <li><a href="services.html" data-i18n="nav.services">Services</a></li>
+            <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
+            <li class="lang-toggle-item">
+              <div class="lang-toggle" role="group" aria-label="Language">
+                <button type="button" data-lang-btn="en">EN</button>
+                <button type="button" data-lang-btn="ms">BM</button>
+              </div>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="header-actions">
+          <button
+            class="btn btn-ghost btn-icon"
+            data-theme-toggle
+            aria-label="Toggle dark or light mode"
+            title="Toggle theme"
+            data-i18n-attr="aria-label:header.themeToggle,title:header.themeToggle"
+          >
+            <span data-theme-icon>🌙</span>
+          </button>
+          <button
+            class="mobile-menu-btn"
+            data-mobile-menu
+            aria-label="Open menu"
+            data-i18n-attr="aria-label:header.menuOpen"
+          >
+            ☰
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-hero page-hero--has-bg notranslate" translate="no" id="activities-hero">
+        <div class="container">
+          <h1 data-i18n="activities.hero.title">Activities &amp; Ministries</h1>
+          <p data-i18n="activities.hero.subtitle">Discover the ministries and activities that make up our church family.</p>
+        </div>
+      </section>
+
+      <section class="container section">
+        <div id="activities-content">
+          <div class="loading">Loading activities &amp; ministries…</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" translate="no">
+      <div class="container">
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <a href="index.html" class="logo">
+              <div class="logo-marks">
+            <img src="assets/sib-logo.png" alt="S.I.B logo" />
+            <img src="assets/ontherock-logo.png" alt="BEM On The ROCK logo" />
+          </div>
+              <div class="logo-text">
+                <span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The ROCK</span>
               </div>
             </a>
             <p class="notranslate" translate="no">Building lives on the solid foundation of Christ.</p>
