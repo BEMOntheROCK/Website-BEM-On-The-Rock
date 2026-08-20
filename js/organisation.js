@@ -1,4 +1,5 @@
 import "./common.js";
+import { hideLoadingOverlay } from "./loading-overlay.js";
 import { getOrgStructure, getLeaders, getCategories } from "./firebase-service.js";
 import { getImageUrl } from "./image-service.js";
 
@@ -189,6 +190,8 @@ async function loadPage() {
     bindLeaderSearch();
   } catch (err) {
     console.error("Failed to load organisation page:", err);
+  } finally {
+    hideLoadingOverlay();
   }
 }
 

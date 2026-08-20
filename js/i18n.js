@@ -100,6 +100,7 @@ export async function setLanguage(lang) {
   applyStrings(strings);
   updateToggleUI(lang);
   await setGoogleTranslateLanguage(lang);
+  window.dispatchEvent(new CustomEvent("site-lang-change", { detail: { lang } }));
 }
 
 export function getCurrentLanguage() {

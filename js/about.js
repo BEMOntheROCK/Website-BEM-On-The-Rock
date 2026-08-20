@@ -1,4 +1,5 @@
 import "./common.js";
+import { hideLoadingOverlay } from "./loading-overlay.js";
 import {
   getSiteSettings,
   getAboutContent,
@@ -227,6 +228,8 @@ async function loadPage() {
           <p>Unable to load church information. Please check your Firebase configuration.</p>
         </div>`;
     }
+  } finally {
+    hideLoadingOverlay();
   }
 }
 

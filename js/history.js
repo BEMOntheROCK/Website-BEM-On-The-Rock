@@ -1,4 +1,5 @@
 import "./common.js";
+import { hideLoadingOverlay } from "./loading-overlay.js";
 import { getHistory, displayHistoryDate, sortHistoryItems } from "./firebase-service.js";
 import { getImageUrl } from "./image-service.js";
 
@@ -79,6 +80,8 @@ async function loadPage() {
           <p>Unable to load history. Please check your Firebase configuration.</p>
         </div>`;
     }
+  } finally {
+    hideLoadingOverlay();
   }
 }
 

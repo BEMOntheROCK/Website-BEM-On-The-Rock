@@ -1,4 +1,5 @@
 import "./common.js";
+import { hideLoadingOverlay } from "./loading-overlay.js";
 import {
   getSiteSettings,
   getNews,
@@ -450,6 +451,8 @@ async function loadPage() {
         "Unable to load content. Please check your Firebase configuration.";
     });
     document.getElementById("tagline-wrap")?.classList.add("tagline-ready");
+  } finally {
+    hideLoadingOverlay();
   }
 }
 

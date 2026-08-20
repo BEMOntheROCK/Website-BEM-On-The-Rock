@@ -1,4 +1,5 @@
 import "./common.js";
+import { hideLoadingOverlay } from "./loading-overlay.js";
 import { getServices } from "./firebase-service.js";
 import { getImageUrl } from "./image-service.js";
 
@@ -102,6 +103,8 @@ async function loadPage() {
       <div class="empty-state">
         <p>Couldn't load services right now. Please try again later.</p>
       </div>`;
+  } finally {
+    hideLoadingOverlay();
   }
 }
 

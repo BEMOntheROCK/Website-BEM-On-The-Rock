@@ -3069,3 +3069,101 @@ body {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+/* ── Page loading overlay ──
+   Covers the page body only (not the header/nav) so people can navigate
+   away while content is still loading. Visible by default in plain CSS
+   (no JS required to show it, so there's no flash of unstyled/empty
+   content) — JS's only job is to fill in a verse and fade it out once
+   the page's real content is ready. */
+.page-loading-overlay {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90; /* below .site-header's z-index: 100 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--bg);
+  transition: opacity 0.5s ease;
+}
+
+.page-loading-overlay.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.page-loading-inner {
+  max-width: 32rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.page-loading-glyph {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--marigold-glow) 0%, transparent 70%);
+  position: relative;
+}
+
+.page-loading-glyph::before {
+  content: "";
+  position: absolute;
+  inset: 0.65rem;
+  border-radius: 50%;
+  background: var(--marigold);
+  animation: page-loading-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes page-loading-pulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.page-loading-verse {
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text);
+  opacity: 0;
+  animation: fadeIn 0.6s ease forwards;
+  animation-delay: 0.15s;
+}
+
+.page-loading-reference {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--marigold-dark);
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 0.6s ease forwards;
+  animation-delay: 0.3s;
+}
+
+[data-theme="dark"] .page-loading-reference {
+  color: var(--marigold-light);
+}
+
+.page-loading-slow-message {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.5s ease, max-height 0.5s ease;
+}
+
+.page-loading-slow-message.is-visible {
+  opacity: 1;
+  max-height: 3rem;
+}

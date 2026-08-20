@@ -1,4 +1,5 @@
 import "./common.js";
+import { hideLoadingOverlay } from "./loading-overlay.js";
 import { getActivities, getCommunityContent, getCommunityPhotos } from "./firebase-service.js";
 import { getImageUrl } from "./image-service.js";
 
@@ -90,6 +91,8 @@ async function loadPage() {
       <div class="empty-state">
         <p>Unable to load activities. Please check your Firebase configuration.</p>
       </div>`;
+  } finally {
+    hideLoadingOverlay();
   }
 }
 
