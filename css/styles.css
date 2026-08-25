@@ -884,6 +884,7 @@ a:hover {
 
 .livestream-embed {
   position: relative;
+  width: 100%;
   aspect-ratio: 16 / 9;
   min-height: 220px;
   background: #000;
