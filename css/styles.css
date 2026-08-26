@@ -2414,19 +2414,56 @@ a:hover {
 @media (max-width: 768px) {
   .nav-links {
     display: none;
-    position: absolute;
+    position: fixed;
     top: var(--header-h);
     left: 0;
     right: 0;
-    background: var(--overlay);
-    backdrop-filter: blur(12px);
+    bottom: 0;
+    height: calc(100dvh - var(--header-h));
+    background: var(--bg);
     flex-direction: column;
-    padding: 1rem;
-    border-bottom: 1px solid var(--border);
+    align-items: stretch;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    overflow-y: auto;
+    border-bottom: none;
   }
 
   .nav-links.open {
     display: flex;
+  }
+
+  .nav-links li {
+    width: 100%;
+  }
+
+  .nav-links a {
+    display: block;
+    width: 100%;
+    font-size: 1.35rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 1.1rem 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  .nav-links .lang-toggle-item {
+    margin-top: 0.5rem;
+  }
+
+  .nav-links .lang-toggle-item .lang-toggle {
+    padding: 5px;
+    gap: 4px;
+  }
+
+  .nav-links .lang-toggle-item .lang-toggle button {
+    padding: 0.6rem 1.1rem;
+    font-size: 1rem;
+  }
+
+  body.nav-open {
+    overflow: hidden;
   }
 
   .mobile-menu-btn {

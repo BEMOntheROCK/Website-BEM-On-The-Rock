@@ -7,12 +7,14 @@ const navLinks  = document.querySelector(".nav-links");
 
 function openMenu() {
   navLinks.classList.add("open");
+  document.body.classList.add("nav-open");
   mobileBtn.textContent = "✕";
   mobileBtn.setAttribute("aria-label", "Close menu");
 }
 
 function closeMenu() {
   navLinks.classList.remove("open");
+  document.body.classList.remove("nav-open");
   mobileBtn.textContent = "☰";
   mobileBtn.setAttribute("aria-label", "Open menu");
 }
