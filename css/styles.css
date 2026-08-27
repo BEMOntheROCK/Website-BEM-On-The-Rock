@@ -184,6 +184,10 @@ a:hover {
   transition: background var(--transition), color var(--transition);
 }
 
+.nav-links a .nav-link-icon {
+  display: none;
+}
+
 .nav-links a:hover,
 .nav-links a.active {
   background: var(--bg-muted);
@@ -2457,13 +2461,24 @@ a:hover {
   }
 
   .nav-links a {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
     width: 100%;
     font-size: 1.35rem;
     font-weight: 600;
     text-align: center;
     padding: 1.1rem 1rem;
     border-radius: var(--radius-md);
+  }
+
+  .nav-links a .nav-link-icon {
+    display: inline-block;
+    font-size: 1.1rem;
+    width: 1.3rem;
+    text-align: center;
+    color: var(--marigold);
   }
 
   .nav-links .lang-toggle-item {
