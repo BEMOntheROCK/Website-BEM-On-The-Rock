@@ -16,9 +16,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Links to BEM On The ROCK's church services, such as hall booking and membership registration."
+      content="Privacy Policy for the BEM On The ROCK church website — how we collect, use, and protect your information."
     />
-    <title>Services — BEM On The ROCK</title>
+    <title>Privacy Policy — BEM On The ROCK</title>
     <link rel="icon" type="image/png" href="assets/favicon.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="css/styles.css" />
@@ -43,7 +43,7 @@
             <li><a href="history.html" data-i18n="nav.history">History</a></li>
             <li><a href="organisation-structure.html" data-i18n="nav.org">Organisation</a></li>
             <li><a href="activities.html" data-i18n="nav.activities">Activities</a></li>
-            <li><a href="services.html" class="active" data-i18n="nav.services">Services</a></li>
+            <li><a href="services.html" data-i18n="nav.services">Services</a></li>
             <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
             <li class="lang-toggle-item">
               <div class="lang-toggle" role="group" aria-label="Language">
@@ -86,30 +86,17 @@
     </div>
 
     <main>
-      <section class="page-hero page-hero--has-bg notranslate" translate="no" id="services-hero">
+      <section class="page-hero notranslate" translate="no" id="privacy-hero">
         <div class="container">
-          <h1 data-i18n="services.hero.title">Services</h1>
-          <p data-i18n="services.hero.subtitle">Quick links to the tools and forms our church family uses most.</p>
+          <h1 data-i18n="privacy.hero.title">Privacy Policy</h1>
+          <p data-i18n="privacy.hero.subtitle">How we collect, use, and protect your information.</p>
         </div>
       </section>
 
       <section class="container section">
-        <div class="search-wrap">
-          <i class="fa-solid fa-magnifying-glass search-icon"></i>
-          <input
-            type="search"
-            id="service-search"
-            class="search-input"
-            data-i18n-attr="placeholder:services.searchPlaceholder"
-            placeholder="Search services…"
-            autocomplete="off"
-          />
-        </div>
-        <div id="services-content">
-          <div class="loading">Loading services…</div>
-        </div>
-        <div id="services-no-results" class="empty-state" hidden>
-          <p data-i18n="services.noResults">No services match your search.</p>
+        <p id="privacy-last-updated" class="admin-hint notranslate" translate="no"></p>
+        <div id="privacy-content" class="privacy-content">
+          <div class="loading">Loading…</div>
         </div>
       </section>
     </main>
@@ -156,6 +143,6 @@
     <script type="module" src="js/i18n.js"></script>
     <script type="module" src="js/loading-overlay.js"></script>
     <script type="module" src="js/scroll-effects.js"></script>
-    <script type="module" src="js/services.js"></script>
+    <script type="module" src="js/privacy.js"></script>
   </body>
 </html>

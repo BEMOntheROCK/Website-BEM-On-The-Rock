@@ -13,6 +13,7 @@ import {
   getLeaders, createLeader, updateLeader, deleteLeader,
   getCategories, createCategory, updateCategory, deleteCategory, saveCategories,
   getCommunityContent, saveCommunityContent,
+  getPrivacyContent, savePrivacyContent,
   getCommunityPhotos, createCommunityPhoto, updateCommunityPhoto, deleteCommunityPhoto, saveCommunityPhotosOrder,
   getActivities, createActivity, updateActivity, deleteActivity,
   getServices, createService, updateService, deleteService,
@@ -271,6 +272,7 @@ async function initAll() {
     loadSettings(),
     loadCommunityContent(),
     loadCommunityPhotos(),
+    loadPrivacyForm(),
   ]);
   // Leaders and activities depend on their categories being loaded first
   await loadLeaders();
@@ -1035,6 +1037,36 @@ document.getElementById("settings-form").addEventListener("submit", async e => {
     console.error(err);
   }
 });
+// ══════════════════════════════════════════
+// PRIVACY POLICY
+// ══════════════════════════════════════════
+async function loadPrivacyForm() {
+  const textarea = document.getElementById("privacy-content");
+  if (!textarea) return;
+  const privacy = await getPrivacyContent();
+  textarea.value = privacy.content || "";
+  const lastUpdatedEl = document.getElementById("privacy-last-updated");
+  if (lastUpdatedEl) {
+    lastUpdatedEl.textContent = privacy.updatedAt
+      ? `Last updated: ${formatDate(privacy.updatedAt)}`
+      : "";
+  }
+}
+
+document.getElementById("privacy-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  try {
+    await savePrivacyContent({
+      content: document.getElementById("privacy-content").value.trim(),
+    });
+    showAlert(adminAlert, "Privacy policy saved.", "success");
+    await loadPrivacyForm();
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save privacy policy.");
+    console.error(err);
+  }
+});
+
 // ══════════════════════════════════════════
 // COMMUNITY CONTRIBUTIONS — intro text
 // ══════════════════════════════════════════

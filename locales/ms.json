@@ -15,6 +15,7 @@
   "footer.connect": "Hubungi Kami",
   "footer.youtube": "YouTube",
   "footer.rights": "Hak cipta terpelihara.",
+  "footer.privacy": "Dasar Privasi",
 
   "home.hero.badge": "Selamat Datang",
   "home.hero.aboutBtn": "Tentang Gereja Kami",
@@ -71,5 +72,7 @@
   "services.hero.title": "Perkhidmatan",
   "services.hero.subtitle": "Pautan pantas ke alat dan borang yang paling kerap digunakan oleh keluarga gereja kami.",
   "services.searchPlaceholder": "Cari perkhidmatan…",
-  "services.noResults": "Tiada perkhidmatan sepadan dengan carian anda."
+  "services.noResults": "Tiada perkhidmatan sepadan dengan carian anda.",
+  "privacy.hero.title": "Dasar Privasi",
+  "privacy.hero.subtitle": "Bagaimana kami mengumpul, menggunakan, dan melindungi maklumat anda."
 }

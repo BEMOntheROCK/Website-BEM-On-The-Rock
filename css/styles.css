@@ -1437,6 +1437,24 @@ a:hover {
   white-space: pre-wrap;
 }
 
+.privacy-content {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.privacy-text {
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.85;
+  white-space: pre-wrap;
+}
+
+.footer-privacy-link {
+  margin-left: 0.75rem;
+  color: var(--text-muted);
+  text-decoration: underline;
+}
+
 .social-links {
   margin-top: 1.75rem;
 }

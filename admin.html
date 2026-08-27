@@ -188,6 +188,15 @@
               </button>
             </li>
             <li>
+              <button type="button" data-panel="privacy">
+                <i class="fa-solid fa-user-shield admin-nav-icon"></i>
+                <span class="admin-nav-text">
+                  <span class="admin-nav-label">Privacy Policy</span>
+                  <span class="admin-nav-sub">Text shown on the Privacy Policy page</span>
+                </span>
+              </button>
+            </li>
+            <li>
               <button type="button" id="logout-btn">
                 <i class="fa-solid fa-arrow-right-from-bracket admin-nav-icon"></i>
                 <span class="admin-nav-text">
@@ -628,6 +637,22 @@
               </tbody>
             </table>
           </div>
+        </section>
+
+        <!-- Privacy Policy panel -->
+        <section id="panel-privacy" class="admin-panel">
+          <h2>Privacy Policy</h2>
+          <p class="admin-panel-intro">This text is shown on the public Privacy Policy page. Line breaks and paragraph spacing are preserved as you type them.</p>
+          <form id="privacy-form">
+            <div class="form-group">
+              <label for="privacy-content">Policy Text</label>
+              <textarea id="privacy-content" rows="20" placeholder="Enter the full privacy policy text here…"></textarea>
+            </div>
+            <p class="admin-hint" id="privacy-last-updated"></p>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save Privacy Policy</button>
+            </div>
+          </form>
         </section>
       </div>
     </div>

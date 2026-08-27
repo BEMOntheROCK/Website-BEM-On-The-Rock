@@ -19,6 +19,7 @@ const SITE_SETTINGS_DOC = doc(db, "siteSettings", "main");
 const ABOUT_DOC = doc(db, "about", "main");
 const ORG_DOC = doc(db, "organisation", "main");
 const COMMUNITY_DOC = doc(db, "community", "main");
+const PRIVACY_DOC = doc(db, "privacyPolicy", "main");
 
 export async function getSiteSettings() {
   const snap = await getDoc(SITE_SETTINGS_DOC);
@@ -194,6 +195,26 @@ export async function getCommunityContent() {
 export async function saveCommunityContent(data) {
   await setDoc(
     COMMUNITY_DOC,
+    { ...data, updatedAt: serverTimestamp() },
+    { merge: true }
+  );
+}
+
+const DEFAULT_PRIVACY = {
+  content: "",
+};
+
+export async function getPrivacyContent() {
+  const snap = await getDoc(PRIVACY_DOC);
+  if (snap.exists()) {
+    return { ...DEFAULT_PRIVACY, id: snap.id, ...snap.data() };
+  }
+  return { ...DEFAULT_PRIVACY };
+}
+
+export async function savePrivacyContent(data) {
+  await setDoc(
+    PRIVACY_DOC,
     { ...data, updatedAt: serverTimestamp() },
     { merge: true }
   );
