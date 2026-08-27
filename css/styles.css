@@ -200,6 +200,113 @@ a:hover {
   gap: 0.5rem;
 }
 
+.header-actions [data-theme-toggle] {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.header-actions [data-theme-toggle]:hover {
+  border-color: var(--marigold);
+  color: var(--marigold);
+  background: var(--bg-muted);
+}
+
+/* ── Desktop settings dropdown (gear icon) ── */
+.settings-dropdown {
+  position: relative;
+  display: none;
+}
+
+.settings-dropdown [data-settings-toggle] {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.settings-dropdown [data-settings-toggle]:hover,
+.settings-dropdown.open [data-settings-toggle] {
+  border-color: var(--marigold);
+  color: var(--marigold);
+  background: var(--bg-muted);
+}
+
+.settings-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  min-width: 200px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity var(--transition), transform var(--transition);
+  z-index: 110;
+}
+
+.settings-dropdown.open .settings-dropdown-menu {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.settings-dropdown-lang {
+  display: flex;
+  justify-content: center;
+}
+
+.settings-dropdown-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0;
+  width: 100%;
+}
+
+.settings-dropdown-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: background var(--transition), color var(--transition);
+}
+
+.settings-dropdown-link i {
+  width: 1rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.settings-dropdown-link:hover {
+  background: var(--bg-muted);
+  color: var(--marigold);
+}
+
+.settings-dropdown-link:hover i {
+  color: var(--marigold);
+}
+
+@media (min-width: 769px) {
+  .settings-dropdown {
+    display: block;
+  }
+
+  .nav-links li.lang-toggle-item,
+  .nav-links li.nav-item-admin {
+    display: none;
+  }
+}
+
 .mobile-menu-btn {
   display: none;
   background: none;
@@ -3172,25 +3279,53 @@ body {
 }
 
 .page-loading-glyph {
-  width: 3rem;
-  height: 3rem;
+  --spinner-color-1: var(--text-muted);
+  --spinner-color-2: var(--marigold);
+  --spinner-size: 1px;
+  width: calc(48 * var(--spinner-size));
+  height: calc(48 * var(--spinner-size));
   border-radius: 50%;
-  background: radial-gradient(circle, var(--marigold-glow) 0%, transparent 70%);
   position: relative;
+  border: calc(3 * var(--spinner-size)) solid;
+  border-color: var(--spinner-color-1) var(--spinner-color-1) transparent transparent;
+  box-sizing: border-box;
+  animation: page-loading-spin 1s linear infinite;
+}
+
+.page-loading-glyph::after,
+.page-loading-glyph::before {
+  content: "";
+  box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  border: calc(3 * var(--spinner-size)) solid;
+  border-color: transparent transparent var(--spinner-color-2) var(--spinner-color-2);
+  width: calc(40 * var(--spinner-size));
+  height: calc(40 * var(--spinner-size));
+  border-radius: 50%;
+  animation: page-loading-spin-back 0.5s linear infinite;
+  transform-origin: center center;
 }
 
 .page-loading-glyph::before {
-  content: "";
-  position: absolute;
-  inset: 0.65rem;
-  border-radius: 50%;
-  background: var(--marigold);
-  animation: page-loading-pulse 1.8s ease-in-out infinite;
+  width: calc(32 * var(--spinner-size));
+  height: calc(32 * var(--spinner-size));
+  border-color: var(--spinner-color-1) var(--spinner-color-1) transparent transparent;
+  animation: page-loading-spin 1.5s linear infinite;
 }
 
-@keyframes page-loading-pulse {
-  0%, 100% { transform: scale(0.85); opacity: 0.6; }
-  50% { transform: scale(1.15); opacity: 1; }
+@keyframes page-loading-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes page-loading-spin-back {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
 }
 
 .page-loading-verse {

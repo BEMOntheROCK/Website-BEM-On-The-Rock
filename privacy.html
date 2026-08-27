@@ -44,7 +44,7 @@
             <li><a href="organisation-structure.html"><i class="fa-solid fa-sitemap nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.org">Organisation</span></a></li>
             <li><a href="activities.html"><i class="fa-solid fa-hands-praying nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.activities">Activities</span></a></li>
             <li><a href="services.html"><i class="fa-solid fa-arrow-up-right-from-square nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.services">Services</span></a></li>
-            <li><a href="admin.html"><i class="fa-solid fa-user-shield nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.admin">Admin</span></a></li>
+            <li class="nav-item-admin"><a href="admin.html"><i class="fa-solid fa-user-shield nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.admin">Admin</span></a></li>
             <li class="lang-toggle-item">
               <div class="lang-toggle" role="group" aria-label="Language">
                 <button type="button" data-lang-btn="en">EN</button>
@@ -62,8 +62,39 @@
             title="Toggle theme"
             data-i18n-attr="aria-label:header.themeToggle,title:header.themeToggle"
           >
-            <span data-theme-icon>🌙</span>
+            <i class="fa-solid fa-moon" data-theme-icon aria-hidden="true"></i>
           </button>
+          <div class="settings-dropdown" data-settings-dropdown>
+            <button
+              type="button"
+              class="btn btn-outline btn-icon"
+              data-settings-toggle
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-label="Settings"
+              title="Settings"
+              data-i18n-attr="aria-label:header.settings,title:header.settings"
+            >
+              <i class="fa-solid fa-gear" aria-hidden="true"></i>
+            </button>
+            <div class="settings-dropdown-menu" data-settings-menu role="menu">
+              <div class="settings-dropdown-lang">
+                <div class="lang-toggle" role="group" aria-label="Language">
+                  <button type="button" data-lang-btn="en">EN</button>
+                  <button type="button" data-lang-btn="ms">BM</button>
+                </div>
+              </div>
+              <hr class="settings-dropdown-divider" />
+              <a href="privacy.html" class="settings-dropdown-link" role="menuitem">
+                <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+                <span data-i18n="footer.privacy">Privacy Policy</span>
+              </a>
+              <a href="admin.html" class="settings-dropdown-link" role="menuitem">
+                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                <span data-i18n="nav.admin">Admin</span>
+              </a>
+            </div>
+          </div>
           <button
             class="mobile-menu-btn"
             data-mobile-menu

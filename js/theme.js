@@ -16,7 +16,8 @@ export function applyTheme(theme) {
 
 function updateToggleIcons(theme) {
   document.querySelectorAll("[data-theme-icon]").forEach((el) => {
-    el.textContent = theme === "dark" ? "☀️" : "🌙";
+    el.classList.remove("fa-sun", "fa-moon");
+    el.classList.add(theme === "dark" ? "fa-sun" : "fa-moon");
   });
   document.querySelectorAll("[data-theme-label]").forEach((el) => {
     el.textContent = theme === "dark" ? "Light mode" : "Dark mode";

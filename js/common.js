@@ -42,6 +42,46 @@ if (mobileBtn && navLinks) {
   });
 }
 
+// ── Desktop settings dropdown (gear icon: language, privacy, admin) ──
+document.querySelectorAll("[data-settings-dropdown]").forEach((wrapper) => {
+  const toggleBtn = wrapper.querySelector("[data-settings-toggle]");
+  const menu = wrapper.querySelector("[data-settings-menu]");
+  if (!toggleBtn || !menu) return;
+
+  function openDropdown() {
+    wrapper.classList.add("open");
+    toggleBtn.setAttribute("aria-expanded", "true");
+  }
+
+  function closeDropdown() {
+    wrapper.classList.remove("open");
+    toggleBtn.setAttribute("aria-expanded", "false");
+  }
+
+  toggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    wrapper.classList.contains("open") ? closeDropdown() : openDropdown();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (wrapper.classList.contains("open") && !wrapper.contains(e.target)) {
+      closeDropdown();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && wrapper.classList.contains("open")) {
+      closeDropdown();
+      toggleBtn.focus();
+    }
+  });
+
+  // Close the dropdown after a language button or link inside it is used
+  menu.querySelectorAll("button, a").forEach((el) => {
+    el.addEventListener("click", () => closeDropdown());
+  });
+});
+
 export function showAlert(container, message, type = "error") {
   if (!container) return;
   container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
