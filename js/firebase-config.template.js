@@ -16,7 +16,8 @@ export const firebaseConfig = {
   projectId: "website-bem-on-the-rock",
   storageBucket: "website-bem-on-the-rock.firebasestorage.app",
   messagingSenderId: "1022431655269",
-  appId: "1:1022431655269:web:d45142f2e39526f5c21d8c"
+  appId: "1:1022431655269:web:d45142f2e39526f5c21d8c",
+  measurementId: "G-Q71YBM72P4"
 };
 
 /** Default YouTube links — admins can override these in the dashboard */
