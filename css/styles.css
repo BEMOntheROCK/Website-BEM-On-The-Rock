@@ -1882,7 +1882,7 @@ a:hover {
 
 .contact-bar {
   background: var(--marigold);
-  color: var(--secondary);
+  color: #111111;
   border-radius: var(--radius-lg);
   padding: 2rem;
   display: flex;
