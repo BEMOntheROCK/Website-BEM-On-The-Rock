@@ -42,7 +42,7 @@
             <li><a href="organisation-structure.html"><i class="fa-solid fa-sitemap nav-link-icon" aria-hidden="true"></i> Organisation</a></li>
             <li><a href="activities.html"><i class="fa-solid fa-hands-praying nav-link-icon" aria-hidden="true"></i> Activities</a></li>
             <li><a href="services.html"><i class="fa-solid fa-arrow-up-right-from-square nav-link-icon" aria-hidden="true"></i> Services</a></li>
-            <li class="nav-item-admin"><a href="admin.html" class="active"><i class="fa-solid fa-user-shield nav-link-icon" aria-hidden="true"></i> Admin</a></li>
+            <li><a href="admin.html" class="active"><i class="fa-solid fa-user-shield nav-link-icon" aria-hidden="true"></i> Admin</a></li>
           </ul>
         </nav>
 
@@ -55,36 +55,6 @@
           >
             <i class="fa-solid fa-moon" data-theme-icon aria-hidden="true"></i>
           </button>
-          <div class="settings-dropdown" data-settings-dropdown>
-            <button
-              type="button"
-              class="btn btn-outline btn-icon"
-              data-settings-toggle
-              aria-haspopup="true"
-              aria-expanded="false"
-              aria-label="Settings"
-              title="Settings"
-            >
-              <i class="fa-solid fa-gear" aria-hidden="true"></i>
-            </button>
-            <div class="settings-dropdown-menu" data-settings-menu role="menu">
-              <div class="settings-dropdown-lang">
-                <div class="lang-toggle" role="group" aria-label="Language">
-                  <button type="button" data-lang-btn="en">EN</button>
-                  <button type="button" data-lang-btn="ms">BM</button>
-                </div>
-              </div>
-              <hr class="settings-dropdown-divider" />
-              <a href="privacy.html" class="settings-dropdown-link" role="menuitem">
-                <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
-                Privacy Policy
-              </a>
-              <a href="admin.html" class="settings-dropdown-link" role="menuitem">
-                <i class="fa-solid fa-lock" aria-hidden="true"></i>
-                Admin
-              </a>
-            </div>
-          </div>
           <button
             class="mobile-menu-btn"
             data-mobile-menu
@@ -210,10 +180,19 @@
           <ul class="admin-nav">
             <li>
               <button type="button" data-panel="settings">
-                <i class="fa-solid fa-address-book admin-nav-icon"></i>
+                <i class="fa-solid fa-gear admin-nav-icon"></i>
                 <span class="admin-nav-text">
-                  <span class="admin-nav-label">Church Contact &amp; Settings</span>
-                  <span class="admin-nav-sub">Church details, contact info &amp; homepage settings</span>
+                  <span class="admin-nav-label">Settings</span>
+                  <span class="admin-nav-sub">General site settings</span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button type="button" data-panel="youtube-settings">
+                <i class="fa-brands fa-youtube admin-nav-icon"></i>
+                <span class="admin-nav-text">
+                  <span class="admin-nav-label">YouTube Settings</span>
+                  <span class="admin-nav-sub">Livestream links &amp; past sermon videos</span>
                 </span>
               </button>
             </li>
@@ -323,7 +302,7 @@
         <!-- About panel -->
         <section id="panel-about" class="admin-panel">
           <h2>About Us Page</h2>
-          <p class="admin-panel-intro">Everything here fills in the "About Us" page — your church's mission, vision, founder's story, contact details, and social media links. Most of these fields are things you'll only update occasionally, like when contact info changes.</p>
+          <p class="admin-panel-intro">Everything here fills in the "About Us" page — your church's mission, vision, founder's story, contact details, and social media links. The church name, address, phone, email, and service times entered here are also used elsewhere on the site (like the homepage). Most of these fields are things you'll only update occasionally, like when contact info changes.</p>
           <form id="about-form">
             <h3 class="admin-subheading">General Information</h3>
             <div class="form-row">
@@ -340,6 +319,19 @@
               <div class="form-group">
                 <label for="about-office-hours">Office Hours</label>
                 <textarea id="about-office-hours" rows="4" placeholder="Mon: Off Day&#10;Tue – Fri: 8.30 a.m – 4.30 p.m&#10;Sat: 10.00 a.m. – 3.00 p.m"></textarea>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="about-address">Address</label>
+                <input type="text" id="about-address" placeholder="e.g. 123 Jalan Taman Tunku, Muar, Johor" />
+              </div>
+              <div class="form-group">
+                <label for="about-service-times">Service Times</label>
+                <input type="text" id="about-service-times" placeholder="e.g. Sundays, 10:00 AM" />
+                <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
+                  Also shown on the homepage's livestream section.
+                </small>
               </div>
             </div>
 
@@ -370,6 +362,9 @@
               <div class="form-group">
                 <label for="about-office-phone">Office Number (display)</label>
                 <input type="text" id="about-office-phone" placeholder="+60 12-345 6789" />
+                <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
+                  Also shown as the main contact phone number on this page.
+                </small>
               </div>
             </div>
             <div class="form-row">
@@ -386,6 +381,9 @@
               <div class="form-group">
                 <label for="about-email-admin">Email (Admin)</label>
                 <input type="email" id="about-email-admin" />
+                <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
+                  Also shown as the main contact email on this page.
+                </small>
               </div>
               <div class="form-group">
                 <label for="about-email-account">Email (Account)</label>
@@ -574,19 +572,25 @@
 
         <!-- Settings panel -->
         <section id="panel-settings" class="admin-panel">
-          <h2>Church Contact &amp; Settings</h2>
-          <p class="admin-panel-intro">General church details shown across the website — church name, tagline, service times, address, and the homepage's YouTube livestream settings. Changes here affect the whole site, not just one page. Live status on the homepage is detected automatically — there's nothing to toggle here.</p>
+          <h2>Settings</h2>
+          <p class="admin-panel-intro">General site-wide settings. More options will be added here over time.</p>
           <form id="settings-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="settings-church-name">Church Name</label>
-                <input type="text" id="settings-church-name" placeholder="e.g. BEM On The Rock" />
-              </div>
-              <div class="form-group">
-                <label for="settings-tagline">Tagline</label>
-                <input type="text" id="settings-tagline" placeholder="e.g. Building lives on the solid foundation of Christ" />
-              </div>
+            <div class="form-group">
+              <label for="settings-tagline">Tagline</label>
+              <input type="text" id="settings-tagline" placeholder="e.g. Building lives on the solid foundation of Christ" />
             </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save Settings</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- YouTube Settings panel -->
+        <section id="panel-youtube-settings" class="admin-panel">
+          <h2>YouTube Settings</h2>
+          <p class="admin-panel-intro">The homepage's YouTube livestream settings and past sermon videos. Live status on the homepage is detected automatically — there's nothing to toggle here.</p>
+          <form id="youtube-settings-form">
             <div class="form-row">
               <div class="form-group">
                 <label for="settings-youtube-live">YouTube Live URL</label>
@@ -599,29 +603,8 @@
             </div>
 
             <p class="admin-hint" style="margin-top: -0.5rem;">
-              Live status is detected automatically from your YouTube channel — no manual toggle needed. When you're not live, the home page shows a "we'll be live again" message using the service time below. For this to work reliably, set the <strong>YouTube Channel ID</strong> under "Advanced" below — YouTube's "@handle/live" links are not dependable for automatic detection.
+              Live status is detected automatically from your YouTube channel — no manual toggle needed. When you're not live, the home page shows a "we'll be live again" message using the service time set in the About Us panel. For this to work reliably, set the <strong>YouTube Channel ID</strong> under "Advanced" below — YouTube's "@handle/live" links are not dependable for automatic detection.
             </p>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="settings-service-times">Service Times</label>
-                <input type="text" id="settings-service-times" placeholder="e.g. Sundays, 10:00 AM" />
-              </div>
-              <div class="form-group">
-                <label for="settings-address">Address</label>
-                <input type="text" id="settings-address" placeholder="e.g. 123 Jalan Taman Tunku, Muar, Johor" />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="settings-phone">Phone</label>
-                <input type="tel" id="settings-phone" placeholder="+60 12-345 6789" />
-              </div>
-              <div class="form-group">
-                <label for="settings-email">Email</label>
-                <input type="email" id="settings-email" placeholder="office@bemontherock.org" />
-              </div>
-            </div>
 
             <details class="admin-advanced">
               <summary>Advanced (rarely needed)</summary>
@@ -637,7 +620,7 @@
             </details>
 
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Save Settings</button>
+              <button type="submit" class="btn btn-primary">Save YouTube Settings</button>
             </div>
           </form>
 

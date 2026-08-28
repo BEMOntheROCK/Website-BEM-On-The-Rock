@@ -27,14 +27,10 @@ export async function getSiteSettings() {
     return { id: snap.id, ...snap.data() };
   }
   return {
-    churchName: "BEM On The ROCK",
     tagline: "Building lives on the solid foundation of Christ",
     youtubeChannelUrl: defaultYouTube.channelUrl,
     youtubeLiveUrl: defaultYouTube.liveUrl,
-    address: "",
-    phone: "",
-    email: "",
-    serviceTimes: "Sundays at 10:00 AM",
+    youtubeChannelId: "",
   };
 }
 
@@ -51,6 +47,8 @@ const DEFAULT_ABOUT = {
   denomination: "",
   registrationNumber: "",
   officeHours: "",
+  address: "",
+  serviceTimes: "Sundays at 10:00 AM",
   whatsapp: "",
   officePhone: "",
   officePhoneLink: "",

@@ -2,6 +2,7 @@ import "./common.js";
 import { hideLoadingOverlay } from "./loading-overlay.js";
 import {
   getSiteSettings,
+  getAboutContent,
   getNews,
   getUpdates,
   getCarouselVideos,
@@ -29,9 +30,7 @@ async function renderHero(settings) {
   const tagline = document.getElementById("hero-tagline");
   const footerTagline = document.getElementById("footer-tagline");
 
-  if (title && settings.churchName) {
-    const parts = settings.churchName.split(" ");
-    const last = parts.pop();
+  if (title) {
     title.innerHTML = `<span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The <em>ROCK</em></span>`;
   }
 
@@ -431,12 +430,14 @@ document.getElementById("news-modal")?.addEventListener("click", (e) => {
 
 async function loadPage() {
   try {
-    const [settings, news, updates, carouselVideos] = await Promise.all([
+    const [settings, about, news, updates, carouselVideos] = await Promise.all([
       getSiteSettings(),
+      getAboutContent(),
       getNews(),
       getUpdates(),
       getCarouselVideos(),
     ]);
+    settings.serviceTimes = about.serviceTimes;
 
     await renderHero(settings);
     const { live, videoId } = await renderLivestream(settings);

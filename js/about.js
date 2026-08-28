@@ -1,7 +1,6 @@
 import "./common.js";
 import { hideLoadingOverlay } from "./loading-overlay.js";
 import {
-  getSiteSettings,
   getAboutContent,
 } from "./firebase-service.js";
 import { getImageUrl } from "./image-service.js";
@@ -197,28 +196,25 @@ async function renderAbout(about) {
   }
 }
 
-function renderContact(settings) {
+function renderContact(about) {
   const set = (id, prefix, value) => {
     const el = document.getElementById(id);
     if (el && value) el.textContent = `${prefix}${value}`;
   };
 
-  set("contact-address", "📍 ", settings.address);
-  set("contact-phone", "📞 ", settings.phone);
-  set("contact-email", "✉ ", settings.email);
-  set("contact-service", "🕐 ", settings.serviceTimes);
+  set("contact-address", "📍 ", about.address);
+  set("contact-phone", "📞 ", about.officePhone);
+  set("contact-email", "✉ ", about.emailAdmin);
+  set("contact-service", "🕐 ", about.serviceTimes);
 }
 
 async function loadPage() {
   try {
-    const [about, settings] = await Promise.all([
-      getAboutContent(),
-      getSiteSettings(),
-    ]);
+    const about = await getAboutContent();
     renderGeneralInfo(about);
     await renderFounder(about);
     await renderAbout(about);
-    renderContact(settings);
+    renderContact(about);
   } catch (err) {
     console.error("Failed to load about page:", err);
     const container = document.getElementById("about-content");

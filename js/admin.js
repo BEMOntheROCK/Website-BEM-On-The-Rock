@@ -270,6 +270,7 @@ async function initAll() {
     loadAboutForm(),
     loadOrgForm(),
     loadSettings(),
+    loadYoutubeSettings(),
     loadCommunityContent(),
     loadCommunityPhotos(),
     loadPrivacyForm(),
@@ -923,6 +924,8 @@ async function loadAboutForm() {
   set("about-denomination",     about.denomination);
   set("about-registration",     about.registrationNumber);
   set("about-office-hours",     about.officeHours);
+  set("about-address",          about.address);
+  set("about-service-times",    about.serviceTimes);
   set("about-whatsapp",         about.whatsapp);
   set("about-office-phone",     about.officePhone);
   set("about-office-phone-link",about.officePhoneLink);
@@ -953,6 +956,8 @@ document.getElementById("about-form").addEventListener("submit", async e => {
       denomination:     get("about-denomination"),
       registrationNumber: get("about-registration"),
       officeHours:      get("about-office-hours"),
+      address:          get("about-address"),
+      serviceTimes:     get("about-service-times"),
       whatsapp:         get("about-whatsapp"),
       officePhone:      get("about-office-phone"),
       officePhoneLink:  get("about-office-phone-link"),
@@ -1005,15 +1010,7 @@ document.getElementById("org-chart-form").addEventListener("submit", async e => 
 async function loadSettings() {
   const s   = await getSiteSettings();
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ""; };
-  set("settings-church-name",      s.churchName);
   set("settings-tagline",          s.tagline);
-  set("settings-youtube-live",     s.youtubeLiveUrl);
-  set("settings-youtube-channel",  s.youtubeChannelUrl);
-  set("settings-youtube-channel-id", s.youtubeChannelId);
-  set("settings-service-times",    s.serviceTimes);
-  set("settings-address",          s.address);
-  set("settings-phone",            s.phone);
-  set("settings-email",            s.email);
 }
 
 document.getElementById("settings-form").addEventListener("submit", async e => {
@@ -1021,19 +1018,38 @@ document.getElementById("settings-form").addEventListener("submit", async e => {
   const get = id => document.getElementById(id)?.value.trim() || "";
   try {
     await saveSiteSettings({
-      churchName:       get("settings-church-name"),
       tagline:          get("settings-tagline"),
-      youtubeLiveUrl:   get("settings-youtube-live"),
-      youtubeChannelUrl:get("settings-youtube-channel"),
-      youtubeChannelId: get("settings-youtube-channel-id"),
-      serviceTimes:     get("settings-service-times"),
-      address:          get("settings-address"),
-      phone:            get("settings-phone"),
-      email:            get("settings-email"),
     });
     showAlert(adminAlert, "Settings saved.", "success");
   } catch (err) {
     showAlert(adminAlert, "Failed to save settings.");
+    console.error(err);
+  }
+});
+
+// ══════════════════════════════════════════
+// YOUTUBE SETTINGS
+// ══════════════════════════════════════════
+async function loadYoutubeSettings() {
+  const s   = await getSiteSettings();
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ""; };
+  set("settings-youtube-live",     s.youtubeLiveUrl);
+  set("settings-youtube-channel",  s.youtubeChannelUrl);
+  set("settings-youtube-channel-id", s.youtubeChannelId);
+}
+
+document.getElementById("youtube-settings-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const get = id => document.getElementById(id)?.value.trim() || "";
+  try {
+    await saveSiteSettings({
+      youtubeLiveUrl:   get("settings-youtube-live"),
+      youtubeChannelUrl:get("settings-youtube-channel"),
+      youtubeChannelId: get("settings-youtube-channel-id"),
+    });
+    showAlert(adminAlert, "YouTube settings saved.", "success");
+  } catch (err) {
+    showAlert(adminAlert, "Failed to save YouTube settings.");
     console.error(err);
   }
 });
