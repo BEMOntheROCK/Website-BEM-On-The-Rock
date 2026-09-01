@@ -26,3 +26,12 @@ export const defaultYouTube = {
   liveUrl: "https://www.youtube.com/@bem_ontherock/live",
   channelId: "UCokmjLYT92F1EDik5Gvx8Kw",
 };
+
+/**
+ * Web Push certificate (VAPID key) for Firebase Cloud Messaging.
+ * This is a PUBLIC key, safe to commit — it's meant to be embedded in
+ * client-side code (same as the Firebase apiKey above). Generated from
+ * Firebase Console > Project Settings > Cloud Messaging > Web configuration.
+ */
+export const vapidKey =
+  "BJBUGJKSSSTZJuoOHLV2-PdGJNxOci8L4xQJBa_qxpB5uhQKeUTPCB1J4yTOftg17-sE0iDGWCSPeKlwbhUCXxE";

@@ -296,6 +296,39 @@ a:hover {
   color: var(--marigold);
 }
 
+/* .settings-dropdown-link is also used on a <button> for the notification
+   toggle — reset native button styling so it matches the <a> links. */
+button.settings-dropdown-link {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button.settings-dropdown-link.is-active {
+  color: var(--marigold);
+}
+
+button.settings-dropdown-link.is-active i {
+  color: var(--marigold);
+}
+
+button.settings-dropdown-link:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button.settings-dropdown-link:disabled:hover {
+  background: none;
+  color: var(--text);
+}
+
+button.settings-dropdown-link:disabled:hover i {
+  color: var(--text-muted);
+}
+
 @media (min-width: 769px) {
   .settings-dropdown {
     display: block;

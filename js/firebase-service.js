@@ -218,6 +218,24 @@ export async function savePrivacyContent(data) {
   );
 }
 
+// ── Push notification tokens ──
+// Each visitor who opts in gets one doc, keyed by their own token, so
+// re-subscribing on the same device just updates the same doc instead of
+// creating duplicates. Only a Cloud Function (using the Admin SDK, which
+// bypasses Firestore rules) reads this collection to send notifications —
+// see firestore.rules, where public read access is denied.
+export async function saveNotificationToken(token) {
+  await setDoc(
+    doc(db, "pushTokens", token),
+    {
+      token,
+      userAgent: navigator.userAgent,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
 // ── Community Contributions (photo collage) ──
 
 export async function getCommunityPhotos() {

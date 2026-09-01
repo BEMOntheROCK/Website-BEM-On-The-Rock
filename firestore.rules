@@ -40,69 +40,6 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
-    match /communityPhotos/{doc} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-    match /activities/{doc} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-    match /services/{doc} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-    match /carouselVideos/{doc} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-    match /media/{doc} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-  }
-}rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    function isAdmin() {
-      return request.auth != null;
-    }
-    match /siteSettings/{doc} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    match /about/{doc} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    match /news/{doc} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-    match /updates/{doc} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-    match /history/{doc} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-    match /organisation/{doc} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    match /leaders/{doc} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-    match /categories/{doc} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-    match /community/{doc} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
     match /privacyPolicy/{doc} {
       allow read: if true;
       allow write: if isAdmin();
@@ -126,6 +63,15 @@ service cloud.firestore {
     match /media/{doc} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
+    }
+    match /pushTokens/{doc} {
+      // Visitors can save their own device token to subscribe, but the
+      // list of tokens is never publicly readable — only a Cloud Function
+      // (using the Admin SDK, which bypasses these rules entirely) reads
+      // this collection to actually send notifications.
+      allow read: if false;
+      allow create, update: if true;
+      allow delete: if isAdmin();
     }
   }
 }

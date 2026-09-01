@@ -2,6 +2,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/fireba
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { isSupported, getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+import {
+  isSupported as isMessagingSupported,
+  getMessaging,
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-messaging.js";
 import { firebaseConfig } from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
@@ -16,5 +20,15 @@ export let analytics = null;
 isSupported().then((supported) => {
   if (supported) {
     analytics = getAnalytics(app);
+  }
+});
+
+// Cloud Messaging (push notifications) similarly isn't supported everywhere
+// (notably Safari on iOS unless installed to the home screen, and some
+// private browsing modes), so we guard it the same way.
+export let messaging = null;
+isMessagingSupported().then((supported) => {
+  if (supported) {
+    messaging = getMessaging(app);
   }
 });
