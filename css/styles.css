@@ -335,7 +335,8 @@ button.settings-dropdown-link:disabled:hover i {
   }
 
   .nav-links li.lang-toggle-item,
-  .nav-links li.nav-item-admin {
+  .nav-links li.nav-item-admin,
+  .nav-links li.nav-item-notif {
     display: none;
   }
 }
@@ -2615,6 +2616,53 @@ button.settings-dropdown-link:disabled:hover i {
     width: 1.3rem;
     text-align: center;
     color: var(--marigold);
+  }
+
+  /* Same visual treatment as .nav-links a above, but this one's a <button>
+     (not a link) since it triggers an action instead of navigating, and
+     its icon swaps at runtime (JS replaces the icon's whole class list to
+     switch between bell / bell-slash), so the icon is styled by tag here
+     rather than through the .nav-link-icon class that JS would strip. */
+  .nav-links button.nav-notif-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    width: 100%;
+    font-size: 1.35rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 1.1rem 1rem;
+    border-radius: var(--radius-md);
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background var(--transition), color var(--transition);
+  }
+
+  .nav-links button.nav-notif-toggle:hover,
+  .nav-links button.nav-notif-toggle.is-active {
+    background: var(--bg-muted);
+    color: var(--marigold);
+  }
+
+  .nav-links button.nav-notif-toggle i {
+    font-size: 1.1rem;
+    width: 1.3rem;
+    text-align: center;
+    color: var(--marigold);
+  }
+
+  .nav-links button.nav-notif-toggle:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .nav-links button.nav-notif-toggle:disabled:hover {
+    background: none;
+    color: var(--text);
   }
 
   .nav-links .lang-toggle-item {

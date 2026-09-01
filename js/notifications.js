@@ -47,39 +47,47 @@ function setButtonState(button, state) {
   }
 }
 
-async function subscribe(button) {
+function setAllButtonsState(buttons, state) {
+  buttons.forEach((button) => setButtonState(button, state));
+}
+
+async function subscribe(buttons) {
   try {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
-      setButtonState(button, permission === "denied" ? "denied" : "off");
+      setAllButtonsState(buttons, permission === "denied" ? "denied" : "off");
       return;
     }
     const token = await getToken(messaging, { vapidKey });
 
     if (!token) {
-      setButtonState(button, "off");
+      setAllButtonsState(buttons, "off");
       return;
     }
     await saveNotificationToken(token);
     localStorage.setItem(STORAGE_KEY, "true");
-    setButtonState(button, "on");
+    setAllButtonsState(buttons, "on");
   } catch (err) {
     console.error("Notification subscription failed:", err);
-    setButtonState(button, "off");
+    setAllButtonsState(buttons, "off");
   }
 }
 
 export function initNotificationToggle() {
-  const button = document.querySelector("[data-notif-toggle]");
-  if (!button) return;
+  // There can be more than one toggle on the page at once — the desktop
+  // settings dropdown's button and the mobile menu's button both use the
+  // same [data-notif-toggle] marker, the same way the language toggle
+  // already appears in more than one place.
+  const buttons = Array.from(document.querySelectorAll("[data-notif-toggle]"));
+  if (buttons.length === 0) return;
 
   if (!("Notification" in window)) {
-    setButtonState(button, "unsupported");
+    setAllButtonsState(buttons, "unsupported");
     return;
   }
 
   if (Notification.permission === "denied") {
-    setButtonState(button, "denied");
+    setAllButtonsState(buttons, "denied");
     return;
   }
 
@@ -97,15 +105,17 @@ export function initNotificationToggle() {
 
   const finishInit = () => {
     if (!messaging) {
-      setButtonState(button, "unsupported");
+      setAllButtonsState(buttons, "unsupported");
       return;
     }
     if (Notification.permission === "granted" && localStorage.getItem(STORAGE_KEY) === "true") {
-      setButtonState(button, "on");
+      setAllButtonsState(buttons, "on");
     } else {
-      setButtonState(button, "off");
+      setAllButtonsState(buttons, "off");
     }
-    button.addEventListener("click", () => subscribe(button));
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => subscribe(buttons));
+    });
   };
 
   if (checkSupport()) {
@@ -146,8 +156,8 @@ export function initAutoNotificationPrompt() {
     attempts += 1;
     if (messaging) {
       localStorage.setItem(PROMPTED_KEY, "true");
-      const button = document.querySelector("[data-notif-toggle]");
-      subscribe(button);
+      const buttons = Array.from(document.querySelectorAll("[data-notif-toggle]"));
+      subscribe(buttons);
     } else if (attempts < 6) {
       setTimeout(tryPrompt, 500);
     } else {
