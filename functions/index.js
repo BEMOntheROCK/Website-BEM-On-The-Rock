@@ -1,460 +1,175 @@
-import "./common.js";
-import { hideLoadingOverlay } from "./loading-overlay.js";
-import {
-  getSiteSettings,
-  getAboutContent,
-  getNews,
-  getUpdates,
-  getCarouselVideos,
-  formatDate,
-} from "./firebase-service.js";
-import { defaultYouTube } from "./firebase-config.js";
-import { getImageUrl } from "./image-service.js";
-import { mountCroppedImage, DEFAULT_CROP } from "./image-crop.js";
+/**
+ * Cloud Functions for BEM On The ROCK.
+ *
+ * Three functions:
+ *   - onNewsCreated / onUpdateCreated — Firestore triggers that fire
+ *     whenever the admin panel creates a new News or Update, sending a
+ *     push notification to every device that has opted in (stored in the
+ *     "pushTokens" collection by js/notifications.js).
+ *   - checkLiveStatus — runs on a schedule (every 5 minutes), checks
+ *     whether the church's YouTube channel is currently live, and sends a
+ *     "We're live!" notification the moment it detects the stream just
+ *     started (not on every check while already live).
+ *
+ * Deploy with:  firebase deploy --only functions
+ * (requires the Firebase CLI: npm install -g firebase-tools, then
+ * firebase login, run once from the repo root)
+ *
+ * checkLiveStatus additionally requires a YouTube Data API key stored as
+ * a Cloud Functions secret — see the setup steps discussed with Claude,
+ * or run: firebase functions:secrets:set YOUTUBE_API_KEY
+ */
 
-document.getElementById("year").textContent = new Date().getFullYear();
+const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { defineSecret } = require("firebase-functions/params");
+const { initializeApp } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
+const { getMessaging } = require("firebase-admin/messaging");
 
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text ?? "";
-  return div.innerHTML;
-}
+initializeApp();
+const db = getFirestore();
+const messaging = getMessaging();
 
-function setLink(id, url) {
-  const el = document.getElementById(id);
-  if (el && url) el.href = url;
-}
+const youtubeApiKey = defineSecret("YOUTUBE_API_KEY");
+const DEFAULT_CHANNEL_ID = "UCokmjLYT92F1EDik5Gvx8Kw";
 
-async function renderHero(settings) {
-  const title = document.getElementById("hero-title");
-  const tagline = document.getElementById("hero-tagline");
-  const footerTagline = document.getElementById("footer-tagline");
+/**
+ * Fetches every saved push token, sends the notification to all of them in
+ * batches (FCM allows at most 500 tokens per call), and removes any tokens
+ * that have expired or been revoked (e.g. the visitor uninstalled the app
+ * or cleared their browser data) so the list doesn't grow stale forever.
+ */
+async function sendToAllSubscribers({ title, body, url }) {
+  const tokensSnap = await db.collection("pushTokens").get();
+  const tokens = tokensSnap.docs.map((doc) => doc.id);
 
-  if (title) {
-    title.innerHTML = `<span class="church-title-bem">BEM</span> <span class="church-title-ontherock">On The <em>ROCK</em></span>`;
+  if (tokens.length === 0) {
+    console.log("No subscribed devices — skipping notification send.");
+    return;
   }
 
-  if (tagline && settings.tagline) tagline.textContent = settings.tagline;
-  if (footerTagline && settings.tagline) footerTagline.textContent = settings.tagline;
+  const message = {
+    notification: { title, body },
+    data: { url: url || "/index.html" },
+  };
 
-  const taglineWrap = document.getElementById("tagline-wrap");
-  if (taglineWrap) taglineWrap.classList.add("tagline-ready");
-}
+  const staleTokens = [];
+  const BATCH_SIZE = 500;
 
-function embedVideo(videoId, title = "BEM On The ROCK Sunday Service") {
-  const embed = document.getElementById("livestream-embed");
-  if (!embed || !videoId) return;
-  embed.innerHTML = `<iframe
-    src="https://www.youtube.com/embed/${escapeHtml(videoId)}"
-    title="${escapeHtml(title)}"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen
-  ></iframe>`;
-}
+  for (let i = 0; i < tokens.length; i += BATCH_SIZE) {
+    const batch = tokens.slice(i, i + BATCH_SIZE);
+    const response = await messaging.sendEachForMulticast({
+      ...message,
+      tokens: batch,
+    });
 
-function embedNextServicePlaceholder(serviceTimesText, liveUrl) {
-  const embed = document.getElementById("livestream-embed");
-  if (!embed) return;
-  embed.innerHTML = `
-    <div class="livestream-placeholder livestream-placeholder--next">
-      <span class="icon">▶</span>
-      <p class="livestream-placeholder-title">We're not currently live, check out the videos below or watch more on BEM On The ROCK YouTube Channel</p>
-      ${
-        serviceTimesText
-          ? `<p class="livestream-placeholder-schedule">We will be live again ${escapeHtml(serviceTimesText)}</p>`
-          : ""
-      }
-    </div>`;
-}
-
-// No API key required: YouTube's oEmbed endpoint only resolves successfully
-// for a URL that currently points at a playable video. When a channel's
-// "/live" URL isn't actively broadcasting, the oEmbed request fails —
-// which is what we use as our live/offline signal.
-async function checkYoutubeLive(liveUrl) {
-  try {
-    const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(liveUrl)}&format=json`;
-    const res = await fetch(oembedUrl);
-    if (!res.ok) return { live: false, videoId: null };
-
-    const data = await res.json();
-    const match = data.html && data.html.match(/embed\/([a-zA-Z0-9_-]+)/);
-    const videoId = match ? match[1] : null;
-
-    return { live: !!videoId, videoId };
-  } catch (err) {
-    console.error("Live check failed:", err);
-    return { live: false, videoId: null };
-  }
-}
-
-async function renderLivestream(settings) {
-  const liveUrl = settings.youtubeLiveUrl || defaultYouTube.liveUrl;
-  const channelUrl = settings.youtubeChannelUrl || defaultYouTube.channelUrl;
-  const channelId = settings.youtubeChannelId || defaultYouTube.channelId;
-
-  setLink("livestream-link", liveUrl);
-  setLink("channel-link", channelUrl);
-  setLink("hero-youtube-btn", liveUrl);
-  setLink("footer-youtube", channelUrl);
-
-  const serviceTimes = document.getElementById("service-times");
-  if (serviceTimes && settings.serviceTimes) {
-    serviceTimes.textContent = settings.serviceTimes;
-  }
-
-  // YouTube's oEmbed endpoint only reliably resolves "/live" through the
-  // Channel ID URL (youtube.com/channel/UC.../live). The @handle form
-  // (youtube.com/@handle/live) is documented by YouTube as unreliable for
-  // this redirect and frequently fails to resolve even while actually live.
-  // Prefer the Channel ID for the automated live-check; fall back to the
-  // configured liveUrl (handle form) only if no Channel ID is set.
-  const checkUrl = channelId
-    ? `https://www.youtube.com/channel/${channelId}/live`
-    : liveUrl;
-
-  const { live, videoId } = await checkYoutubeLive(checkUrl);
-
-  const statusBadge = document.getElementById("livestream-status-badge");
-  if (statusBadge) {
-    statusBadge.textContent = live ? "Live Stream" : "Offline";
-    statusBadge.classList.toggle("live-badge--offline", !live);
-  }
-
-  if (live && videoId) {
-    embedVideo(videoId, "BEM On The ROCK — Live Now");
-  } else {
-    embedNextServicePlaceholder(settings.serviceTimes, liveUrl);
-  }
-
-  return { live, videoId };
-}
-
-async function renderCarousel(videos, isLive, liveVideoId, serviceTimesText, liveUrl) {
-  const container = document.getElementById("video-carousel");
-  if (!container) return;
-
-  const sorted = [...videos].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
-  const liveCardHtml = `
-    <button type="button" class="carousel-card carousel-card--live active" data-live="true" data-title="Live Now">
-      <div class="carousel-card-thumb carousel-card-thumb--live">
-        <span class="live-badge carousel-live-badge">${isLive ? "● Live" : "Offline"}</span>
-      </div>
-      <div class="carousel-card-body">
-        <h4>${isLive ? "Live Now" : "Currently Offline"}</h4>
-      </div>
-    </button>`;
-
-  const pastCardsHtml = sorted
-    .map(
-      (v) => `
-    <button type="button" class="carousel-card" data-video-id="${escapeHtml(v.videoId)}" data-title="${escapeHtml(v.title)}">
-      <div class="carousel-card-thumb">
-        <img src="https://img.youtube.com/vi/${escapeHtml(v.videoId)}/hqdefault.jpg" alt="${escapeHtml(v.title)}" loading="lazy" />
-        <span class="carousel-play-icon">▶</span>
-      </div>
-      <div class="carousel-card-body">
-        <h4>${escapeHtml(v.title)}</h4>
-        ${v.date ? `<time>${escapeHtml(formatDate(v.date))}</time>` : ""}
-      </div>
-    </button>`
-    )
-    .join("");
-
-  container.innerHTML = liveCardHtml + pastCardsHtml;
-
-  container.querySelectorAll(".carousel-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      const isLiveCard = card.getAttribute("data-live") === "true";
-
-      if (isLiveCard) {
-        if (isLive && liveVideoId) {
-          embedVideo(liveVideoId, "BEM On The ROCK — Live Now");
-        } else {
-          embedNextServicePlaceholder(serviceTimesText, liveUrl);
+    response.responses.forEach((result, index) => {
+      if (!result.success) {
+        const code = result.error?.code || "";
+        if (
+          code === "messaging/registration-token-not-registered" ||
+          code === "messaging/invalid-registration-token"
+        ) {
+          staleTokens.push(batch[index]);
         }
-      } else {
-        const videoId = card.getAttribute("data-video-id");
-        const title = card.getAttribute("data-title");
-        if (!videoId) return;
-        embedVideo(videoId, title);
       }
-
-      container.querySelectorAll(".carousel-card").forEach((c) => c.classList.remove("active"));
-      card.classList.add("active");
     });
-  });
-}
-
-async function renderUpdates(updates) {
-  const container = document.getElementById("updates-list");
-  if (!container) return;
-
-  if (!updates.length) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">📢</div>
-        <p>No updates at the moment. Check back soon!</p>
-      </div>`;
-    return;
   }
 
-  const items = await Promise.all(
-    updates.map(async (item) => ({
-      ...item,
-      imageUrl: item.imageId ? await getImageUrl(item.imageId) : null,
-    }))
-  );
-
-  container.innerHTML = items
-    .map(
-      (item) => `
-    <article class="update-item ${item.priority === "high" ? "high" : ""}">
-      ${
-        item.imageUrl
-          ? `<div class="update-thumb"><img src="${item.imageUrl}" alt="" loading="lazy" /></div>`
-          : ""
-      }
-      <time class="update-date">${escapeHtml(formatDate(item.date))}</time>
-      <div class="update-content">
-        <h3>${escapeHtml(item.title)}</h3>
-        <p>${escapeHtml(item.content)}</p>
-      </div>
-    </article>`
-    )
-    .join("");
-}
-
-let newsCarouselTimer = null;
-let newsCarouselIndex = 0;
-let newsCarouselItems = [];
-
-function openNewsModal(item) {
-  const wrap = document.getElementById("news-modal-image").parentElement;
-  const imgEl = document.getElementById("news-modal-image");
-  imgEl.removeAttribute("style");
-  imgEl.alt = item.title;
-  if (item.imageUrl) {
-    imgEl.src = item.imageUrl;
-    mountCroppedImage(wrap, imgEl, item.crop || DEFAULT_CROP);
-  } else {
-    imgEl.src = "";
-  }
-  document.getElementById("news-modal-title").textContent = item.title;
-  document.getElementById("news-modal-desc").textContent = item.content;
-  document.getElementById("news-modal-date").textContent = formatDate(item.date);
-  document.getElementById("news-modal").classList.add("open");
-}
-
-function closeNewsModal() {
-  document.getElementById("news-modal").classList.remove("open");
-}
-
-/** How many cards are visible at once, matching the CSS breakpoints. */
-function getNewsVisibleCount() {
-  return window.innerWidth < 640 ? 1 : 2;
-}
-
-function goToNewsSlide(index) {
-  const track = document.getElementById("news-carousel-track");
-  if (!track || !newsCarouselItems.length) return;
-  newsCarouselIndex = (index + newsCarouselItems.length) % newsCarouselItems.length;
-  const slideWidthPct = 100 / getNewsVisibleCount();
-  track.style.transform = `translateX(-${newsCarouselIndex * slideWidthPct}%)`;
-  document.querySelectorAll(".news-carousel-dot").forEach((dot, i) => {
-    dot.classList.toggle("active", i === newsCarouselIndex);
-  });
-}
-
-function startNewsAutoAdvance() {
-  stopNewsAutoAdvance();
-  newsCarouselTimer = setInterval(() => {
-    goToNewsSlide(newsCarouselIndex + 1);
-  }, 5000);
-}
-
-function stopNewsAutoAdvance() {
-  if (newsCarouselTimer) clearInterval(newsCarouselTimer);
-  newsCarouselTimer = null;
-}
-
-async function renderNews(news) {
-  const container = document.getElementById("news-carousel");
-  if (!container) return;
-
-  if (!news.length) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">📰</div>
-        <p>No news articles yet.</p>
-      </div>`;
-    return;
+  if (staleTokens.length > 0) {
+    const cleanupBatch = db.batch();
+    staleTokens.forEach((token) => {
+      cleanupBatch.delete(db.collection("pushTokens").doc(token));
+    });
+    await cleanupBatch.commit();
+    console.log(`Removed ${staleTokens.length} stale push token(s).`);
   }
 
-  const capped = news.slice(0, 9);
-  const items = await Promise.all(
-    capped.map(async (item) => ({
-      ...item,
-      imageUrl: item.imageId ? await getImageUrl(item.imageId) : null,
-    }))
-  );
-  newsCarouselItems = items;
-  newsCarouselIndex = 0;
-
-  container.innerHTML = `
-    <div class="news-carousel-viewport">
-      <div class="news-carousel-track" id="news-carousel-track">
-        ${items
-          .map(
-            (item, i) => `
-          <div class="news-carousel-slide" data-index="${i}">
-            <button type="button" class="news-card" data-index="${i}" aria-label="View news: ${escapeHtml(item.title)}">
-              <div class="news-card-media" data-crop-container>
-                ${
-                  item.imageUrl
-                    ? `<img class="news-card-img" data-crop-img alt="${escapeHtml(item.title)}" loading="lazy" />`
-                    : `<div class="news-carousel-noimg">${escapeHtml(item.title)}</div>`
-                }
-              </div>
-            </button>
-          </div>`
-          )
-          .join("")}
-      </div>
-      <button type="button" class="news-carousel-arrow news-carousel-arrow--prev" aria-label="Previous news">‹</button>
-      <button type="button" class="news-carousel-arrow news-carousel-arrow--next" aria-label="Next news">›</button>
-    </div>
-    <div class="news-carousel-dots">
-      ${items.map((_, i) => `<span class="news-carousel-dot" data-index="${i}"></span>`).join("")}
-    </div>
-  `;
-
-  container.querySelectorAll(".news-carousel-slide").forEach((slide, i) => {
-    const item = items[i];
-    if (item.imageUrl) {
-      const mediaEl = slide.querySelector("[data-crop-container]");
-      const imgEl = slide.querySelector("[data-crop-img]");
-      imgEl.src = item.imageUrl;
-      mountCroppedImage(mediaEl, imgEl, item.crop || DEFAULT_CROP);
-    }
-  });
-
-  container.querySelectorAll(".news-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      const idx = parseInt(card.dataset.index, 10);
-      openNewsModal(newsCarouselItems[idx]);
-    });
-  });
-
-  container.querySelector(".news-carousel-arrow--prev").addEventListener("click", () => {
-    goToNewsSlide(newsCarouselIndex - 1);
-    startNewsAutoAdvance();
-  });
-  container.querySelector(".news-carousel-arrow--next").addEventListener("click", () => {
-    goToNewsSlide(newsCarouselIndex + 1);
-    startNewsAutoAdvance();
-  });
-  container.querySelectorAll(".news-carousel-dot").forEach((dot) => {
-    dot.addEventListener("click", () => {
-      goToNewsSlide(parseInt(dot.dataset.index, 10));
-      startNewsAutoAdvance();
-    });
-  });
-
-  container.addEventListener("mouseenter", stopNewsAutoAdvance);
-  container.addEventListener("mouseleave", startNewsAutoAdvance);
-  container.addEventListener("touchstart", stopNewsAutoAdvance, { passive: true });
-
-  // Swipe support for touch devices — arrows are hidden on mobile, so this
-  // is the primary way to navigate the carousel there.
-  const viewport = container.querySelector(".news-carousel-viewport");
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let touchDeltaX = 0;
-  let isSwiping = false;
-
-  viewport.addEventListener(
-    "touchstart",
-    (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      touchDeltaX = 0;
-      isSwiping = true;
-    },
-    { passive: true }
-  );
-
-  viewport.addEventListener(
-    "touchmove",
-    (e) => {
-      if (!isSwiping) return;
-      const dx = e.touches[0].clientX - touchStartX;
-      const dy = e.touches[0].clientY - touchStartY;
-      // Only hijack the gesture once it's clearly more horizontal than
-      // vertical, so normal page scrolling still works.
-      if (Math.abs(dx) > Math.abs(dy)) {
-        touchDeltaX = dx;
-        e.preventDefault();
-      }
-    },
-    { passive: false }
-  );
-
-  viewport.addEventListener("touchend", () => {
-    if (!isSwiping) return;
-    isSwiping = false;
-    const SWIPE_THRESHOLD = 40;
-    if (touchDeltaX > SWIPE_THRESHOLD) {
-      goToNewsSlide(newsCarouselIndex - 1);
-    } else if (touchDeltaX < -SWIPE_THRESHOLD) {
-      goToNewsSlide(newsCarouselIndex + 1);
-    }
-    startNewsAutoAdvance();
-  });
-
-  let resizeTimer = null;
-  window.addEventListener("resize", () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => goToNewsSlide(newsCarouselIndex), 150);
-  });
-
-  goToNewsSlide(0);
-  startNewsAutoAdvance();
+  console.log(`Notification sent to ${tokens.length - staleTokens.length} device(s).`);
 }
 
-document.getElementById("news-modal-close")?.addEventListener("click", closeNewsModal);
-document.getElementById("news-modal")?.addEventListener("click", (e) => {
-  if (e.target.id === "news-modal") closeNewsModal();
+function excerpt(text, maxLength = 120) {
+  if (!text) return "";
+  const trimmed = text.trim();
+  return trimmed.length > maxLength ? `${trimmed.slice(0, maxLength - 1)}…` : trimmed;
+}
+
+exports.onNewsCreated = onDocumentCreated("news/{docId}", async (event) => {
+  const news = event.data?.data();
+  if (!news) return;
+
+  await sendToAllSubscribers({
+    title: news.title || "New announcement",
+    body: excerpt(news.content),
+    url: "/index.html",
+  });
 });
 
-async function loadPage() {
-  try {
-    const [settings, about, news, updates, carouselVideos] = await Promise.all([
-      getSiteSettings(),
-      getAboutContent(),
-      getNews(),
-      getUpdates(),
-      getCarouselVideos(),
-    ]);
-    settings.serviceTimes = about.serviceTimes;
+exports.onUpdateCreated = onDocumentCreated("updates/{docId}", async (event) => {
+  const update = event.data?.data();
+  if (!update) return;
 
-    await renderHero(settings);
-    const { live, videoId } = await renderLivestream(settings);
-    const liveUrl = settings.youtubeLiveUrl || defaultYouTube.liveUrl;
-    await renderCarousel(carouselVideos, live, videoId, settings.serviceTimes, liveUrl);
-    await renderUpdates(updates);
-    await renderNews(news);
+  await sendToAllSubscribers({
+    title: update.title || "New update",
+    body: excerpt(update.content),
+    url: "/index.html",
+  });
+});
+
+/**
+ * Asks the YouTube Data API whether the given channel currently has a
+ * live broadcast in progress. Returns true/false — never throws; any
+ * error is logged and treated as "not live" so a transient API hiccup
+ * doesn't send a false notification.
+ */
+async function isChannelLive(channelId, apiKey) {
+  const url =
+    `https://www.googleapis.com/youtube/v3/search` +
+    `?part=snippet&channelId=${channelId}&eventType=live&type=video&key=${apiKey}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`YouTube API error: ${response.status} ${await response.text()}`);
+      return false;
+    }
+    const data = await response.json();
+    return Array.isArray(data.items) && data.items.length > 0;
   } catch (err) {
-    console.error("Failed to load page content:", err);
-    document.querySelectorAll(".loading").forEach((el) => {
-      el.textContent =
-        "Unable to load content. Please check your Firebase configuration.";
-    });
-    document.getElementById("tagline-wrap")?.classList.add("tagline-ready");
-  } finally {
-    hideLoadingOverlay();
+    console.error("YouTube API request failed:", err);
+    return false;
   }
 }
 
-loadPage();
+const LIVE_STATUS_DOC = "liveStatus/main";
+
+exports.checkLiveStatus = onSchedule(
+  { schedule: "every 5 minutes", secrets: [youtubeApiKey] },
+  async () => {
+    const settingsSnap = await db.doc("siteSettings/main").get();
+    const channelId = settingsSnap.data()?.youtubeChannelId || DEFAULT_CHANNEL_ID;
+
+    const statusRef = db.doc(LIVE_STATUS_DOC);
+    const statusSnap = await statusRef.get();
+    const wasLive = statusSnap.data()?.isLive === true;
+
+    const isLiveNow = await isChannelLive(channelId, youtubeApiKey.value());
+
+    await statusRef.set(
+      { isLive: isLiveNow, checkedAt: new Date().toISOString() },
+      { merge: true }
+    );
+
+    // Only notify on the false → true transition, so we don't send a
+    // fresh notification every 5 minutes for the whole duration of a
+    // single service.
+    if (isLiveNow && !wasLive) {
+      await sendToAllSubscribers({
+        title: "We're live!",
+        body: "Join the Sunday service livestream now.",
+        url: "/index.html",
+      });
+    }
+  }
+);
