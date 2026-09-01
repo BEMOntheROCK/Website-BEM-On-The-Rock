@@ -2,6 +2,16 @@ import { initTheme } from "./theme.js";
 
 initTheme();
 
+// Register the service worker on every public page, but never on the admin
+// panel — admin should always load fresh, never an offline/cached version.
+if ("serviceWorker" in navigator && !window.location.pathname.endsWith("admin.html")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/service-worker.js").catch((err) => {
+      console.error("Service worker registration failed:", err);
+    });
+  });
+}
+
 const mobileBtn = document.querySelector("[data-mobile-menu]");
 const navLinks  = document.querySelector(".nav-links");
 
