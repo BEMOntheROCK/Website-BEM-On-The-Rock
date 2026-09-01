@@ -4,9 +4,21 @@ import { vapidKey } from "./firebase-config.js";
 import { saveNotificationToken } from "./firebase-service.js";
 
 const STORAGE_KEY = "bem-notifications-enabled";
+const PROMPTED_KEY = "bem-notifications-prompted";
+
+function isRunningAsInstalledApp() {
+  // Standalone display mode covers Chrome/Edge/Android after "Install" or
+  // "Add to Home Screen". navigator.standalone is Safari's older iOS-only
+  // equivalent, which doesn't support the display-mode media query.
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true
+  );
+}
 
 function setButtonState(button, state) {
   // state: "off" | "on" | "unsupported" | "denied"
+  if (!button) return;
   const icon = button.querySelector("i");
   const label = button.querySelector("span");
 
@@ -101,4 +113,49 @@ export function initNotificationToggle() {
   } else {
     setTimeout(finishInit, 500);
   }
+}
+
+/**
+ * Prompts for notification permission automatically, but only once ever,
+ * and only when the site is opened as the installed app (standalone mode)
+ * rather than a regular browser tab — opening an installed app's icon is
+ * itself a deliberate action, which keeps this from being the kind of
+ * unprompted popup browsers tend to auto-block.
+ *
+ * After this first prompt (whether granted, denied, or dismissed), it
+ * never asks again automatically — the visitor can still change their
+ * mind later via the "Enable notifications" toggle in the settings menu.
+ */
+export function initAutoNotificationPrompt() {
+  if (!("Notification" in window)) return;
+  if (!isRunningAsInstalledApp()) return;
+  if (localStorage.getItem(PROMPTED_KEY) === "true") return;
+  if (Notification.permission !== "default") {
+    // Already answered (granted/denied) from a previous visit, possibly
+    // before this flag existed — don't ask again, just remember that.
+    localStorage.setItem(PROMPTED_KEY, "true");
+    return;
+  }
+
+  // Give the app a moment to finish loading before interrupting with a
+  // permission prompt, rather than asking the instant it opens. messaging's
+  // own async isSupported() check may also still be pending, so retry a
+  // few times before concluding it's genuinely unsupported.
+  let attempts = 0;
+  const tryPrompt = () => {
+    attempts += 1;
+    if (messaging) {
+      localStorage.setItem(PROMPTED_KEY, "true");
+      const button = document.querySelector("[data-notif-toggle]");
+      subscribe(button);
+    } else if (attempts < 6) {
+      setTimeout(tryPrompt, 500);
+    } else {
+      // Genuinely unsupported (or never resolved) — don't keep the
+      // "not yet prompted" flag hanging around forever, or we'd retry
+      // this same check on every single app launch.
+      localStorage.setItem(PROMPTED_KEY, "true");
+    }
+  };
+  setTimeout(tryPrompt, 1500);
 }
