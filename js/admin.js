@@ -563,7 +563,6 @@ function closeCrud() {
 
 document.getElementById("modal-close").addEventListener("click", closeCrud);
 document.getElementById("modal-cancel").addEventListener("click", closeCrud);
-crudModal.addEventListener("click", e => { if (e.target === crudModal) closeCrud(); });
 
 crudForm.addEventListener("submit", async e => {
   e.preventDefault();
@@ -704,7 +703,6 @@ function closeCatModal() {
 document.getElementById("add-category-btn").addEventListener("click", () => openCatModal());
 document.getElementById("category-modal-close").addEventListener("click", closeCatModal);
 document.getElementById("category-modal-cancel").addEventListener("click", closeCatModal);
-catModal.addEventListener("click", e => { if (e.target === catModal) closeCatModal(); });
 
 catForm.addEventListener("submit", async e => {
   e.preventDefault();
@@ -875,7 +873,6 @@ function closeLeaderModal() {
 
 document.getElementById("leader-modal-close").addEventListener("click", closeLeaderModal);
 document.getElementById("leader-modal-cancel").addEventListener("click", closeLeaderModal);
-leaderModal.addEventListener("click", e => { if (e.target === leaderModal) closeLeaderModal(); });
 
 leaderForm.addEventListener("submit", async e => {
   e.preventDefault();
@@ -1214,7 +1211,6 @@ function closeCommunityPhotoModal() {
 document.getElementById("add-community-photo-btn")?.addEventListener("click", () => openCommunityPhotoModal());
 document.getElementById("community-photo-modal-close")?.addEventListener("click", closeCommunityPhotoModal);
 document.getElementById("community-photo-modal-cancel")?.addEventListener("click", closeCommunityPhotoModal);
-communityPhotoModal?.addEventListener("click", e => { if (e.target === communityPhotoModal) closeCommunityPhotoModal(); });
 
 communityPhotoForm?.addEventListener("submit", async e => {
   e.preventDefault();
@@ -1388,7 +1384,6 @@ function closeActivityModal() {
 
 document.getElementById("activity-modal-close").addEventListener("click", closeActivityModal);
 document.getElementById("activity-modal-cancel").addEventListener("click", closeActivityModal);
-activityModal.addEventListener("click", e => { if (e.target === activityModal) closeActivityModal(); });
 
 activityForm.addEventListener("submit", async e => {
   e.preventDefault();
@@ -1559,7 +1554,6 @@ function closeServiceModal() {
 
 document.getElementById("service-modal-close").addEventListener("click", closeServiceModal);
 document.getElementById("service-modal-cancel").addEventListener("click", closeServiceModal);
-serviceModal.addEventListener("click", e => { if (e.target === serviceModal) closeServiceModal(); });
 
 serviceForm.addEventListener("submit", async e => {
   e.preventDefault();
@@ -1707,7 +1701,6 @@ function closeCarouselVideoModal() {
 
 document.getElementById("carousel-video-modal-close").addEventListener("click", closeCarouselVideoModal);
 document.getElementById("carousel-video-modal-cancel").addEventListener("click", closeCarouselVideoModal);
-carouselVideoModal.addEventListener("click", e => { if (e.target === carouselVideoModal) closeCarouselVideoModal(); });
 
 carouselVideoForm.addEventListener("submit", async e => {
   e.preventDefault();
