@@ -92,22 +92,13 @@ export function initNotificationToggle() {
   }
 
   // Wait for the async isSupported() check in firebase-init.js to resolve
-  // before deciding the UI state — messaging may end up null on browsers
-  // that don't support it (e.g. Safari outside of a home-screen install).
-  const checkSupport = () => {
-    if (messaging === null && Notification.permission !== "granted") {
-      // Still ambiguous (isSupported() may not have resolved yet); try
-      // again shortly rather than assuming unsupported prematurely.
-      return false;
-    }
-    return true;
-  };
-
+  // before deciding the UI state — messaging may end up null either
+  // because the browser genuinely doesn't support it (e.g. Safari outside
+  // of a home-screen install), or simply because the check hasn't finished
+  // yet. Retry a few times over a few seconds before concluding it's truly
+  // unsupported, since that check can take longer than a single 500ms
+  // wait on a slower connection or device.
   const finishInit = () => {
-    if (!messaging) {
-      setAllButtonsState(buttons, "unsupported");
-      return;
-    }
     if (Notification.permission === "granted" && localStorage.getItem(STORAGE_KEY) === "true") {
       setAllButtonsState(buttons, "on");
     } else {
@@ -118,11 +109,18 @@ export function initNotificationToggle() {
     });
   };
 
-  if (checkSupport()) {
-    finishInit();
-  } else {
-    setTimeout(finishInit, 500);
-  }
+  let attempts = 0;
+  const tryInit = () => {
+    attempts += 1;
+    if (messaging) {
+      finishInit();
+    } else if (attempts < 6) {
+      setTimeout(tryInit, 500);
+    } else {
+      setAllButtonsState(buttons, "unsupported");
+    }
+  };
+  tryInit();
 }
 
 /**
