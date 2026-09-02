@@ -2024,6 +2024,28 @@ button.settings-dropdown-link:disabled:hover i {
   min-height: calc(100vh - var(--header-h));
 }
 
+@media (min-width: 769px) {
+  .admin-layout {
+    /* Fixed height (not min-height) so the sidebar and main content can
+       each scroll independently within it, rather than the whole page
+       scrolling together — otherwise a long panel (e.g. a big table)
+       pushes the sidebar's nav buttons out of view, forcing a scroll all
+       the way back up just to switch to another panel. */
+    height: calc(100vh - var(--header-h));
+    overflow: hidden;
+  }
+
+  .admin-sidebar {
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .admin-main {
+    height: 100%;
+    overflow-y: auto;
+  }
+}
+
 .admin-sidebar {
   background: var(--bg-elevated);
   border-right: 1px solid var(--border);
