@@ -2055,6 +2055,18 @@ button.settings-dropdown-link:disabled:hover i {
 }
 
 @media (min-width: 769px) {
+  /* Belt-and-braces: forcibly prevent the outer page/window from ever
+     scrolling on the admin dashboard, so .admin-main is unambiguously the
+     only scrollable element. Without this, a small mismatch between the
+     assumed --header-h and the header's real rendered height (sub-pixel
+     rounding, etc.) can let the outer page scroll by a sliver too — which
+     only becomes visible on a panel tall enough to need it (like About
+     Us), showing up as what looks like two overlapping scrollbars. */
+  body.admin-page {
+    height: 100vh;
+    overflow: hidden;
+  }
+
   .admin-layout {
     /* Fixed height (not min-height) so the sidebar and main content can
        each scroll independently within it, rather than the whole page
