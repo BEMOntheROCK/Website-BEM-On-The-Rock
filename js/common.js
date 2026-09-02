@@ -15,6 +15,30 @@ if ("serviceWorker" in navigator && !window.location.pathname.endsWith("admin.ht
   });
 }
 
+// Themed scrollbars (see css/styles.css) are transparent until actively
+// scrolled, then fade back out after a short pause. A single capture-phase
+// listener on the document catches scroll events from the page itself and
+// from any nested scrollable element (admin sidebar/content, modals, etc.)
+// without needing to know in advance which elements are scrollable.
+(function initAutoHideScrollbars() {
+  const hideTimers = new WeakMap();
+  document.addEventListener(
+    "scroll",
+    (event) => {
+      const target = event.target === document ? document.documentElement : event.target;
+      if (!target || !target.classList) return;
+
+      target.classList.add("is-scrolling");
+      clearTimeout(hideTimers.get(target));
+      hideTimers.set(
+        target,
+        setTimeout(() => target.classList.remove("is-scrolling"), 800)
+      );
+    },
+    true
+  );
+})();
+
 const mobileBtn = document.querySelector("[data-mobile-menu]");
 const navLinks  = document.querySelector(".nav-links");
 

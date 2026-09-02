@@ -71,7 +71,37 @@
   padding: 0;
 }
 
+/* ── Themed, auto-hiding scrollbars ──
+   Applies everywhere: the page itself, the admin sidebar/content panes,
+   modals, or any other scrollable element. The thumb is transparent by
+   default and only becomes visible while actively scrolling (via the
+   .is-scrolling class, toggled by common.js) or on hover — it then fades
+   back out after a brief pause. This is a WebKit/Blink/Safari-only
+   pseudo-element API; Firefox gets the themed color/thin width below but
+   without the auto-hide behavior, since Firefox has no equivalent hook. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 999px;
+  transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover,
+.is-scrolling::-webkit-scrollbar-thumb {
+  background-color: var(--marigold);
+}
+
 html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--marigold) transparent;
   scroll-behavior: smooth;
 }
 
