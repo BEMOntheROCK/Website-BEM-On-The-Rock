@@ -373,7 +373,8 @@ button.settings-dropdown-link:disabled:hover i {
   .nav-links li.lang-toggle-item,
   .nav-links li.nav-item-admin,
   .nav-links li.nav-item-notif,
-  .nav-links li.nav-item-install {
+  .nav-links li.nav-item-install,
+  .nav-links li.nav-more-toggle-item {
     display: none;
   }
 }
