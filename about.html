@@ -53,9 +53,15 @@
             <li><a href="services.html"><i class="fa-solid fa-arrow-up-right-from-square nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.services">Services</span></a></li>
             <li class="nav-item-admin"><a href="admin.html"><i class="fa-solid fa-user-shield nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.admin">Admin</span></a></li>
             <li class="nav-item-notif">
-              <button type="button" class="nav-notif-toggle" data-notif-toggle>
+              <button type="button" class="nav-action-btn" data-notif-toggle>
                 <i class="fa-regular fa-bell nav-link-icon" aria-hidden="true"></i>
                 <span data-i18n="header.notifEnable">Enable notifications</span>
+              </button>
+            </li>
+            <li class="nav-item-install" data-install-menu-item hidden>
+              <button type="button" class="nav-action-btn" data-install-menu-trigger>
+                <i class="fa-solid fa-download nav-link-icon" aria-hidden="true"></i>
+                <span data-i18n="install.fabLabel">Download the app</span>
               </button>
             </li>
             <li class="lang-toggle-item">
@@ -206,6 +212,46 @@
         </div>
       </div>
     </footer>
+
+    <!-- "Download the app" floating button (mobile only) -->
+    <div class="install-fab" data-install-fab hidden>
+      <button type="button" class="install-fab-main" data-install-fab-trigger>
+        <i class="fa-solid fa-download" aria-hidden="true"></i>
+        <span data-i18n="install.fabLabel">Download the app</span>
+      </button>
+      <button type="button" class="install-fab-dismiss" data-install-fab-dismiss aria-label="Dismiss">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <!-- "Download the app" guided instructions modal -->
+    <div class="modal-overlay install-modal-overlay" data-install-modal>
+      <div class="modal modal-sm" role="dialog" aria-modal="true" aria-label="Install instructions">
+        <div class="modal-header">
+          <h3 data-i18n="install.modalHeading">Download the app</h3>
+          <button type="button" class="modal-close" data-install-modal-close aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="install-modal-scenario" data-install-scenario="step1">
+            <h4 data-i18n="install.step1Title">Open in Safari</h4>
+            <p data-i18n="install.step1Body">Looks like you're using an iOS device. To download the app, please open this website in Safari first.</p>
+          </div>
+          <div class="install-modal-scenario" data-install-scenario="step2">
+            <h4 data-i18n="install.step2Title">Add to Home Screen</h4>
+            <p data-i18n="install.step2Body">To add this app to your Home Screen: tap the Share button below, then choose &quot;Add to Home Screen.&quot;</p>
+            <div class="install-modal-arrow" aria-hidden="true">
+              <i class="fa-solid fa-arrow-down"></i>
+            </div>
+          </div>
+          <div class="install-modal-scenario" data-install-scenario="fallback">
+            <h4 data-i18n="install.fallbackTitle">Install the app</h4>
+            <p data-i18n="install.fallbackBody">Look for &quot;Add to Home Screen&quot; or &quot;Install app&quot; in your browser's menu.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div id="google_translate_element"></div>
     <script type="module" src="js/i18n.js"></script>

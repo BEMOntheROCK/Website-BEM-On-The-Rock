@@ -13,6 +13,15 @@
   "header.settings": "Settings",
   "header.notifEnable": "Enable notifications",
 
+  "install.fabLabel": "Download the app",
+  "install.modalHeading": "Download the app",
+  "install.step1Title": "Open in Safari",
+  "install.step1Body": "Looks like you're using an iOS device. To download the app, please open this website in Safari first.",
+  "install.step2Title": "Add to Home Screen",
+  "install.step2Body": "To add this app to your Home Screen: tap the Share button below, then choose \"Add to Home Screen.\"",
+  "install.fallbackTitle": "Install the app",
+  "install.fallbackBody": "Look for \"Add to Home Screen\" or \"Install app\" in your browser's menu.",
+
   "footer.pages": "Pages",
   "footer.connect": "Connect",
   "footer.youtube": "YouTube",

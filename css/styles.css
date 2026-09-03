@@ -372,7 +372,8 @@ button.settings-dropdown-link:disabled:hover i {
 
   .nav-links li.lang-toggle-item,
   .nav-links li.nav-item-admin,
-  .nav-links li.nav-item-notif {
+  .nav-links li.nav-item-notif,
+  .nav-links li.nav-item-install {
     display: none;
   }
 }
@@ -2693,7 +2694,7 @@ button.settings-dropdown-link:disabled:hover i {
      its icon swaps at runtime (JS replaces the icon's whole class list to
      switch between bell / bell-slash), so the icon is styled by tag here
      rather than through the .nav-link-icon class that JS would strip. */
-  .nav-links button.nav-notif-toggle {
+  .nav-links button.nav-action-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2712,25 +2713,25 @@ button.settings-dropdown-link:disabled:hover i {
     transition: background var(--transition), color var(--transition);
   }
 
-  .nav-links button.nav-notif-toggle:hover,
-  .nav-links button.nav-notif-toggle.is-active {
+  .nav-links button.nav-action-btn:hover,
+  .nav-links button.nav-action-btn.is-active {
     background: var(--bg-muted);
     color: var(--marigold);
   }
 
-  .nav-links button.nav-notif-toggle i {
+  .nav-links button.nav-action-btn i {
     font-size: 1.1rem;
     width: 1.3rem;
     text-align: center;
     color: var(--marigold);
   }
 
-  .nav-links button.nav-notif-toggle:disabled {
+  .nav-links button.nav-action-btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
   }
 
-  .nav-links button.nav-notif-toggle:disabled:hover {
+  .nav-links button.nav-action-btn:disabled:hover {
     background: none;
     color: var(--text);
   }
@@ -2884,6 +2885,100 @@ button.settings-dropdown-link:disabled:hover i {
     font-size: 1rem;
   }
 }
+
+/* ── "Download the app" floating button (mobile only) ── */
+.install-fab {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .install-fab {
+    position: fixed;
+    bottom: 5rem;
+    right: 1.25rem;
+    z-index: 150;
+    display: flex;
+    align-items: stretch;
+    box-shadow: 0 4px 16px var(--marigold-glow);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .install-fab[hidden] {
+    display: none;
+  }
+}
+
+.install-fab-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--marigold);
+  color: var(--secondary);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.7rem 1rem;
+  white-space: nowrap;
+}
+
+.install-fab-main:hover {
+  background: var(--marigold-light);
+}
+
+.install-fab-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.15);
+  color: var(--secondary);
+  border: none;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  padding: 0 0.7rem;
+  font-size: 0.85rem;
+}
+
+.install-fab-dismiss:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* ── "Download the app" guided instructions modal ── */
+.install-modal-scenario {
+  display: none;
+}
+
+.install-modal-scenario.active {
+  display: block;
+}
+
+.install-modal-scenario h4 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: 0.65rem;
+}
+
+.install-modal-scenario p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.install-modal-arrow {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 1.75rem;
+  color: var(--marigold);
+  animation: install-arrow-bounce 1.4s ease-in-out infinite;
+}
+
+@keyframes install-arrow-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+
 /* ── Activities & Ministries ── */
 .activities-category {
   margin-bottom: 3rem;

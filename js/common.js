@@ -1,9 +1,11 @@
 import { initTheme } from "./theme.js";
 import { initNotificationToggle, initAutoNotificationPrompt } from "./notifications.js";
+import { initInstallApp } from "./install-app.js";
 
 initTheme();
 initNotificationToggle();
 initAutoNotificationPrompt();
+initInstallApp();
 
 // Register the service worker on every public page, but never on the admin
 // panel — admin should always load fresh, never an offline/cached version.

@@ -13,6 +13,15 @@
   "header.settings": "Tetapan",
   "header.notifEnable": "Aktifkan pemberitahuan",
 
+  "install.fabLabel": "Muat turun aplikasi",
+  "install.modalHeading": "Muat turun aplikasi",
+  "install.step1Title": "Buka dalam Safari",
+  "install.step1Body": "Anda kelihatan menggunakan peranti iOS. Untuk memuat turun aplikasi, sila buka laman web ini dalam Safari terlebih dahulu.",
+  "install.step2Title": "Tambah ke Skrin Utama",
+  "install.step2Body": "Untuk menambah aplikasi ini ke Skrin Utama anda: ketik butang Kongsi (Share) di bawah, kemudian pilih \"Tambah ke Skrin Utama.\"",
+  "install.fallbackTitle": "Pasang aplikasi",
+  "install.fallbackBody": "Cari pilihan \"Tambah ke Skrin Utama\" atau \"Pasang Aplikasi\" dalam menu pelayar anda.",
+
   "footer.pages": "Laman",
   "footer.connect": "Hubungi Kami",
   "footer.youtube": "YouTube",
