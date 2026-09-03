@@ -51,20 +51,26 @@
             <li><a href="organisation-structure.html"><i class="fa-solid fa-sitemap nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.org">Organisation</span></a></li>
             <li><a href="activities.html" class="active"><i class="fa-solid fa-hands-praying nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.activities">Activities</span></a></li>
             <li><a href="services.html"><i class="fa-solid fa-arrow-up-right-from-square nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.services">Services</span></a></li>
-            <li class="nav-item-admin"><a href="admin.html"><i class="fa-solid fa-user-shield nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.admin">Admin</span></a></li>
-            <li class="nav-item-notif">
+            <li class="nav-more-toggle-item">
+              <button type="button" class="nav-more-toggle" data-nav-more-toggle aria-expanded="false">
+                <span data-i18n="nav.more">More</span>
+                <i class="fa-solid fa-chevron-down nav-more-chevron" aria-hidden="true"></i>
+              </button>
+            </li>
+            <li class="nav-item-admin nav-more-item"><a href="admin.html"><i class="fa-solid fa-user-shield nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.admin">Admin</span></a></li>
+            <li class="nav-item-notif nav-more-item">
               <button type="button" class="nav-action-btn" data-notif-toggle>
                 <i class="fa-regular fa-bell nav-link-icon" aria-hidden="true"></i>
                 <span data-i18n="header.notifEnable">Enable notifications</span>
               </button>
             </li>
-            <li class="nav-item-install" data-install-menu-item hidden>
+            <li class="nav-item-install nav-more-item" data-install-menu-item hidden>
               <button type="button" class="nav-action-btn" data-install-menu-trigger>
                 <i class="fa-solid fa-download nav-link-icon" aria-hidden="true"></i>
                 <span data-i18n="install.fabLabel">Download the app</span>
               </button>
             </li>
-            <li class="lang-toggle-item">
+            <li class="lang-toggle-item nav-more-item">
               <div class="lang-toggle" role="group" aria-label="Language">
                 <button type="button" data-lang-btn="en">EN</button>
                 <button type="button" data-lang-btn="ms">BM</button>

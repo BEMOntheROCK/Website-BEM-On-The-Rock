@@ -2750,6 +2750,58 @@ button.settings-dropdown-link:disabled:hover i {
     font-size: 1rem;
   }
 
+  /* ── Collapsible "More" section inside the mobile menu ──
+     Admin, Notifications, Download the app, and Language all live behind
+     this, collapsed by default, so the main list stays focused on actual
+     pages. :not([hidden]) makes sure an item another script has hidden for
+     its own reason (e.g. install-app.js hiding "Download the app" once
+     the site's already installed) stays hidden even while "More" is open. */
+  .nav-more-toggle-item {
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.5rem;
+  }
+
+  .nav-links button.nav-more-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-md);
+    transition: background var(--transition), color var(--transition);
+  }
+
+  .nav-links button.nav-more-toggle:hover {
+    background: var(--bg-muted);
+    color: var(--marigold);
+  }
+
+  .nav-more-chevron {
+    font-size: 0.85rem;
+    transition: transform var(--transition);
+  }
+
+  .nav-links.more-open .nav-more-chevron {
+    transform: rotate(180deg);
+  }
+
+  .nav-more-item {
+    display: none;
+  }
+
+  .nav-links.more-open .nav-more-item:not([hidden]) {
+    display: block;
+  }
+
   body.nav-open {
     overflow: hidden;
   }

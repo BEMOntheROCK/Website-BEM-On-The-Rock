@@ -43,12 +43,22 @@ if ("serviceWorker" in navigator && !window.location.pathname.endsWith("admin.ht
 
 const mobileBtn = document.querySelector("[data-mobile-menu]");
 const navLinks  = document.querySelector(".nav-links");
+const navMoreToggle = document.querySelector("[data-nav-more-toggle]");
+
+function collapseMoreSection() {
+  if (!navLinks || !navMoreToggle) return;
+  navLinks.classList.remove("more-open");
+  navMoreToggle.setAttribute("aria-expanded", "false");
+}
 
 function openMenu() {
   navLinks.classList.add("open");
   document.body.classList.add("nav-open");
   mobileBtn.textContent = "✕";
   mobileBtn.setAttribute("aria-label", "Close menu");
+  // The "More" section always starts collapsed each time the menu opens,
+  // regardless of whether it was left expanded on a previous open.
+  collapseMoreSection();
 }
 
 function closeMenu() {
@@ -78,6 +88,14 @@ if (mobileBtn && navLinks) {
     ) {
       closeMenu();
     }
+  });
+}
+
+// ── Collapsible "More" section inside the mobile menu ──
+if (navMoreToggle && navLinks) {
+  navMoreToggle.addEventListener("click", () => {
+    const isOpen = navLinks.classList.toggle("more-open");
+    navMoreToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
   });
 }
 
