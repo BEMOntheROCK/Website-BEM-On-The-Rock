@@ -2499,6 +2499,19 @@ button.settings-dropdown-link:disabled:hover i {
   font-size: 0.95rem;
 }
 
+/* Small inline tag used next to list items (e.g. photo size) */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
 /* Thumbnail inside the drag-reorderable Category / Community Photo list items */
 .category-item .admin-thumb,
 .category-item .admin-thumb-placeholder {
@@ -3271,12 +3284,16 @@ button.settings-dropdown-link:disabled:hover i {
 }
 
 .community-collage {
+  --collage-row: 160px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-auto-rows: var(--collage-row);
+  grid-auto-flow: dense;
+  gap: 1rem;
 }
 
 .collage-item {
+  position: relative;
   margin: 0;
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -3284,9 +3301,28 @@ button.settings-dropdown-link:disabled:hover i {
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   transition: transform var(--transition), box-shadow var(--transition);
+  grid-column: span 1;
+  grid-row: span 1;
 }
 
-.collage-item:hover {
+/* Medium = wide or tall (admin's choice); Large = big square */
+.collage-item--medium-wide {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+.collage-item--medium-tall {
+  grid-column: span 1;
+  grid-row: span 2;
+}
+
+.collage-item--large {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.collage-item:hover,
+.collage-item.is-active {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
 }
@@ -3294,35 +3330,55 @@ button.settings-dropdown-link:disabled:hover i {
 .collage-item img,
 .collage-item-placeholder {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  height: 100%;
   object-fit: cover;
   display: block;
   background: linear-gradient(135deg, var(--marigold-dark), var(--marigold));
+  transition: transform var(--transition);
 }
 
+.collage-item:hover img,
+.collage-item.is-active img {
+  transform: scale(1.04);
+}
+
+/* Caption sits over the image and only appears on hover / tap */
 .collage-item-caption {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: 0.2rem;
-  padding: 0.9rem 1rem;
+  padding: 1rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.15) 60%, transparent 100%);
+  opacity: 0;
+  transition: opacity var(--transition);
+  pointer-events: none;
+}
+
+.collage-item:hover .collage-item-caption,
+.collage-item:focus-visible .collage-item-caption,
+.collage-item.is-active .collage-item-caption {
+  opacity: 1;
 }
 
 .collage-item-title {
   font-family: var(--font-display);
   font-size: 1rem;
   font-weight: 700;
-  color: var(--text);
+  color: #fff;
 }
 
-.collage-item-desc {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  line-height: 1.5;
+.collage-item-date {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 @media (max-width: 768px) {
   .community-collage {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    --collage-row: 130px;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
 }
 

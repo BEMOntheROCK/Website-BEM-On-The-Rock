@@ -119,18 +119,43 @@ async function communityContributionsHtml(communityContent, photos) {
     </div>`;
 }
 
+function formatCollageDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(`${dateStr}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+}
+
 function collageItemHtml(photo) {
+  const size = ["small", "medium", "large"].includes(photo.size) ? photo.size : "small";
+  const sizeClass = size === "medium" && photo.orientation === "tall"
+    ? "collage-item--medium-tall"
+    : size === "medium"
+      ? "collage-item--medium-wide"
+      : `collage-item--${size}`;
+  const formattedDate = formatCollageDate(photo.date);
   return `
-    <figure class="collage-item">
+    <figure class="collage-item ${sizeClass}" tabindex="0" data-collage-item>
       ${photo.imageUrl
         ? `<img src="${photo.imageUrl}" alt="${escapeHtml(photo.title)}" loading="lazy" />`
         : `<div class="collage-item-placeholder"></div>`}
       <figcaption class="collage-item-caption">
         <span class="collage-item-title">${escapeHtml(photo.title)}</span>
-        ${photo.description ? `<span class="collage-item-desc">${escapeHtml(photo.description)}</span>` : ""}
+        ${formattedDate ? `<span class="collage-item-date">${escapeHtml(formattedDate)}</span>` : ""}
       </figcaption>
     </figure>`;
 }
+
+// Hover reveals the caption on devices with a mouse; on touch devices there's
+// no hover, so tapping an item toggles the caption instead (tapping elsewhere
+// closes it).
+document.addEventListener("click", (e) => {
+  const item = e.target.closest("[data-collage-item]");
+  document.querySelectorAll(".collage-item.is-active").forEach((el) => {
+    if (el !== item) el.classList.remove("is-active");
+  });
+  if (item) item.classList.toggle("is-active");
+});
 
 function activityCardHtml(item) {
   return `

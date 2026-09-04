@@ -1126,11 +1126,14 @@ async function renderCommunityPhotos() {
     const thumbHtml = url
       ? `<img class="admin-thumb" src="${url}" alt="${esc(photo.title)}" loading="lazy" />`
       : `<span class="admin-thumb-placeholder" title="No image uploaded"><i class="fa-solid fa-image"></i></span>`;
+    const sizeLabel = { small: "Small", medium: "Medium", large: "Large" }[photo.size] || "Small";
+    const orientationLabel = photo.size === "medium" && photo.orientation === "tall" ? " (Tall)" : photo.size === "medium" ? " (Wide)" : "";
     return `
     <div class="category-item" draggable="true" data-comm-photo-id="${photo.id}">
       <span class="drag-handle" title="Drag to reorder">⠿</span>
       ${thumbHtml}
       <span class="category-item-name">${esc(photo.title)}</span>
+      <span class="badge">${sizeLabel}${orientationLabel}</span>
       <div class="category-item-actions">
         <button class="btn btn-outline btn-sm" data-action="edit-comm-photo" data-id="${photo.id}">Edit</button>
         <button class="btn btn-danger btn-sm"  data-action="del-comm-photo"  data-id="${photo.id}">Delete</button>
@@ -1194,7 +1197,10 @@ function openCommunityPhotoModal(id = null) {
   document.getElementById("community-photo-modal-title").textContent = id ? "Edit Photo" : "Add Photo";
   document.getElementById("community-photo-id").value          = id || "";
   document.getElementById("community-photo-title").value       = photo?.title || "";
-  document.getElementById("community-photo-description").value = photo?.description || "";
+  document.getElementById("community-photo-date").value        = photo?.date || "";
+  document.getElementById("community-photo-size").value         = photo?.size || "small";
+  document.getElementById("community-photo-orientation").value  = photo?.orientation || "wide";
+  toggleCommunityOrientationField();
   communityPhotoImgUpload?.setImageId(photo?.imageId || null);
   communityPhotoModal.classList.add("open");
 }
@@ -1203,7 +1209,14 @@ function closeCommunityPhotoModal() {
   communityPhotoModal.classList.remove("open");
   communityPhotoForm.reset();
   communityPhotoImgUpload?.setImageId(null);
+  toggleCommunityOrientationField();
 }
+
+function toggleCommunityOrientationField() {
+  const size = document.getElementById("community-photo-size").value;
+  document.getElementById("community-photo-orientation-group").hidden = size !== "medium";
+}
+document.getElementById("community-photo-size")?.addEventListener("change", toggleCommunityOrientationField);
 
 document.getElementById("add-community-photo-btn")?.addEventListener("click", () => openCommunityPhotoModal());
 document.getElementById("community-photo-modal-close")?.addEventListener("click", closeCommunityPhotoModal);
@@ -1214,7 +1227,11 @@ communityPhotoForm?.addEventListener("submit", async e => {
   const id = document.getElementById("community-photo-id").value;
   const payload = {
     title:       document.getElementById("community-photo-title").value.trim(),
-    description: document.getElementById("community-photo-description").value.trim(),
+    date:        document.getElementById("community-photo-date").value || null,
+    size:        document.getElementById("community-photo-size").value || "small",
+    orientation: document.getElementById("community-photo-size").value === "medium"
+      ? (document.getElementById("community-photo-orientation").value || "wide")
+      : null,
     imageId:     communityPhotoImgUpload?.getImageId() || null,
     order:       id ? communityPhotosData.find(p => p.id === id)?.order ?? communityPhotosData.length : communityPhotosData.length,
   };

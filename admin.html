@@ -519,7 +519,7 @@
           <hr class="admin-divider" />
 
           <h3 class="admin-subheading">Community Contributions</h3>
-          <p class="admin-hint">This section shows an intro paragraph followed by a photo collage — each photo has its own title and optional description.</p>
+          <p class="admin-hint">This section shows an intro paragraph followed by a photo collage. Each photo has a title, optional date, and a size (small, medium, or large) that controls how much space it takes up in the grid. Hovering (or tapping, on touch devices) reveals the title and date.</p>
 
           <form id="community-intro-form">
             <div class="form-group">
@@ -872,8 +872,23 @@
               <input type="text" id="community-photo-title" required />
             </div>
             <div class="form-group">
-              <label for="community-photo-description">Description <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
-              <textarea id="community-photo-description" rows="3"></textarea>
+              <label for="community-photo-date">Date <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+              <input type="date" id="community-photo-date" />
+            </div>
+            <div class="form-group">
+              <label for="community-photo-size">Size</label>
+              <select id="community-photo-size" required>
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </div>
+            <div class="form-group" id="community-photo-orientation-group" hidden>
+              <label for="community-photo-orientation">Medium orientation</label>
+              <select id="community-photo-orientation">
+                <option value="wide">Wide (2 cols × 1 row)</option>
+                <option value="tall">Tall (1 col × 2 rows)</option>
+              </select>
             </div>
             <div id="community-photo-image-upload"></div>
             <div class="form-actions">
