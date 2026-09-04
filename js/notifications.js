@@ -1,9 +1,10 @@
-import { getToken } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-messaging.js";
+import { getToken, deleteToken } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-messaging.js";
 import { messaging } from "./firebase-init.js";
 import { vapidKey } from "./firebase-config.js";
-import { saveNotificationToken } from "./firebase-service.js";
+import { saveNotificationToken, deleteNotificationToken } from "./firebase-service.js";
 
 const STORAGE_KEY = "bem-notifications-enabled";
+const TOKEN_KEY = "bem-notification-token";
 const PROMPTED_KEY = "bem-notifications-prompted";
 
 function isRunningAsInstalledApp() {
@@ -16,96 +17,112 @@ function isRunningAsInstalledApp() {
   );
 }
 
-function setButtonState(button, state) {
+function getToggleGroups() {
+  return Array.from(document.querySelectorAll("[data-notif-toggle-group]"));
+}
+
+function setToggleState(state) {
   // state: "off" | "on" | "unsupported" | "denied"
-  if (!button) return;
-  const icon = button.querySelector("i");
-  const label = button.querySelector("span");
+  getToggleGroups().forEach((group) => {
+    const offBtn = group.querySelector('[data-notif-btn="off"]');
+    const onBtn = group.querySelector('[data-notif-btn="on"]');
+    if (!offBtn || !onBtn) return;
 
-  if (state === "on") {
-    icon.className = "fa-solid fa-bell";
-    label.textContent = "Notifications on";
-    button.classList.add("is-active");
-    button.disabled = false;
-  } else if (state === "denied") {
-    icon.className = "fa-solid fa-bell-slash";
-    label.textContent = "Notifications blocked";
-    button.classList.remove("is-active");
-    button.disabled = true;
-    button.title = "Notifications are blocked in your browser settings for this site.";
-  } else if (state === "unsupported") {
-    icon.className = "fa-solid fa-bell-slash";
-    label.textContent = "Notifications unavailable";
-    button.classList.remove("is-active");
-    button.disabled = true;
-    button.title = "Push notifications aren't supported in this browser. On iPhone, add this site to your Home Screen first.";
-  } else {
-    icon.className = "fa-regular fa-bell";
-    label.textContent = "Enable notifications";
-    button.classList.remove("is-active");
-    button.disabled = false;
-  }
+    offBtn.classList.toggle("active", state === "off" || state === "denied" || state === "unsupported");
+    onBtn.classList.toggle("active", state === "on");
+
+    if (state === "unsupported") {
+      offBtn.disabled = true;
+      onBtn.disabled = true;
+      group.title = "Push notifications aren't supported in this browser. On iPhone, add this site to your Home Screen first.";
+    } else if (state === "denied") {
+      offBtn.disabled = true;
+      onBtn.disabled = true;
+      group.title = "Notifications are blocked in your browser settings for this site.";
+    } else {
+      offBtn.disabled = false;
+      onBtn.disabled = false;
+      group.title = "";
+    }
+  });
 }
 
-function setAllButtonsState(buttons, state) {
-  buttons.forEach((button) => setButtonState(button, state));
-}
-
-async function subscribe(buttons) {
+async function enableNotifications() {
   try {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
-      setAllButtonsState(buttons, permission === "denied" ? "denied" : "off");
+      setToggleState(permission === "denied" ? "denied" : "off");
       return;
     }
     const token = await getToken(messaging, { vapidKey });
 
     if (!token) {
-      setAllButtonsState(buttons, "off");
+      setToggleState("off");
       return;
     }
     await saveNotificationToken(token);
     localStorage.setItem(STORAGE_KEY, "true");
-    setAllButtonsState(buttons, "on");
+    localStorage.setItem(TOKEN_KEY, token);
+    setToggleState("on");
   } catch (err) {
     console.error("Notification subscription failed:", err);
-    setAllButtonsState(buttons, "off");
+    setToggleState("off");
+  }
+}
+
+async function disableNotifications() {
+  try {
+    const storedToken = localStorage.getItem(TOKEN_KEY);
+
+    if (messaging) {
+      await deleteToken(messaging).catch(() => {
+        // Token may already be invalid/expired on the browser's side —
+        // that's fine, we still want to clear our own records below.
+      });
+    }
+    if (storedToken) {
+      await deleteNotificationToken(storedToken).catch(() => {});
+    }
+  } catch (err) {
+    console.error("Failed to fully disable notifications:", err);
+  } finally {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    setToggleState("off");
   }
 }
 
 export function initNotificationToggle() {
-  // There can be more than one toggle on the page at once — the desktop
-  // settings dropdown's button and the mobile menu's button both use the
-  // same [data-notif-toggle] marker, the same way the language toggle
-  // already appears in more than one place.
-  const buttons = Array.from(document.querySelectorAll("[data-notif-toggle]"));
-  if (buttons.length === 0) return;
+  const groups = getToggleGroups();
+  if (groups.length === 0) return;
 
   if (!("Notification" in window)) {
-    setAllButtonsState(buttons, "unsupported");
+    setToggleState("unsupported");
     return;
   }
 
   if (Notification.permission === "denied") {
-    setAllButtonsState(buttons, "denied");
+    setToggleState("denied");
     return;
   }
 
   // Wait for the async isSupported() check in firebase-init.js to resolve
   // before deciding the UI state — messaging may end up null either
-  // because the browser genuinely doesn't support it (e.g. Safari outside
-  // of a home-screen install), or simply because the check hasn't finished
-  // yet. Retry a few times over a few seconds before concluding it's truly
-  // unsupported, since that check can take longer than a single 500ms
-  // wait on a slower connection or device.
+  // because the browser genuinely doesn't support it, or simply because
+  // the check hasn't finished yet. Retry a few times over a few seconds
+  // before concluding it's truly unsupported.
   const finishInit = () => {
     if (Notification.permission === "granted" && localStorage.getItem(STORAGE_KEY) === "true") {
-      setAllButtonsState(buttons, "on");
+      setToggleState("on");
     } else {
-      setAllButtonsState(buttons, "off");
+      setToggleState("off");
     }
-    buttons.forEach((button) => {
-      button.addEventListener("click", () => subscribe(buttons));
+
+    groups.forEach((group) => {
+      const offBtn = group.querySelector('[data-notif-btn="off"]');
+      const onBtn = group.querySelector('[data-notif-btn="on"]');
+      if (offBtn) offBtn.addEventListener("click", disableNotifications);
+      if (onBtn) onBtn.addEventListener("click", enableNotifications);
     });
   };
 
@@ -117,7 +134,7 @@ export function initNotificationToggle() {
     } else if (attempts < 6) {
       setTimeout(tryInit, 500);
     } else {
-      setAllButtonsState(buttons, "unsupported");
+      setToggleState("unsupported");
     }
   };
   tryInit();
@@ -132,7 +149,7 @@ export function initNotificationToggle() {
  *
  * After this first prompt (whether granted, denied, or dismissed), it
  * never asks again automatically — the visitor can still change their
- * mind later via the "Enable notifications" toggle in the settings menu.
+ * mind later via the on/off toggle in the settings menu.
  */
 export function initAutoNotificationPrompt() {
   if (!("Notification" in window)) return;
@@ -154,8 +171,7 @@ export function initAutoNotificationPrompt() {
     attempts += 1;
     if (messaging) {
       localStorage.setItem(PROMPTED_KEY, "true");
-      const buttons = Array.from(document.querySelectorAll("[data-notif-toggle]"));
-      subscribe(buttons);
+      enableNotifications();
     } else if (attempts < 6) {
       setTimeout(tryPrompt, 500);
     } else {

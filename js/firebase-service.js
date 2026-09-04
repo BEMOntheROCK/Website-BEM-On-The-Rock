@@ -67,7 +67,6 @@ const DEFAULT_ABOUT = {
   values: "Faith · Love · Integrity · Community · Service",
   contactNote:
     "We welcome visitors and newcomers. Come as you are — you belong here.",
-  heroImageId: null,
   missionImageId: null,
   visionImageId: null,
   valuesImageId: null,
@@ -234,6 +233,10 @@ export async function saveNotificationToken(token) {
     },
     { merge: true }
   );
+}
+
+export async function deleteNotificationToken(token) {
+  await deleteDoc(doc(db, "pushTokens", token));
 }
 
 // ── Community Contributions (photo collage) ──

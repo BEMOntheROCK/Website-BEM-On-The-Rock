@@ -2795,12 +2795,19 @@ button.settings-dropdown-link:disabled:hover i {
     transform: rotate(180deg);
   }
 
+  /* !important here is deliberate: .lang-toggle-item and .nav-item-notif
+     each have their own unconditional centering rule elsewhere
+     (`.nav-links .lang-toggle-item { display: flex; ... }`) with higher
+     CSS specificity than a plain single-class selector. Without
+     !important, those rules would win and this collapsible section would
+     never actually collapse for those two items. */
   .nav-more-item {
-    display: none;
+    display: none !important;
   }
 
   .nav-links.more-open .nav-more-item:not([hidden]) {
-    display: block;
+    display: flex !important;
+    justify-content: center;
   }
 
   body.nav-open {
@@ -3476,8 +3483,18 @@ button.settings-dropdown-link:disabled:hover i {
   color: #fff;
 }
 
+.lang-toggle button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.lang-toggle button:disabled:hover {
+  color: var(--text-muted);
+}
+
 /* Nav-embedded variant (shows inside mobile hamburger menu too) */
-.nav-links .lang-toggle-item {
+.nav-links .lang-toggle-item,
+.nav-links .nav-item-notif {
   display: flex;
   justify-content: center;
   padding: 0.5rem 0;

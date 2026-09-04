@@ -59,10 +59,14 @@
             </li>
             <li class="nav-item-admin nav-more-item"><a href="admin.html"><i class="fa-solid fa-user-shield nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.admin">Admin</span></a></li>
             <li class="nav-item-notif nav-more-item">
-              <button type="button" class="nav-action-btn" data-notif-toggle>
-                <i class="fa-regular fa-bell nav-link-icon" aria-hidden="true"></i>
-                <span data-i18n="header.notifEnable">Enable notifications</span>
-              </button>
+              <div class="lang-toggle notif-toggle" role="group" aria-label="Notifications" data-notif-toggle-group>
+                <button type="button" data-notif-btn="off" aria-label="Turn off notifications" title="Turn off notifications">
+                  <i class="fa-solid fa-bell-slash" aria-hidden="true"></i>
+                </button>
+                <button type="button" data-notif-btn="on" aria-label="Turn on notifications" title="Turn on notifications">
+                  <i class="fa-solid fa-bell" aria-hidden="true"></i>
+                </button>
+              </div>
             </li>
             <li class="nav-item-install nav-more-item" data-install-menu-item hidden>
               <button type="button" class="nav-action-btn" data-install-menu-trigger>
@@ -110,10 +114,16 @@
                 </div>
               </div>
               <hr class="settings-dropdown-divider" />
-              <button type="button" class="settings-dropdown-link" data-notif-toggle role="menuitem">
-                <i class="fa-regular fa-bell" aria-hidden="true"></i>
-                <span data-i18n="header.notifEnable">Enable notifications</span>
-              </button>
+              <div class="settings-dropdown-lang">
+                <div class="lang-toggle notif-toggle" role="group" aria-label="Notifications" data-notif-toggle-group>
+                  <button type="button" data-notif-btn="off" aria-label="Turn off notifications" title="Turn off notifications">
+                    <i class="fa-solid fa-bell-slash" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" data-notif-btn="on" aria-label="Turn on notifications" title="Turn on notifications">
+                    <i class="fa-solid fa-bell" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
               <hr class="settings-dropdown-divider" />
               <a href="privacy.html" class="settings-dropdown-link" role="menuitem">
                 <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
