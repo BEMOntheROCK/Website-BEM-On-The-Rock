@@ -519,7 +519,7 @@
           <hr class="admin-divider" />
 
           <h3 class="admin-subheading">Community Contributions</h3>
-          <p class="admin-hint">This section shows an intro paragraph followed by a photo collage. Each photo has a title, optional date, and a size (small, medium, or large) that controls how much space it takes up in the grid. Hovering (or tapping, on touch devices) reveals the title and date.</p>
+          <p class="admin-hint">This section shows an intro paragraph followed by a photo collage. Each photo has a title, optional date, and a size (in grid columns × rows) that controls how much space it takes up in the grid. Hovering (or tapping, on touch devices) reveals the title and date.</p>
 
           <form id="community-intro-form">
             <div class="form-group">
@@ -876,18 +876,17 @@
               <input type="date" id="community-photo-date" />
             </div>
             <div class="form-group">
-              <label for="community-photo-size">Size</label>
+              <label for="community-photo-size">Size (columns × rows)</label>
               <select id="community-photo-size" required>
-                <option value="small">Small</option>
-                <option value="medium">Medium</option>
-                <option value="large">Large</option>
-              </select>
-            </div>
-            <div class="form-group" id="community-photo-orientation-group" hidden>
-              <label for="community-photo-orientation">Medium orientation</label>
-              <select id="community-photo-orientation">
-                <option value="wide">Wide (2 cols × 1 row)</option>
-                <option value="tall">Tall (1 col × 2 rows)</option>
+                <option value="1x1">1 × 1 — Square</option>
+                <option value="1x2">1 × 2 — Tall</option>
+                <option value="2x1">2 × 1 — Wide</option>
+                <option value="2x2">2 × 2 — Large square</option>
+                <option value="3x1">3 × 1 — Extra wide</option>
+                <option value="3x2">3 × 2 — Wide</option>
+                <option value="3x3">3 × 3 — Extra large square</option>
+                <option value="3x4">3 × 4 — Extra tall</option>
+                <option value="4x3">4 × 3 — Extra wide</option>
               </select>
             </div>
             <div id="community-photo-image-upload"></div>

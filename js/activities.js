@@ -143,13 +143,10 @@ function formatCollageDate(dateStr) {
   return d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
 }
 
+const COMMUNITY_SIZES = ["1x1", "1x2", "2x1", "2x2", "3x1", "3x2", "3x3", "3x4", "4x3"];
+
 function collageItemHtml(photo) {
-  const size = ["small", "medium", "large"].includes(photo.size) ? photo.size : "small";
-  const sizeClass = size === "medium" && photo.orientation === "tall"
-    ? "collage-item--medium-tall"
-    : size === "medium"
-      ? "collage-item--medium-wide"
-      : `collage-item--${size}`;
+  const sizeClass = `collage-item--${COMMUNITY_SIZES.includes(photo.size) ? photo.size : "1x1"}`;
   const formattedDate = formatCollageDate(photo.date);
   if (photo.imageUrl) communityPhotoCropMap.set(photo.id, photo.crop || DEFAULT_CROP);
   return `

@@ -3305,20 +3305,28 @@ button.settings-dropdown-link:disabled:hover i {
   grid-row: span 1;
 }
 
-/* Medium = wide or tall (admin's choice); Large = big square */
-.collage-item--medium-wide {
-  grid-column: span 2;
-  grid-row: span 1;
-}
+/* Size classes: name is columns × rows spanned in the grid, matching the
+   admin's dropdown 1:1 so the crop aspect ratio can be derived the same way. */
+.collage-item--1x1 { grid-column: span 1; grid-row: span 1; }
+.collage-item--1x2 { grid-column: span 1; grid-row: span 2; }
+.collage-item--2x1 { grid-column: span 2; grid-row: span 1; }
+.collage-item--2x2 { grid-column: span 2; grid-row: span 2; }
+.collage-item--3x1 { grid-column: span 3; grid-row: span 1; }
+.collage-item--3x2 { grid-column: span 3; grid-row: span 2; }
+.collage-item--3x3 { grid-column: span 3; grid-row: span 3; }
+.collage-item--3x4 { grid-column: span 3; grid-row: span 4; }
+.collage-item--4x3 { grid-column: span 4; grid-row: span 3; }
 
-.collage-item--medium-tall {
-  grid-column: span 1;
-  grid-row: span 2;
-}
-
-.collage-item--large {
-  grid-column: span 2;
-  grid-row: span 2;
+/* On narrow screens there usually aren't 3-4 columns available, so cap the
+   widest items down to something that still fits without overflowing. */
+@media (max-width: 768px) {
+  .collage-item--3x1,
+  .collage-item--3x2,
+  .collage-item--3x3,
+  .collage-item--3x4,
+  .collage-item--4x3 {
+    grid-column: span 2;
+  }
 }
 
 .collage-item:hover,

@@ -1139,14 +1139,13 @@ async function renderCommunityPhotos() {
     const thumbHtml = url
       ? `<img class="admin-thumb" src="${url}" alt="${esc(photo.title)}" loading="lazy" />`
       : `<span class="admin-thumb-placeholder" title="No image uploaded"><i class="fa-solid fa-image"></i></span>`;
-    const sizeLabel = { small: "Small", medium: "Medium", large: "Large" }[photo.size] || "Small";
-    const orientationLabel = photo.size === "medium" && photo.orientation === "tall" ? " (Tall)" : photo.size === "medium" ? " (Wide)" : "";
+    const sizeLabel = COMMUNITY_SIZES.includes(photo.size) ? photo.size.replace("x", " × ") : "1 × 1";
     return `
     <div class="category-item" draggable="true" data-comm-photo-id="${photo.id}">
       <span class="drag-handle" title="Drag to reorder">⠿</span>
       ${thumbHtml}
       <span class="category-item-name">${esc(photo.title)}</span>
-      <span class="badge">${sizeLabel}${orientationLabel}</span>
+      <span class="badge">${sizeLabel}</span>
       <div class="category-item-actions">
         <button class="btn btn-outline btn-sm" data-action="edit-comm-photo" data-id="${photo.id}">Edit</button>
         <button class="btn btn-danger btn-sm"  data-action="del-comm-photo"  data-id="${photo.id}">Delete</button>
@@ -1211,9 +1210,8 @@ function openCommunityPhotoModal(id = null) {
   document.getElementById("community-photo-id").value          = id || "";
   document.getElementById("community-photo-title").value       = photo?.title || "";
   document.getElementById("community-photo-date").value        = photo?.date || "";
-  document.getElementById("community-photo-size").value         = photo?.size || "small";
-  document.getElementById("community-photo-orientation").value  = photo?.orientation || "wide";
-  toggleCommunityOrientationField();
+  document.getElementById("community-photo-size").value         = COMMUNITY_SIZES.includes(photo?.size) ? photo.size : "1x1";
+  updateCommunityCropAspect();
   communityPhotoImgUpload?.setImageId(photo?.imageId || null);
   if (photo?.imageId) {
     getImageUrl(photo.imageId).then(url => {
@@ -1231,31 +1229,18 @@ function closeCommunityPhotoModal() {
   communityPhotoForm.reset();
   communityPhotoImgUpload?.setImageId(null);
   communityCropEditor?.setImage(null);
-  toggleCommunityOrientationField();
+  updateCommunityCropAspect();
 }
 
-const COMMUNITY_CROP_ASPECT = {
-  small: "1 / 1",
-  large: "1 / 1",
-  "medium-wide": "2 / 1",
-  "medium-tall": "1 / 2",
-};
+const COMMUNITY_SIZES = ["1x1", "1x2", "2x1", "2x2", "3x1", "3x2", "3x3", "3x4", "4x3"];
 
 function updateCommunityCropAspect() {
   const size = document.getElementById("community-photo-size").value;
-  const orientation = document.getElementById("community-photo-orientation").value;
-  const key = size === "medium" ? `medium-${orientation}` : size;
+  const [cols, rows] = size.split("x").map(Number);
   const box = document.getElementById("community-photo-crop-editor")?.querySelector("[data-crop-box]");
-  if (box) box.style.aspectRatio = COMMUNITY_CROP_ASPECT[key] || "1 / 1";
+  if (box) box.style.aspectRatio = `${cols || 1} / ${rows || 1}`;
 }
-
-function toggleCommunityOrientationField() {
-  const size = document.getElementById("community-photo-size").value;
-  document.getElementById("community-photo-orientation-group").hidden = size !== "medium";
-  updateCommunityCropAspect();
-}
-document.getElementById("community-photo-size")?.addEventListener("change", toggleCommunityOrientationField);
-document.getElementById("community-photo-orientation")?.addEventListener("change", updateCommunityCropAspect);
+document.getElementById("community-photo-size")?.addEventListener("change", updateCommunityCropAspect);
 
 document.getElementById("add-community-photo-btn")?.addEventListener("click", () => openCommunityPhotoModal());
 document.getElementById("community-photo-modal-close")?.addEventListener("click", closeCommunityPhotoModal);
@@ -1265,14 +1250,13 @@ communityPhotoForm?.addEventListener("submit", async e => {
   e.preventDefault();
   const id = document.getElementById("community-photo-id").value;
   const payload = {
-    title:       document.getElementById("community-photo-title").value.trim(),
-    date:        document.getElementById("community-photo-date").value || null,
-    size:        document.getElementById("community-photo-size").value || "small",
-    orientation: document.getElementById("community-photo-size").value === "medium"
-      ? (document.getElementById("community-photo-orientation").value || "wide")
-      : null,
-    imageId:     communityPhotoImgUpload?.getImageId() || null,
-    order:       id ? communityPhotosData.find(p => p.id === id)?.order ?? communityPhotosData.length : communityPhotosData.length,
+    title:   document.getElementById("community-photo-title").value.trim(),
+    date:    document.getElementById("community-photo-date").value || null,
+    size:    COMMUNITY_SIZES.includes(document.getElementById("community-photo-size").value)
+      ? document.getElementById("community-photo-size").value
+      : "1x1",
+    imageId: communityPhotoImgUpload?.getImageId() || null,
+    order:   id ? communityPhotosData.find(p => p.id === id)?.order ?? communityPhotosData.length : communityPhotosData.length,
   };
   if (payload.imageId) payload.crop = communityCropEditor?.getCrop() || DEFAULT_CROP;
   try {
