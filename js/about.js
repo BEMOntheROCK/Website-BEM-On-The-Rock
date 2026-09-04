@@ -185,15 +185,6 @@ async function renderAbout(about) {
 
   const note = document.getElementById("contact-note");
   if (note) note.textContent = about.contactNote || "";
-
-  const hero = document.getElementById("about-hero");
-  if (hero && about.heroImageId) {
-    const url = await getImageUrl(about.heroImageId);
-    if (url) {
-      hero.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.45)), url("${url}")`;
-      hero.classList.add("page-hero--has-bg");
-    }
-  }
 }
 
 function renderContact(about) {

@@ -255,7 +255,6 @@ async function initAll() {
   serviceImgUpload = safeBind("service-image-upload", { inputId: "service-img-in", label: "Service Image" });
   communityPhotoImgUpload = safeBind("community-photo-image-upload", { inputId: "comm-img-in", label: "Photo" });
   aboutUploads = {
-    hero:    safeBind("about-hero-image-upload",    { inputId: "ab-hero-in",    label: "Hero Background" }),
     founder: safeBind("about-founder-image-upload", { inputId: "ab-founder-in", label: "Founder Photo" }),
     mission: safeBind("about-mission-image-upload", { inputId: "ab-mission-in", label: "Mission Image" }),
     vision:  safeBind("about-vision-image-upload",  { inputId: "ab-vision-in",  label: "Vision Image" }),
@@ -937,7 +936,6 @@ async function loadAboutForm() {
   set("about-vision",           about.vision);
   set("about-values",           about.values);
   set("about-contact-note",     about.contactNote);
-  aboutUploads.hero?.setImageId(about.heroImageId);
   aboutUploads.founder?.setImageId(about.founderImageId);
   aboutUploads.mission?.setImageId(about.missionImageId);
   aboutUploads.vision?.setImageId(about.visionImageId);
@@ -970,7 +968,6 @@ document.getElementById("about-form").addEventListener("submit", async e => {
       vision:           get("about-vision"),
       values:           get("about-values"),
       contactNote:      get("about-contact-note"),
-      heroImageId:      aboutUploads.hero?.getImageId() || null,
       missionImageId:   aboutUploads.mission?.getImageId() || null,
       visionImageId:    aboutUploads.vision?.getImageId() || null,
       valuesImageId:    aboutUploads.values?.getImageId() || null,
