@@ -133,8 +133,11 @@ document.querySelectorAll("[data-settings-dropdown]").forEach((wrapper) => {
     }
   });
 
-  // Close the dropdown after a language button or link inside it is used
-  menu.querySelectorAll("button, a").forEach((el) => {
+  // Close the dropdown only when a real navigational link inside it is
+  // used (Privacy Policy, Admin) — the language and notification toggles
+  // should stay open so people can flip between options without the menu
+  // closing on them each time.
+  menu.querySelectorAll(".settings-dropdown-link").forEach((el) => {
     el.addEventListener("click", () => closeDropdown());
   });
 });

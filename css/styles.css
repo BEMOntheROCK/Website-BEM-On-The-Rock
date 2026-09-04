@@ -3618,7 +3618,7 @@ button.settings-dropdown-link:disabled:hover i {
 
 .lang-toggle button.active {
   background: var(--secondary);
-  color: #fff;
+  color: var(--bg);
 }
 
 .lang-toggle button:disabled {
