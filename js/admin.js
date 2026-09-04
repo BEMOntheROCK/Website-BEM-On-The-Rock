@@ -26,7 +26,7 @@ import {
 } from "./firebase-service.js";
 import { bindImageUpload, deleteImage, getImageUrl } from "./image-service.js";
 import { createCropEditor } from "./crop-editor.js";
-import { DEFAULT_CROP } from "./image-crop.js";
+import { DEFAULT_CROP, mountCroppedImage } from "./image-crop.js";
 
 // ── DOM refs ──
 const authScreen    = document.getElementById("auth-screen");
@@ -1133,27 +1133,39 @@ async function renderCommunityPhotos() {
     container.innerHTML = `<p class="admin-hint">No photos yet. Add one to get started.</p>`;
     return;
   }
-  const thumbs = await buildThumbMap(communityPhotosData);
+  const urls = await buildThumbMap(communityPhotosData);
   container.innerHTML = communityPhotosData.map(photo => {
-    const url = photo.imageId ? thumbs.get(photo.imageId) : null;
-    const thumbHtml = url
-      ? `<img class="admin-thumb" src="${url}" alt="${esc(photo.title)}" loading="lazy" />`
-      : `<span class="admin-thumb-placeholder" title="No image uploaded"><i class="fa-solid fa-image"></i></span>`;
+    const url = photo.imageId ? urls.get(photo.imageId) : null;
+    const mediaHtml = url
+      ? `<img src="${url}" alt="${esc(photo.title)}" loading="lazy" />`
+      : `<div class="collage-item-placeholder"><i class="fa-solid fa-image"></i></div>`;
+    const sizeClass = `collage-item--${COMMUNITY_SIZES.includes(photo.size) ? photo.size : "1x1"}`;
     const sizeLabel = COMMUNITY_SIZES.includes(photo.size) ? photo.size.replace("x", " × ") : "1 × 1";
     return `
-    <div class="category-item" draggable="true" data-comm-photo-id="${photo.id}">
-      <span class="drag-handle" title="Drag to reorder">⠿</span>
-      ${thumbHtml}
-      <span class="category-item-name">${esc(photo.title)}</span>
-      <span class="badge">${sizeLabel}</span>
-      <div class="category-item-actions">
-        <button class="btn btn-outline btn-sm" data-action="edit-comm-photo" data-id="${photo.id}">Edit</button>
-        <button class="btn btn-danger btn-sm"  data-action="del-comm-photo"  data-id="${photo.id}">Delete</button>
-      </div>
-    </div>`;
+    <figure class="collage-item ${sizeClass} admin-collage-item" draggable="true" data-comm-photo-id="${photo.id}">
+      ${mediaHtml}
+      <figcaption class="admin-collage-overlay">
+        <span class="admin-collage-title">${esc(photo.title)}</span>
+        <span class="badge">${sizeLabel}</span>
+        <div class="admin-collage-actions">
+          <button class="btn btn-outline btn-sm" data-action="edit-comm-photo" data-id="${photo.id}">Edit</button>
+          <button class="btn btn-danger btn-sm"  data-action="del-comm-photo"  data-id="${photo.id}">Delete</button>
+        </div>
+      </figcaption>
+    </figure>`;
   }).join("");
 
+  mountAdminCollageCrops(container);
   bindCommunityPhotoDrag(container);
+}
+
+function mountAdminCollageCrops(container) {
+  container.querySelectorAll(".collage-item[data-comm-photo-id]").forEach(figure => {
+    const img = figure.querySelector("img");
+    if (!img) return;
+    const photo = communityPhotosData.find(p => p.id === figure.dataset.commPhotoId);
+    mountCroppedImage(figure, img, photo?.crop || DEFAULT_CROP);
+  });
 }
 
 document.getElementById("community-photos-list")?.addEventListener("click", e => {
@@ -1165,25 +1177,25 @@ document.getElementById("community-photos-list")?.addEventListener("click", e =>
 
 function bindCommunityPhotoDrag(container) {
   let dragSrc = null;
-  container.querySelectorAll(".category-item").forEach(item => {
+  container.querySelectorAll(".collage-item").forEach(item => {
     item.addEventListener("dragstart", e => {
       dragSrc = item;
       e.dataTransfer.effectAllowed = "move";
-      item.style.opacity = "0.5";
+      item.classList.add("is-dragging");
     });
     item.addEventListener("dragend", () => {
-      item.style.opacity = "";
-      container.querySelectorAll(".category-item").forEach(i => i.classList.remove("drag-over"));
+      item.classList.remove("is-dragging");
+      container.querySelectorAll(".collage-item").forEach(i => i.classList.remove("drag-over"));
     });
     item.addEventListener("dragover", e => {
       e.preventDefault();
-      container.querySelectorAll(".category-item").forEach(i => i.classList.remove("drag-over"));
+      container.querySelectorAll(".collage-item").forEach(i => i.classList.remove("drag-over"));
       if (item !== dragSrc) item.classList.add("drag-over");
     });
     item.addEventListener("drop", async e => {
       e.preventDefault();
       if (!dragSrc || dragSrc === item) return;
-      const items   = [...container.querySelectorAll(".category-item")];
+      const items   = [...container.querySelectorAll(".collage-item")];
       const srcIdx  = items.indexOf(dragSrc);
       const tgtIdx  = items.indexOf(item);
       const reorder = [...communityPhotosData];
