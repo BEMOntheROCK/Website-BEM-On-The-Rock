@@ -2,6 +2,7 @@ import "./common.js";
 import { hideLoadingOverlay } from "./loading-overlay.js";
 import { getActivities, getCommunityContent, getCommunityPhotos } from "./firebase-service.js";
 import { getImageUrl } from "./image-service.js";
+import { mountCroppedImage, DEFAULT_CROP } from "./image-crop.js";
 
 document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -85,6 +86,8 @@ async function loadPage() {
         <p>Activities and ministries will be published here soon.</p>
       </div>`;
 
+    mountCommunityPhotoCrops();
+
   } catch (err) {
     console.error("Failed to load activities:", err);
     container.innerHTML = `
@@ -94,6 +97,20 @@ async function loadPage() {
   } finally {
     hideLoadingOverlay();
   }
+}
+
+// id -> crop, populated when the community collage is built so the crop can
+// be applied to each <img> after it's actually in the DOM (mountCroppedImage
+// needs a real, laid-out container to measure).
+const communityPhotoCropMap = new Map();
+
+function mountCommunityPhotoCrops() {
+  document.querySelectorAll(".collage-item[data-photo-id]").forEach((figure) => {
+    const img = figure.querySelector("img");
+    if (!img) return;
+    const crop = communityPhotoCropMap.get(figure.dataset.photoId) || DEFAULT_CROP;
+    mountCroppedImage(figure, img, crop);
+  });
 }
 
 async function communityContributionsHtml(communityContent, photos) {
@@ -134,8 +151,9 @@ function collageItemHtml(photo) {
       ? "collage-item--medium-wide"
       : `collage-item--${size}`;
   const formattedDate = formatCollageDate(photo.date);
+  if (photo.imageUrl) communityPhotoCropMap.set(photo.id, photo.crop || DEFAULT_CROP);
   return `
-    <figure class="collage-item ${sizeClass}" tabindex="0" data-collage-item>
+    <figure class="collage-item ${sizeClass}" tabindex="0" data-collage-item data-photo-id="${photo.id}">
       ${photo.imageUrl
         ? `<img src="${photo.imageUrl}" alt="${escapeHtml(photo.title)}" loading="lazy" />`
         : `<div class="collage-item-placeholder"></div>`}

@@ -68,6 +68,7 @@ let orgChartUpload   = null;
 let activityImgUpload = null;
 let serviceImgUpload = null;
 let communityPhotoImgUpload = null;
+let communityCropEditor = null;
 let aboutUploads     = {};
 
 // ── Helpers ──
@@ -253,7 +254,19 @@ async function initAll() {
   orgChartUpload  = safeBind("org-chart-image-upload", { inputId: "org-img-in",     label: "Organisation Chart Image" });
   activityImgUpload = safeBind("activity-image-upload", { inputId: "act-img-in", label: "Activity Image" });
   serviceImgUpload = safeBind("service-image-upload", { inputId: "service-img-in", label: "Service Image" });
-  communityPhotoImgUpload = safeBind("community-photo-image-upload", { inputId: "comm-img-in", label: "Photo" });
+  communityPhotoImgUpload = safeBind("community-photo-image-upload", {
+    inputId: "comm-img-in",
+    label: "Photo",
+    onImageIdChange: async (newId) => {
+      if (!communityCropEditor) return;
+      const url = newId ? await getImageUrl(newId) : null;
+      communityCropEditor.setImage(url);
+    },
+  });
+  const communityCropEditorContainer = document.getElementById("community-photo-crop-editor");
+  if (communityCropEditorContainer) {
+    communityCropEditor = createCropEditor(communityCropEditorContainer);
+  }
   aboutUploads = {
     founder: safeBind("about-founder-image-upload", { inputId: "ab-founder-in", label: "Founder Photo" }),
     mission: safeBind("about-mission-image-upload", { inputId: "ab-mission-in", label: "Mission Image" }),
@@ -1202,6 +1215,14 @@ function openCommunityPhotoModal(id = null) {
   document.getElementById("community-photo-orientation").value  = photo?.orientation || "wide";
   toggleCommunityOrientationField();
   communityPhotoImgUpload?.setImageId(photo?.imageId || null);
+  if (photo?.imageId) {
+    getImageUrl(photo.imageId).then(url => {
+      communityCropEditor?.setImage(url);
+      communityCropEditor?.setCrop(photo?.crop || DEFAULT_CROP);
+    });
+  } else {
+    communityCropEditor?.setImage(null);
+  }
   communityPhotoModal.classList.add("open");
 }
 
@@ -1209,14 +1230,32 @@ function closeCommunityPhotoModal() {
   communityPhotoModal.classList.remove("open");
   communityPhotoForm.reset();
   communityPhotoImgUpload?.setImageId(null);
+  communityCropEditor?.setImage(null);
   toggleCommunityOrientationField();
+}
+
+const COMMUNITY_CROP_ASPECT = {
+  small: "1 / 1",
+  large: "1 / 1",
+  "medium-wide": "2 / 1",
+  "medium-tall": "1 / 2",
+};
+
+function updateCommunityCropAspect() {
+  const size = document.getElementById("community-photo-size").value;
+  const orientation = document.getElementById("community-photo-orientation").value;
+  const key = size === "medium" ? `medium-${orientation}` : size;
+  const box = document.getElementById("community-photo-crop-editor")?.querySelector("[data-crop-box]");
+  if (box) box.style.aspectRatio = COMMUNITY_CROP_ASPECT[key] || "1 / 1";
 }
 
 function toggleCommunityOrientationField() {
   const size = document.getElementById("community-photo-size").value;
   document.getElementById("community-photo-orientation-group").hidden = size !== "medium";
+  updateCommunityCropAspect();
 }
 document.getElementById("community-photo-size")?.addEventListener("change", toggleCommunityOrientationField);
+document.getElementById("community-photo-orientation")?.addEventListener("change", updateCommunityCropAspect);
 
 document.getElementById("add-community-photo-btn")?.addEventListener("click", () => openCommunityPhotoModal());
 document.getElementById("community-photo-modal-close")?.addEventListener("click", closeCommunityPhotoModal);
@@ -1235,6 +1274,7 @@ communityPhotoForm?.addEventListener("submit", async e => {
     imageId:     communityPhotoImgUpload?.getImageId() || null,
     order:       id ? communityPhotosData.find(p => p.id === id)?.order ?? communityPhotosData.length : communityPhotosData.length,
   };
+  if (payload.imageId) payload.crop = communityCropEditor?.getCrop() || DEFAULT_CROP;
   try {
     if (id) await updateCommunityPhoto(id, payload);
     else    await createCommunityPhoto(payload);
