@@ -163,14 +163,56 @@ function collageItemHtml(photo) {
 
 // Hover reveals the caption on devices with a mouse; on touch devices there's
 // no hover, so tapping an item toggles the caption instead (tapping elsewhere
-// closes it).
+// closes it). Tapping the photo itself, rather than the caption area, opens
+// a fullscreen lightbox instead of toggling the caption.
 document.addEventListener("click", (e) => {
   const item = e.target.closest("[data-collage-item]");
+
+  if (item && e.target.tagName === "IMG") {
+    openLightbox(e.target.src, e.target.alt);
+    return;
+  }
+
   document.querySelectorAll(".collage-item.is-active").forEach((el) => {
     if (el !== item) el.classList.remove("is-active");
   });
   if (item) item.classList.toggle("is-active");
 });
+
+function openLightbox(src, alt) {
+  const overlay = document.querySelector("[data-lightbox-overlay]");
+  const img = overlay?.querySelector("[data-lightbox-image]");
+  if (!overlay || !img) return;
+  img.src = src;
+  img.alt = alt || "";
+  overlay.classList.add("open");
+  document.body.classList.add("lightbox-open");
+}
+
+function closeLightbox() {
+  const overlay = document.querySelector("[data-lightbox-overlay]");
+  if (!overlay) return;
+  overlay.classList.remove("open");
+  document.body.classList.remove("lightbox-open");
+  const img = overlay.querySelector("[data-lightbox-image]");
+  if (img) img.src = "";
+}
+
+(function initLightbox() {
+  const overlay = document.querySelector("[data-lightbox-overlay]");
+  if (!overlay) return;
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeLightbox();
+  });
+
+  const closeBtn = overlay.querySelector("[data-lightbox-close]");
+  if (closeBtn) closeBtn.addEventListener("click", closeLightbox);
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && overlay.classList.contains("open")) closeLightbox();
+  });
+})();
 
 function activityCardHtml(item) {
   return `

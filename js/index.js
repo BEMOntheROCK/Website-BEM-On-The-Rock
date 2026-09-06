@@ -88,6 +88,17 @@ async function checkYoutubeLive(liveUrl) {
   }
 }
 
+// How often to silently re-check whether the stream has gone live/offline
+// while the page stays open (ms).
+const LIVE_POLL_INTERVAL = 60 * 1000;
+
+// Tracks whether the visitor is currently looking at the "live" slot in the
+// player (as opposed to a past video they picked from the carousel), so a
+// background poll knows whether it's safe to swap the embed automatically.
+let isViewingLiveSlot = true;
+let livePollTimer = null;
+let currentLiveState = { live: false, videoId: null };
+
 async function renderLivestream(settings) {
   const liveUrl = settings.youtubeLiveUrl || defaultYouTube.liveUrl;
   const channelUrl = settings.youtubeChannelUrl || defaultYouTube.channelUrl;
@@ -114,12 +125,9 @@ async function renderLivestream(settings) {
     : liveUrl;
 
   const { live, videoId } = await checkYoutubeLive(checkUrl);
+  currentLiveState = { live, videoId };
 
-  const statusBadge = document.getElementById("livestream-status-badge");
-  if (statusBadge) {
-    statusBadge.textContent = live ? "Live Stream" : "Offline";
-    statusBadge.classList.toggle("live-badge--offline", !live);
-  }
+  applyLiveStatusToBadge(live);
 
   if (live && videoId) {
     embedVideo(videoId, "BEM On The ROCK — Live Now");
@@ -127,7 +135,68 @@ async function renderLivestream(settings) {
     embedNextServicePlaceholder(settings.serviceTimes, liveUrl);
   }
 
+  // Keep re-checking in the background so a visitor who leaves the homepage
+  // open sees the status flip to "Live" (and the player swap in) once the
+  // stream actually starts, instead of it being stuck at whatever it was
+  // when the page first loaded.
+  startLivePolling(checkUrl, settings.serviceTimes, liveUrl);
+
   return { live, videoId };
+}
+
+function applyLiveStatusToBadge(live) {
+  const statusBadge = document.getElementById("livestream-status-badge");
+  if (statusBadge) {
+    statusBadge.textContent = live ? "Live Stream" : "Offline";
+    statusBadge.classList.toggle("live-badge--offline", !live);
+  }
+
+  const carouselBadge = document.querySelector(".carousel-card--live .carousel-live-badge");
+  if (carouselBadge) carouselBadge.textContent = live ? "● Live" : "Offline";
+
+  const carouselTitle = document.querySelector(".carousel-card--live h4");
+  if (carouselTitle) carouselTitle.textContent = live ? "Live Now" : "Currently Offline";
+}
+
+function startLivePolling(checkUrl, serviceTimesText, liveUrl) {
+  stopLivePolling();
+  livePollTimer = setInterval(
+    () => refreshLiveStatus(checkUrl, serviceTimesText, liveUrl),
+    LIVE_POLL_INTERVAL
+  );
+
+  // Also re-check right away whenever the tab becomes visible again — a
+  // visitor switching back after a few minutes shouldn't have to wait for
+  // the next timer tick.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshLiveStatus(checkUrl, serviceTimesText, liveUrl);
+  });
+}
+
+function stopLivePolling() {
+  if (livePollTimer) clearInterval(livePollTimer);
+  livePollTimer = null;
+}
+
+async function refreshLiveStatus(checkUrl, serviceTimesText, liveUrl) {
+  const { live, videoId } = await checkYoutubeLive(checkUrl);
+  const changed = live !== currentLiveState.live || videoId !== currentLiveState.videoId;
+  currentLiveState = { live, videoId };
+
+  if (!changed) return;
+
+  applyLiveStatusToBadge(live);
+
+  // Only touch the visible player if the visitor is still looking at the
+  // "live" slot — if they've picked a past video from the carousel, leave
+  // it playing instead of yanking it out from under them.
+  if (isViewingLiveSlot) {
+    if (live && videoId) {
+      embedVideo(videoId, "BEM On The ROCK — Live Now");
+    } else {
+      embedNextServicePlaceholder(serviceTimesText, liveUrl);
+    }
+  }
 }
 
 async function renderCarousel(videos, isLive, liveVideoId, serviceTimesText, liveUrl) {
@@ -167,10 +236,11 @@ async function renderCarousel(videos, isLive, liveVideoId, serviceTimesText, liv
   container.querySelectorAll(".carousel-card").forEach((card) => {
     card.addEventListener("click", () => {
       const isLiveCard = card.getAttribute("data-live") === "true";
+      isViewingLiveSlot = isLiveCard;
 
       if (isLiveCard) {
-        if (isLive && liveVideoId) {
-          embedVideo(liveVideoId, "BEM On The ROCK — Live Now");
+        if (currentLiveState.live && currentLiveState.videoId) {
+          embedVideo(currentLiveState.videoId, "BEM On The ROCK — Live Now");
         } else {
           embedNextServicePlaceholder(serviceTimesText, liveUrl);
         }

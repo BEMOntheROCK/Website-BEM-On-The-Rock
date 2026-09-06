@@ -91,6 +91,9 @@ function updateToggleUI(lang) {
     btn.classList.toggle("active", btn.getAttribute("data-lang-btn") === lang);
   });
   document.documentElement.setAttribute("lang", lang === "ms" ? "ms" : "en");
+  document.querySelectorAll("[data-lang-popup-label]").forEach((el) => {
+    el.textContent = lang === "ms" ? "Language: Malay" : "Language: English";
+  });
 }
 
 export async function setLanguage(lang) {

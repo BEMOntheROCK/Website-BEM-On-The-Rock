@@ -59,7 +59,7 @@
             </li>
             <li class="nav-item-admin nav-more-item"><a href="admin.html"><i class="fa-solid fa-user-shield nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.admin">Admin</span></a></li>
             <li class="nav-item-notif nav-more-item">
-              <div class="lang-toggle notif-toggle" role="group" aria-label="Notifications" data-notif-toggle-group>
+              <div class="lang-toggle notif-toggle notif-toggle--lg" role="group" aria-label="Notifications" data-notif-toggle-group>
                 <button type="button" data-notif-btn="off" aria-label="Turn off notifications" title="Turn off notifications">
                   <i class="fa-solid fa-bell-slash" aria-hidden="true"></i>
                 </button>
@@ -75,10 +75,10 @@
               </button>
             </li>
             <li class="lang-toggle-item nav-more-item">
-              <div class="lang-toggle" role="group" aria-label="Language">
-                <button type="button" data-lang-btn="en">EN</button>
-                <button type="button" data-lang-btn="ms">BM</button>
-              </div>
+              <button type="button" class="nav-action-btn" data-lang-popup-trigger aria-haspopup="true" aria-expanded="false">
+                <i class="fa-solid fa-language nav-link-icon" aria-hidden="true"></i>
+                <span data-lang-popup-label>Language: English</span>
+              </button>
             </li>
           </ul>
         </nav>
@@ -184,34 +184,6 @@
         </div>
       </section>
 
-      <section class="section explore-links-section notranslate" translate="no">
-        <div class="explore-links-card">
-          <h2 class="explore-links-title" data-i18n="home.exploreMore.title">Learn More About Our Church</h2>
-          <div class="explore-links">
-            <a href="history.html" class="btn btn-outline">
-              <i class="fa-solid fa-clock-rotate-left"></i>
-              <span class="explore-link-full" data-i18n="home.hero.historyBtn">Our History</span>
-              <span class="explore-link-short" data-i18n="home.hero.historyBtnShort">Our History</span>
-            </a>
-            <a href="organisation-structure.html" class="btn btn-outline">
-              <i class="fa-solid fa-sitemap"></i>
-              <span class="explore-link-full" data-i18n="home.hero.leadersBtn">Our Leaders</span>
-              <span class="explore-link-short" data-i18n="home.hero.leadersBtnShort">Our Leader</span>
-            </a>
-            <a href="activities.html" class="btn btn-outline">
-              <i class="fa-solid fa-hands-praying"></i>
-              <span class="explore-link-full" data-i18n="home.hero.ministriesBtn">Our Ministries</span>
-              <span class="explore-link-short" data-i18n="home.hero.ministriesBtnShort">Our Ministries</span>
-            </a>
-            <a href="services.html" class="btn btn-outline">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i>
-              <span class="explore-link-full" data-i18n="home.hero.servicesBtn">Our Services</span>
-              <span class="explore-link-short" data-i18n="home.hero.servicesBtnShort">Our Services</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
       <section class="section news-section" id="news">
         <div class="container">
           <div class="section-header notranslate" translate="no">
@@ -288,6 +260,34 @@
           </div>
         </div>
       </section>
+
+      <section class="section explore-links-section notranslate" translate="no">
+        <div class="explore-links-card">
+          <h2 class="explore-links-title" data-i18n="home.exploreMore.title">Learn More About Our Church</h2>
+          <div class="explore-links">
+            <a href="history.html" class="btn btn-outline">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span class="explore-link-full" data-i18n="home.hero.historyBtn">Our History</span>
+              <span class="explore-link-short" data-i18n="home.hero.historyBtnShort">Our History</span>
+            </a>
+            <a href="organisation-structure.html" class="btn btn-outline">
+              <i class="fa-solid fa-sitemap"></i>
+              <span class="explore-link-full" data-i18n="home.hero.leadersBtn">Our Leaders</span>
+              <span class="explore-link-short" data-i18n="home.hero.leadersBtnShort">Our Leader</span>
+            </a>
+            <a href="activities.html" class="btn btn-outline">
+              <i class="fa-solid fa-hands-praying"></i>
+              <span class="explore-link-full" data-i18n="home.hero.ministriesBtn">Our Ministries</span>
+              <span class="explore-link-short" data-i18n="home.hero.ministriesBtnShort">Our Ministries</span>
+            </a>
+            <a href="services.html" class="btn btn-outline">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              <span class="explore-link-full" data-i18n="home.hero.servicesBtn">Our Services</span>
+              <span class="explore-link-short" data-i18n="home.hero.servicesBtnShort">Our Services</span>
+            </a>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- News item modal (image, title, description) -->
@@ -352,14 +352,14 @@
       </div>
     </footer>
 
-    <!-- "Download the app" floating button (mobile only) -->
+    <!-- "Download the app" floating banner (mobile only) -->
     <div class="install-fab" data-install-fab hidden>
-      <button type="button" class="install-fab-main" data-install-fab-trigger>
-        <i class="fa-solid fa-download" aria-hidden="true"></i>
-        <span data-i18n="install.fabLabel">Download the app</span>
-      </button>
       <button type="button" class="install-fab-dismiss" data-install-fab-dismiss aria-label="Dismiss">
         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+      <span class="install-fab-text" data-i18n="install.fabBannerText">Download the app today</span>
+      <button type="button" class="install-fab-main" data-install-fab-trigger>
+        <span data-i18n="install.fabButtonLabel">Download</span>
       </button>
     </div>
 
@@ -391,6 +391,28 @@
         </div>
       </div>
     </div>
+    <!-- Language selection popup -->
+    <div class="modal-overlay lang-modal-overlay" data-lang-modal>
+      <div class="modal modal-sm" role="dialog" aria-modal="true" aria-label="Select language">
+        <div class="modal-header">
+          <h3>Select Language</h3>
+          <button type="button" class="modal-close" data-lang-modal-close aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body lang-modal-body">
+          <button type="button" class="lang-modal-option" data-lang-btn="en">
+            <span>English</span>
+            <i class="fa-solid fa-check lang-modal-check" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="lang-modal-option" data-lang-btn="ms">
+            <span>Bahasa Melayu</span>
+            <i class="fa-solid fa-check lang-modal-check" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
 
     <button id="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
     <div id="google_translate_element"></div>

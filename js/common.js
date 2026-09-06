@@ -142,6 +142,47 @@ document.querySelectorAll("[data-settings-dropdown]").forEach((wrapper) => {
   });
 });
 
+// ── Mobile hamburger menu: "Language: English/Malay" popup ──
+(function initLanguagePopup() {
+  const trigger = document.querySelector("[data-lang-popup-trigger]");
+  const overlay = document.querySelector("[data-lang-modal]");
+  if (!trigger || !overlay) return;
+
+  function openPopup() {
+    overlay.classList.add("open");
+    trigger.setAttribute("aria-expanded", "true");
+  }
+
+  function closePopup() {
+    overlay.classList.remove("open");
+    trigger.setAttribute("aria-expanded", "false");
+  }
+
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    openPopup();
+  });
+
+  const closeBtn = overlay.querySelector("[data-lang-modal-close]");
+  if (closeBtn) closeBtn.addEventListener("click", closePopup);
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closePopup();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && overlay.classList.contains("open")) closePopup();
+  });
+
+  // Picking a language closes both the popup and the mobile menu behind it.
+  overlay.querySelectorAll("[data-lang-btn]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      closePopup();
+      if (navLinks && navLinks.classList.contains("open")) closeMenu();
+    });
+  });
+})();
+
 export function showAlert(container, message, type = "error") {
   if (!container) return;
   container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
