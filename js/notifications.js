@@ -147,6 +147,15 @@ export function initNotificationToggle() {
  * itself a deliberate action, which keeps this from being the kind of
  * unprompted popup browsers tend to auto-block.
  *
+ * Browsers (Chrome, Firefox, Safari) require a genuine user gesture to
+ * actually show the permission dialog — calling requestPermission() from
+ * a timer, as this used to do, is silently ignored with no dialog and no
+ * error at all. So instead of firing on a delay, this waits for the
+ * visitor's very first tap/click/keypress anywhere in the freshly opened
+ * app and fires the request from inside that event's handler, which does
+ * carry the required "user activation". That's the closest thing to an
+ * automatic first-open prompt current browser policy still allows.
+ *
  * After this first prompt (whether granted, denied, or dismissed), it
  * never asks again automatically — the visitor can still change their
  * mind later via the on/off toggle in the settings menu.
@@ -162,18 +171,18 @@ export function initAutoNotificationPrompt() {
     return;
   }
 
-  // Give the app a moment to finish loading before interrupting with a
-  // permission prompt, rather than asking the instant it opens. messaging's
-  // own async isSupported() check may also still be pending, so retry a
-  // few times before concluding it's genuinely unsupported.
+  // Resolve messaging's async isSupported() check *before* attaching the
+  // tap listener below (not inside it) — if we waited on messaging inside
+  // the tap handler instead, the eventual requestPermission() call would
+  // happen after a setTimeout and lose the user activation the tap gave
+  // us, right back to the original silent-failure bug.
   let attempts = 0;
-  const tryPrompt = () => {
+  const waitForMessaging = () => {
     attempts += 1;
     if (messaging) {
-      localStorage.setItem(PROMPTED_KEY, "true");
-      enableNotifications();
+      attachFirstInteractionPrompt();
     } else if (attempts < 6) {
-      setTimeout(tryPrompt, 500);
+      setTimeout(waitForMessaging, 500);
     } else {
       // Genuinely unsupported (or never resolved) — don't keep the
       // "not yet prompted" flag hanging around forever, or we'd retry
@@ -181,5 +190,20 @@ export function initAutoNotificationPrompt() {
       localStorage.setItem(PROMPTED_KEY, "true");
     }
   };
-  setTimeout(tryPrompt, 1500);
+
+  function attachFirstInteractionPrompt() {
+    let handled = false;
+    const onFirstInteraction = () => {
+      if (handled) return;
+      handled = true;
+      document.removeEventListener("pointerdown", onFirstInteraction);
+      document.removeEventListener("keydown", onFirstInteraction);
+      localStorage.setItem(PROMPTED_KEY, "true");
+      enableNotifications();
+    };
+    document.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
+    document.addEventListener("keydown", onFirstInteraction, { once: true });
+  }
+
+  waitForMessaging();
 }
