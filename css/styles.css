@@ -1002,6 +1002,7 @@ button.settings-dropdown-link:disabled:hover i {
 .news-modal-desc {
   color: var(--text-muted);
   line-height: 1.6;
+  white-space: pre-line;
 }
 
 .news-modal-link {
@@ -1308,6 +1309,7 @@ button.settings-dropdown-link:disabled:hover i {
 .update-content p {
   font-size: 0.9rem;
   color: var(--text-muted);
+  white-space: pre-line;
 }
 
 /* ── About page ── */
