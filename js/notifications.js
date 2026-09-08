@@ -71,8 +71,8 @@ async function subscribePush(op) {
   const ready = await messagingReady;
   if (op !== operationId) return;
   if (!ready) {
-    setToggleState("unsupported");
-    localStorage.removeItem(STORAGE_KEY);
+    // Permission may already be granted — keep the toggle on and retry
+    // token registration later rather than snapping the switch back off.
     return;
   }
 
@@ -86,9 +86,6 @@ async function subscribePush(op) {
   if (op !== operationId) return;
 
   if (!token) {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(TOKEN_KEY);
-    setToggleState("off");
     return;
   }
 
@@ -115,32 +112,29 @@ async function enableNotifications() {
       return;
     }
 
-    // Permission already granted: flip the switch immediately so the toggle
-    // doesn't wait on getToken / Firestore. First-time permission still
-    // waits for the OS dialog before changing state.
-    if (Notification.permission === "granted") {
-      setToggleState("on");
-      markPrompted();
-    } else {
+    // Flip the in-app toggle immediately (banner Enable and the bell
+    // control should stay in sync). Revert only if the OS dialog is denied.
+    setToggleState("on");
+    localStorage.setItem(STORAGE_KEY, "true");
+    hidePermissionPrompt();
+
+    if (Notification.permission !== "granted") {
       const permission = await Notification.requestPermission();
       markPrompted();
       if (op !== operationId) return;
       if (permission !== "granted") {
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(TOKEN_KEY);
         setToggleState(permission === "denied" ? "denied" : "off");
         return;
       }
-      setToggleState("on");
+    } else {
+      markPrompted();
     }
 
-    localStorage.setItem(STORAGE_KEY, "true");
-    hidePermissionPrompt();
     await subscribePush(op);
   } catch (err) {
     console.error("Notification subscription failed:", err);
-    if (op !== operationId) return;
-    localStorage.removeItem(STORAGE_KEY);
-    setToggleState("off");
   }
 }
 
@@ -226,6 +220,9 @@ function showPermissionPrompt() {
   `;
 
   banner.querySelector("[data-notif-prompt-enable]").addEventListener("click", () => {
+    setToggleState("on");
+    localStorage.setItem(STORAGE_KEY, "true");
+    hidePermissionPrompt();
     enableNotifications();
   });
   banner.querySelector("[data-notif-prompt-dismiss]").addEventListener("click", () => {
