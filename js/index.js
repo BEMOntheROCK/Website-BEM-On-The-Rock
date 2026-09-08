@@ -215,11 +215,18 @@ async function renderUpdates(updates) {
     <article class="update-item ${item.priority === "high" ? "high" : ""}">
       ${
         item.imageUrl
-          ? `<div class="update-thumb"><img src="${item.imageUrl}" alt="" loading="lazy" /></div>`
+          ? `<div class="update-media">
+              <div class="update-thumb"><img src="${item.imageUrl}" alt="" loading="lazy" /></div>
+              <time class="update-date">${escapeHtml(formatDate(item.date))}</time>
+            </div>`
           : ""
       }
-      <time class="update-date">${escapeHtml(formatDate(item.date))}</time>
       <div class="update-content">
+        ${
+          item.imageUrl
+            ? ""
+            : `<time class="update-date update-date--inline">${escapeHtml(formatDate(item.date))}</time>`
+        }
         <h3>${escapeHtml(item.title)}</h3>
         <p>${escapeHtml(item.content)}</p>
         ${
