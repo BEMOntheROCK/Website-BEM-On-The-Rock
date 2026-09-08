@@ -76,11 +76,12 @@ service cloud.firestore {
       allow create, update, delete: if true;
     }
     match /liveStatus/{doc} {
-      // Purely internal bookkeeping for the checkLiveStatus scheduled
-      // function (tracks whether the last check saw the stream live, so
-      // it only notifies on the offline → live transition). Nothing on
-      // the public site reads or writes this — only the Admin SDK does.
-      allow read, write: if false;
+      // Written only by the checkLiveStatus scheduled function (via the
+      // Admin SDK, which bypasses these rules entirely) — never directly
+      // by a client. Publicly readable so the homepage can show accurate
+      // live status without re-deriving it itself.
+      allow read: if true;
+      allow write: if false;
     }
   }
 }

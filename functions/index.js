@@ -7,9 +7,12 @@
  *     push notification to every device that has opted in (stored in the
  *     "pushTokens" collection by js/notifications.js).
  *   - checkLiveStatus — runs on a schedule (every 5 minutes), checks
- *     whether the church's YouTube channel is currently live, and sends a
- *     "We're live!" notification the moment it detects the stream just
- *     started (not on every check while already live).
+ *     whether the church's YouTube channel is currently live via the
+ *     YouTube Data API, caches the result (and the live video's ID) in
+ *     Firestore at liveStatus/main — which the homepage reads directly
+ *     to drive the "Live" badge and player — and sends a "We're live!"
+ *     notification the moment it detects the stream just started (not
+ *     on every check while already live).
  *
  * Deploy with:  firebase deploy --only functions
  * (requires the Firebase CLI: npm install -g firebase-tools, then
@@ -119,11 +122,11 @@ exports.onUpdateCreated = onDocumentCreated("updates/{docId}", async (event) => 
 
 /**
  * Asks the YouTube Data API whether the given channel currently has a
- * live broadcast in progress. Returns true/false — never throws; any
- * error is logged and treated as "not live" so a transient API hiccup
- * doesn't send a false notification.
+ * live broadcast in progress. Returns { live, videoId } — never throws;
+ * any error is logged and treated as "not live" so a transient API
+ * hiccup doesn't send a false notification or show a broken embed.
  */
-async function isChannelLive(channelId, apiKey) {
+async function checkChannelLive(channelId, apiKey) {
   const url =
     `https://www.googleapis.com/youtube/v3/search` +
     `?part=snippet&channelId=${channelId}&eventType=live&type=video&key=${apiKey}`;
@@ -132,13 +135,14 @@ async function isChannelLive(channelId, apiKey) {
     const response = await fetch(url);
     if (!response.ok) {
       console.error(`YouTube API error: ${response.status} ${await response.text()}`);
-      return false;
+      return { live: false, videoId: null };
     }
     const data = await response.json();
-    return Array.isArray(data.items) && data.items.length > 0;
+    const item = Array.isArray(data.items) ? data.items[0] : null;
+    return { live: !!item, videoId: item?.id?.videoId || null };
   } catch (err) {
     console.error("YouTube API request failed:", err);
-    return false;
+    return { live: false, videoId: null };
   }
 }
 
@@ -154,10 +158,10 @@ exports.checkLiveStatus = onSchedule(
     const statusSnap = await statusRef.get();
     const wasLive = statusSnap.data()?.isLive === true;
 
-    const isLiveNow = await isChannelLive(channelId, youtubeApiKey.value());
+    const { live: isLiveNow, videoId } = await checkChannelLive(channelId, youtubeApiKey.value());
 
     await statusRef.set(
-      { isLive: isLiveNow, checkedAt: new Date().toISOString() },
+      { isLive: isLiveNow, videoId: videoId || null, checkedAt: new Date().toISOString() },
       { merge: true }
     );
 

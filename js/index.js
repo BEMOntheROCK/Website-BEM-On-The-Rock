@@ -6,6 +6,7 @@ import {
   getNews,
   getUpdates,
   getCarouselVideos,
+  subscribeLiveStatus,
   formatDate,
 } from "./firebase-service.js";
 import { defaultYouTube } from "./firebase-config.js";
@@ -67,42 +68,16 @@ function embedNextServicePlaceholder(serviceTimesText, liveUrl) {
     </div>`;
 }
 
-// No API key required: YouTube's oEmbed endpoint only resolves successfully
-// for a URL that currently points at a playable video. When a channel's
-// "/live" URL isn't actively broadcasting, the oEmbed request fails —
-// which is what we use as our live/offline signal.
-async function checkYoutubeLive(liveUrl) {
-  try {
-    const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(liveUrl)}&format=json`;
-    const res = await fetch(oembedUrl);
-    if (!res.ok) return { live: false, videoId: null };
-
-    const data = await res.json();
-    const match = data.html && data.html.match(/embed\/([a-zA-Z0-9_-]+)/);
-    const videoId = match ? match[1] : null;
-
-    return { live: !!videoId, videoId };
-  } catch (err) {
-    console.error("Live check failed:", err);
-    return { live: false, videoId: null };
-  }
-}
-
-// How often to silently re-check whether the stream has gone live/offline
-// while the page stays open (ms).
-const LIVE_POLL_INTERVAL = 60 * 1000;
-
 // Tracks whether the visitor is currently looking at the "live" slot in the
-// player (as opposed to a past video they picked from the carousel), so a
-// background poll knows whether it's safe to swap the embed automatically.
+// player (as opposed to a past video they picked from the carousel), so an
+// incoming status update knows whether it's safe to swap the embed
+// automatically.
 let isViewingLiveSlot = true;
-let livePollTimer = null;
 let currentLiveState = { live: false, videoId: null };
 
 async function renderLivestream(settings) {
   const liveUrl = settings.youtubeLiveUrl || defaultYouTube.liveUrl;
   const channelUrl = settings.youtubeChannelUrl || defaultYouTube.channelUrl;
-  const channelId = settings.youtubeChannelId || defaultYouTube.channelId;
 
   setLink("livestream-link", liveUrl);
   setLink("channel-link", channelUrl);
@@ -114,34 +89,32 @@ async function renderLivestream(settings) {
     serviceTimes.textContent = settings.serviceTimes;
   }
 
-  // YouTube's oEmbed endpoint only reliably resolves "/live" through the
-  // Channel ID URL (youtube.com/channel/UC.../live). The @handle form
-  // (youtube.com/@handle/live) is documented by YouTube as unreliable for
-  // this redirect and frequently fails to resolve even while actually live.
-  // Prefer the Channel ID for the automated live-check; fall back to the
-  // configured liveUrl (handle form) only if no Channel ID is set.
-  const checkUrl = channelId
-    ? `https://www.youtube.com/channel/${channelId}/live`
-    : liveUrl;
+  // Live status comes from Firestore's liveStatus/main doc, which the
+  // checkLiveStatus Cloud Function keeps fresh every 5 minutes using the
+  // real YouTube Data API (see functions/index.js) — not a client-side
+  // guess. Firestore's listener also pushes every future update in real
+  // time, so the badge and player update themselves the moment the
+  // stream actually goes live, with no polling needed on our end.
+  return new Promise((resolve) => {
+    let resolved = false;
+    subscribeLiveStatus(({ live, videoId }) => {
+      currentLiveState = { live, videoId };
+      applyLiveStatusToBadge(live);
 
-  const { live, videoId } = await checkYoutubeLive(checkUrl);
-  currentLiveState = { live, videoId };
+      if (isViewingLiveSlot) {
+        if (live && videoId) {
+          embedVideo(videoId, "BEM On The ROCK — Live Now");
+        } else {
+          embedNextServicePlaceholder(settings.serviceTimes, liveUrl);
+        }
+      }
 
-  applyLiveStatusToBadge(live);
-
-  if (live && videoId) {
-    embedVideo(videoId, "BEM On The ROCK — Live Now");
-  } else {
-    embedNextServicePlaceholder(settings.serviceTimes, liveUrl);
-  }
-
-  // Keep re-checking in the background so a visitor who leaves the homepage
-  // open sees the status flip to "Live" (and the player swap in) once the
-  // stream actually starts, instead of it being stuck at whatever it was
-  // when the page first loaded.
-  startLivePolling(checkUrl, settings.serviceTimes, liveUrl);
-
-  return { live, videoId };
+      if (!resolved) {
+        resolved = true;
+        resolve({ live, videoId });
+      }
+    });
+  });
 }
 
 function applyLiveStatusToBadge(live) {
@@ -156,47 +129,6 @@ function applyLiveStatusToBadge(live) {
 
   const carouselTitle = document.querySelector(".carousel-card--live h4");
   if (carouselTitle) carouselTitle.textContent = live ? "Live Now" : "Currently Offline";
-}
-
-function startLivePolling(checkUrl, serviceTimesText, liveUrl) {
-  stopLivePolling();
-  livePollTimer = setInterval(
-    () => refreshLiveStatus(checkUrl, serviceTimesText, liveUrl),
-    LIVE_POLL_INTERVAL
-  );
-
-  // Also re-check right away whenever the tab becomes visible again — a
-  // visitor switching back after a few minutes shouldn't have to wait for
-  // the next timer tick.
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) refreshLiveStatus(checkUrl, serviceTimesText, liveUrl);
-  });
-}
-
-function stopLivePolling() {
-  if (livePollTimer) clearInterval(livePollTimer);
-  livePollTimer = null;
-}
-
-async function refreshLiveStatus(checkUrl, serviceTimesText, liveUrl) {
-  const { live, videoId } = await checkYoutubeLive(checkUrl);
-  const changed = live !== currentLiveState.live || videoId !== currentLiveState.videoId;
-  currentLiveState = { live, videoId };
-
-  if (!changed) return;
-
-  applyLiveStatusToBadge(live);
-
-  // Only touch the visible player if the visitor is still looking at the
-  // "live" slot — if they've picked a past video from the carousel, leave
-  // it playing instead of yanking it out from under them.
-  if (isViewingLiveSlot) {
-    if (live && videoId) {
-      embedVideo(videoId, "BEM On The ROCK — Live Now");
-    } else {
-      embedNextServicePlaceholder(serviceTimesText, liveUrl);
-    }
-  }
 }
 
 async function renderCarousel(videos, isLive, liveVideoId, serviceTimesText, liveUrl) {

@@ -11,6 +11,7 @@ import {
   orderBy,
   serverTimestamp,
   writeBatch,
+  onSnapshot,
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { db } from "./firebase-init.js";
 import { defaultYouTube } from "./firebase-config.js";
@@ -20,6 +21,30 @@ const ABOUT_DOC = doc(db, "about", "main");
 const ORG_DOC = doc(db, "organisation", "main");
 const COMMUNITY_DOC = doc(db, "community", "main");
 const PRIVACY_DOC = doc(db, "privacyPolicy", "main");
+const LIVE_STATUS_DOC = doc(db, "liveStatus", "main");
+
+/**
+ * Real, server-verified live status — written every 5 minutes by the
+ * checkLiveStatus Cloud Function using the YouTube Data API (see
+ * functions/index.js). This is the source of truth for whether the
+ * homepage should show the player as live; callback fires immediately
+ * with the current value and again every time the function updates it,
+ * so the page updates itself without any client-side polling.
+ * Returns an unsubscribe function.
+ */
+export function subscribeLiveStatus(callback) {
+  return onSnapshot(
+    LIVE_STATUS_DOC,
+    (snap) => {
+      const data = snap.data();
+      callback({ live: data?.isLive === true, videoId: data?.videoId || null });
+    },
+    (err) => {
+      console.error("Live status subscription failed:", err);
+      callback({ live: false, videoId: null });
+    }
+  );
+}
 
 export async function getSiteSettings() {
   const snap = await getDoc(SITE_SETTINGS_DOC);
