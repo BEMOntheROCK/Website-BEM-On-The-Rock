@@ -554,7 +554,7 @@ function openCrud(type, id = null) {
   const linkUrlInput = document.getElementById("crud-link-url");
   const linkLabelInput = document.getElementById("crud-link-label");
 
-  linkGroup.style.display = type === "news" ? "block" : "none";
+  linkGroup.style.display = type === "news" || type === "updates" ? "block" : "none";
   linkUrlInput.value = item?.linkUrl || "";
   linkLabelInput.value = item?.linkLabel || "";
   // If this item already has a link, skip straight to the expanded fields;
@@ -618,7 +618,7 @@ crudForm.addEventListener("submit", async e => {
   };
   if (type === "updates") payload.priority = document.getElementById("crud-priority").value;
   if (type === "news" && payload.imageId) payload.crop = cropEditor?.getCrop() || DEFAULT_CROP;
-  if (type === "news") {
+  if (type === "news" || type === "updates") {
     const linkUrl = document.getElementById("crud-link-url").value.trim();
     payload.linkUrl = linkUrl || null;
     payload.linkLabel = linkUrl ? document.getElementById("crud-link-label").value.trim() || null : null;

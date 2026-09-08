@@ -1312,6 +1312,11 @@ button.settings-dropdown-link:disabled:hover i {
   white-space: pre-line;
 }
 
+.update-link {
+  display: inline-flex;
+  margin-top: 0.65rem;
+}
+
 /* ── About page ── */
 .page-hero {
   padding: 3rem 0 2rem;

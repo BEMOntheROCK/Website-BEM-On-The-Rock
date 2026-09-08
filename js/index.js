@@ -222,6 +222,11 @@ async function renderUpdates(updates) {
       <div class="update-content">
         <h3>${escapeHtml(item.title)}</h3>
         <p>${escapeHtml(item.content)}</p>
+        ${
+          item.linkUrl
+            ? `<a href="${escapeHtml(item.linkUrl)}" class="btn btn-primary btn-sm update-link" target="_blank" rel="noopener noreferrer">${escapeHtml(item.linkLabel || "Learn More")}</a>`
+            : ""
+        }
       </div>
     </article>`
     )
