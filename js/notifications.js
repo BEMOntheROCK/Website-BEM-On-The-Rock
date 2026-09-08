@@ -261,12 +261,15 @@ export function initAutoNotificationPrompt() {
   offer();
 
   window.addEventListener("appinstalled", () => {
-    // Still in the browser tab that ran the install. Show the prompt here
-    // too — the next launch as a standalone app will also offer it if they
-    // skip this one (until they enable or dismiss).
-    if (Notification.permission === "default" && localStorage.getItem(PROMPTED_KEY) !== "true") {
-      showPermissionPrompt();
-    }
+    // This event fires in whichever tab ran the install — often still the
+    // regular browser tab, not the installed app itself. The banner should
+    // only ever appear in the installed app, so route this through the
+    // same offer()/isRunningAsInstalledApp() check as everything else
+    // rather than showing it unconditionally here. In practice this means
+    // the prompt won't appear until the visitor actually opens the app
+    // from its icon (or, on browsers where the tab itself flips to
+    // standalone post-install, the matchMedia listener below catches it).
+    offer();
   });
 
   // iOS / some Android WebViews report standalone only after the first
