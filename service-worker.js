@@ -1,3 +1,8 @@
+// Handle background push in this same worker (scope "/") so getToken() can
+// reuse the already-registered worker instead of installing a second one
+// at firebase-messaging-sw.js — that swap was slow and fought this file.
+importScripts("/firebase-messaging-sw.js");
+
 /**
  * Service worker for BEM On The ROCK.
  *

@@ -13,6 +13,9 @@
   "header.menuClose": "Tutup menu",
   "header.settings": "Tetapan",
   "header.notifEnable": "Aktifkan pemberitahuan",
+  "header.notifPromptBody": "Hidupkan pemberitahuan untuk berita dan siaran langsung.",
+  "header.notifPromptEnable": "Aktifkan",
+  "header.notifPromptDismiss": "Bukan sekarang",
 
   "install.fabLabel": "Muat turun aplikasi",
   "install.fabBannerText": "Muat turun aplikasi hari ini",

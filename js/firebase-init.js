@@ -27,8 +27,9 @@ isSupported().then((supported) => {
 // (notably Safari on iOS unless installed to the home screen, and some
 // private browsing modes), so we guard it the same way.
 export let messaging = null;
-isMessagingSupported().then((supported) => {
+export const messagingReady = isMessagingSupported().then((supported) => {
   if (supported) {
     messaging = getMessaging(app);
   }
+  return messaging;
 });

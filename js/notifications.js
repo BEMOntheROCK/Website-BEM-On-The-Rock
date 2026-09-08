@@ -1,11 +1,15 @@
 import { getToken, deleteToken } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-messaging.js";
-import { messaging } from "./firebase-init.js";
+import { messaging, messagingReady } from "./firebase-init.js";
 import { vapidKey } from "./firebase-config.js";
 import { saveNotificationToken, deleteNotificationToken } from "./firebase-service.js";
 
 const STORAGE_KEY = "bem-notifications-enabled";
 const TOKEN_KEY = "bem-notification-token";
-const PROMPTED_KEY = "bem-notifications-prompted";
+// v2: the previous flag was often set after a messaging timeout without
+// ever showing a permission dialog, so first-install users never got asked.
+const PROMPTED_KEY = "bem-notifications-prompted-v2";
+
+let operationId = 0;
 
 function isRunningAsInstalledApp() {
   // Standalone display mode covers Chrome/Edge/Android after "Install" or
@@ -13,6 +17,7 @@ function isRunningAsInstalledApp() {
   // equivalent, which doesn't support the display-mode media query.
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
+    window.matchMedia("(display-mode: fullscreen)").matches ||
     window.navigator.standalone === true
   );
 }
@@ -47,48 +52,116 @@ function setToggleState(state) {
   });
 }
 
-async function enableNotifications() {
-  try {
-    const permission = await Notification.requestPermission();
-    if (permission !== "granted") {
-      setToggleState(permission === "denied" ? "denied" : "off");
-      return;
-    }
-    const token = await getToken(messaging, { vapidKey });
+function markPrompted() {
+  localStorage.setItem(PROMPTED_KEY, "true");
+}
 
-    if (!token) {
-      setToggleState("off");
+async function getPushRegistration() {
+  if (!("serviceWorker" in navigator)) return undefined;
+  const existing = await navigator.serviceWorker.getRegistration("/");
+  if (existing) return existing;
+  try {
+    return await navigator.serviceWorker.register("/service-worker.js");
+  } catch {
+    return undefined;
+  }
+}
+
+async function subscribePush(op) {
+  const ready = await messagingReady;
+  if (op !== operationId) return;
+  if (!ready) {
+    setToggleState("unsupported");
+    localStorage.removeItem(STORAGE_KEY);
+    return;
+  }
+
+  const registration = await getPushRegistration();
+  if (op !== operationId) return;
+
+  const token = await getToken(messaging, {
+    vapidKey,
+    ...(registration ? { serviceWorkerRegistration: registration } : {}),
+  });
+  if (op !== operationId) return;
+
+  if (!token) {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    setToggleState("off");
+    return;
+  }
+
+  await saveNotificationToken(token);
+  if (op !== operationId) {
+    await deleteNotificationToken(token).catch(() => {});
+    return;
+  }
+  localStorage.setItem(TOKEN_KEY, token);
+  setToggleState("on");
+}
+
+async function enableNotifications() {
+  const op = ++operationId;
+  try {
+    if (!("Notification" in window)) {
+      setToggleState("unsupported");
       return;
     }
-    await saveNotificationToken(token);
+
+    if (Notification.permission === "denied") {
+      setToggleState("denied");
+      markPrompted();
+      return;
+    }
+
+    // Permission already granted: flip the switch immediately so the toggle
+    // doesn't wait on getToken / Firestore. First-time permission still
+    // waits for the OS dialog before changing state.
+    if (Notification.permission === "granted") {
+      setToggleState("on");
+      markPrompted();
+    } else {
+      const permission = await Notification.requestPermission();
+      markPrompted();
+      if (op !== operationId) return;
+      if (permission !== "granted") {
+        localStorage.removeItem(STORAGE_KEY);
+        setToggleState(permission === "denied" ? "denied" : "off");
+        return;
+      }
+      setToggleState("on");
+    }
+
     localStorage.setItem(STORAGE_KEY, "true");
-    localStorage.setItem(TOKEN_KEY, token);
-    setToggleState("on");
+    hidePermissionPrompt();
+    await subscribePush(op);
   } catch (err) {
     console.error("Notification subscription failed:", err);
+    if (op !== operationId) return;
+    localStorage.removeItem(STORAGE_KEY);
     setToggleState("off");
   }
 }
 
 async function disableNotifications() {
-  try {
-    const storedToken = localStorage.getItem(TOKEN_KEY);
+  const op = ++operationId;
+  const storedToken = localStorage.getItem(TOKEN_KEY);
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(TOKEN_KEY);
+  setToggleState("off");
 
+  try {
+    await messagingReady;
+    if (op !== operationId) return;
     if (messaging) {
-      await deleteToken(messaging).catch(() => {
-        // Token may already be invalid/expired on the browser's side —
-        // that's fine, we still want to clear our own records below.
-      });
+      await deleteToken(messaging).catch(() => {});
     }
     if (storedToken) {
       await deleteNotificationToken(storedToken).catch(() => {});
     }
   } catch (err) {
     console.error("Failed to fully disable notifications:", err);
-  } finally {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(TOKEN_KEY);
-    setToggleState("off");
   }
 }
 
@@ -106,104 +179,102 @@ export function initNotificationToggle() {
     return;
   }
 
-  // Wait for the async isSupported() check in firebase-init.js to resolve
-  // before deciding the UI state — messaging may end up null either
-  // because the browser genuinely doesn't support it, or simply because
-  // the check hasn't finished yet. Retry a few times over a few seconds
-  // before concluding it's truly unsupported.
-  const finishInit = () => {
-    if (Notification.permission === "granted" && localStorage.getItem(STORAGE_KEY) === "true") {
-      setToggleState("on");
-    } else {
-      setToggleState("off");
-    }
+  if (Notification.permission === "granted" && localStorage.getItem(STORAGE_KEY) === "true") {
+    setToggleState("on");
+  } else {
+    setToggleState("off");
+  }
 
-    groups.forEach((group) => {
-      const offBtn = group.querySelector('[data-notif-btn="off"]');
-      const onBtn = group.querySelector('[data-notif-btn="on"]');
-      if (offBtn) offBtn.addEventListener("click", disableNotifications);
-      if (onBtn) onBtn.addEventListener("click", enableNotifications);
-    });
-  };
+  groups.forEach((group) => {
+    const offBtn = group.querySelector('[data-notif-btn="off"]');
+    const onBtn = group.querySelector('[data-notif-btn="on"]');
+    if (offBtn) offBtn.addEventListener("click", () => disableNotifications());
+    if (onBtn) onBtn.addEventListener("click", () => enableNotifications());
+  });
+}
 
-  let attempts = 0;
-  const tryInit = () => {
-    attempts += 1;
-    if (messaging) {
-      finishInit();
-    } else if (attempts < 6) {
-      setTimeout(tryInit, 500);
-    } else {
-      setToggleState("unsupported");
-    }
+function promptCopy() {
+  const ms = localStorage.getItem("site-lang") === "ms";
+  return {
+    body: ms
+      ? "Hidupkan pemberitahuan untuk berita dan siaran langsung."
+      : "Turn on notifications for news and live stream alerts.",
+    enable: ms ? "Aktifkan" : "Enable",
+    dismiss: ms ? "Bukan sekarang" : "Not now",
   };
-  tryInit();
+}
+
+function hidePermissionPrompt() {
+  document.querySelector("[data-notif-prompt]")?.remove();
+}
+
+function showPermissionPrompt() {
+  if (document.querySelector("[data-notif-prompt]")) return;
+
+  const copy = promptCopy();
+  const banner = document.createElement("div");
+  banner.className = "notif-permission-banner";
+  banner.setAttribute("data-notif-prompt", "");
+  banner.innerHTML = `
+    <p class="notif-permission-banner-text">${copy.body}</p>
+    <button type="button" class="notif-permission-banner-enable" data-notif-prompt-enable>
+      ${copy.enable}
+    </button>
+    <button type="button" class="notif-permission-banner-dismiss" data-notif-prompt-dismiss aria-label="${copy.dismiss}">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+  `;
+
+  banner.querySelector("[data-notif-prompt-enable]").addEventListener("click", () => {
+    enableNotifications();
+  });
+  banner.querySelector("[data-notif-prompt-dismiss]").addEventListener("click", () => {
+    markPrompted();
+    hidePermissionPrompt();
+  });
+
+  document.body.appendChild(banner);
+}
+
+function shouldOfferFirstRunPrompt() {
+  if (!("Notification" in window)) return false;
+  if (localStorage.getItem(PROMPTED_KEY) === "true") return false;
+  if (Notification.permission !== "default") return false;
+  return isRunningAsInstalledApp();
 }
 
 /**
- * Prompts for notification permission automatically, but only once ever,
- * and only when the site is opened as the installed app (standalone mode)
- * rather than a regular browser tab — opening an installed app's icon is
- * itself a deliberate action, which keeps this from being the kind of
- * unprompted popup browsers tend to auto-block.
- *
- * Browsers (Chrome, Firefox, Safari) require a genuine user gesture to
- * actually show the permission dialog — calling requestPermission() from
- * a timer, as this used to do, is silently ignored with no dialog and no
- * error at all. So instead of firing on a delay, this waits for the
- * visitor's very first tap/click/keypress anywhere in the freshly opened
- * app and fires the request from inside that event's handler, which does
- * carry the required "user activation". That's the closest thing to an
- * automatic first-open prompt current browser policy still allows.
- *
- * After this first prompt (whether granted, denied, or dismissed), it
- * never asks again automatically — the visitor can still change their
- * mind later via the on/off toggle in the settings menu.
+ * After the visitor installs the PWA, or the first time they open it from
+ * the home screen, show an in-app prompt whose Enable button is a real
+ * user gesture — browsers will not show the OS permission dialog from a
+ * timer or from page load alone.
  */
 export function initAutoNotificationPrompt() {
   if (!("Notification" in window)) return;
-  if (!isRunningAsInstalledApp()) return;
-  if (localStorage.getItem(PROMPTED_KEY) === "true") return;
+
   if (Notification.permission !== "default") {
-    // Already answered (granted/denied) from a previous visit, possibly
-    // before this flag existed — don't ask again, just remember that.
-    localStorage.setItem(PROMPTED_KEY, "true");
+    markPrompted();
     return;
   }
 
-  // Resolve messaging's async isSupported() check *before* attaching the
-  // tap listener below (not inside it) — if we waited on messaging inside
-  // the tap handler instead, the eventual requestPermission() call would
-  // happen after a setTimeout and lose the user activation the tap gave
-  // us, right back to the original silent-failure bug.
-  let attempts = 0;
-  const waitForMessaging = () => {
-    attempts += 1;
-    if (messaging) {
-      attachFirstInteractionPrompt();
-    } else if (attempts < 6) {
-      setTimeout(waitForMessaging, 500);
-    } else {
-      // Genuinely unsupported (or never resolved) — don't keep the
-      // "not yet prompted" flag hanging around forever, or we'd retry
-      // this same check on every single app launch.
-      localStorage.setItem(PROMPTED_KEY, "true");
-    }
+  const offer = () => {
+    if (shouldOfferFirstRunPrompt()) showPermissionPrompt();
   };
 
-  function attachFirstInteractionPrompt() {
-    let handled = false;
-    const onFirstInteraction = () => {
-      if (handled) return;
-      handled = true;
-      document.removeEventListener("pointerdown", onFirstInteraction);
-      document.removeEventListener("keydown", onFirstInteraction);
-      localStorage.setItem(PROMPTED_KEY, "true");
-      enableNotifications();
-    };
-    document.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
-    document.addEventListener("keydown", onFirstInteraction, { once: true });
-  }
+  offer();
 
-  waitForMessaging();
+  window.addEventListener("appinstalled", () => {
+    // Still in the browser tab that ran the install. Show the prompt here
+    // too — the next launch as a standalone app will also offer it if they
+    // skip this one (until they enable or dismiss).
+    if (Notification.permission === "default" && localStorage.getItem(PROMPTED_KEY) !== "true") {
+      showPermissionPrompt();
+    }
+  });
+
+  // iOS / some Android WebViews report standalone only after the first
+  // paint, or after the display-mode media query starts matching.
+  window.matchMedia("(display-mode: standalone)").addEventListener("change", (event) => {
+    if (event.matches) offer();
+  });
 }

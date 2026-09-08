@@ -13,6 +13,9 @@
   "header.menuClose": "Close menu",
   "header.settings": "Settings",
   "header.notifEnable": "Enable notifications",
+  "header.notifPromptBody": "Turn on notifications for news and live stream alerts.",
+  "header.notifPromptEnable": "Enable",
+  "header.notifPromptDismiss": "Not now",
 
   "install.fabLabel": "Download the app",
   "install.fabBannerText": "Download the app today",

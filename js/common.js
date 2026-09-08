@@ -10,10 +10,9 @@ initInstallApp();
 // Register the service worker on every public page, but never on the admin
 // panel — admin should always load fresh, never an offline/cached version.
 if ("serviceWorker" in navigator && !window.location.pathname.endsWith("admin.html")) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then((registration) => {
+  navigator.serviceWorker
+    .register("/service-worker.js")
+    .then((registration) => {
         // Each deploy stamps the service worker file with a new commit SHA
         // (see .github/workflows/deploy.yml), so its bytes always differ
         // from whatever's currently installed after a real update — the
@@ -38,7 +37,6 @@ if ("serviceWorker" in navigator && !window.location.pathname.endsWith("admin.ht
       .catch((err) => {
         console.error("Service worker registration failed:", err);
       });
-  });
 
   // Fires once the new worker actually takes control (after it finishes
   // installing and activating) — this is the reliable moment to reload,

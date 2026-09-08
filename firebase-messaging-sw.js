@@ -2,8 +2,10 @@
  * Firebase Cloud Messaging background handler.
  *
  * This file MUST be named exactly "firebase-messaging-sw.js" and MUST live
- * at the site root — the Firebase Messaging SDK looks for it at this exact
- * path by default when a page calls getToken().
+ * at the site root — Firebase's default lookup path is this exact file.
+ * The main service-worker.js also importScripts() this file so caching and
+ * background push share one worker at scope "/", and the page can pass
+ * that registration into getToken() instead of installing a second worker.
  *
  * It's a separate, classic (non-module) service worker from our main
  * service-worker.js, and only handles background push notifications — it
