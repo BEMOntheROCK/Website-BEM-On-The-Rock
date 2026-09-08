@@ -246,6 +246,16 @@ function openNewsModal(item) {
   document.getElementById("news-modal-title").textContent = item.title;
   document.getElementById("news-modal-desc").textContent = item.content;
   document.getElementById("news-modal-date").textContent = formatDate(item.date);
+
+  const linkEl = document.getElementById("news-modal-link");
+  if (item.linkUrl) {
+    linkEl.href = item.linkUrl;
+    linkEl.textContent = item.linkLabel || "Learn More";
+    linkEl.style.display = "";
+  } else {
+    linkEl.style.display = "none";
+  }
+
   document.getElementById("news-modal").classList.add("open");
 }
 

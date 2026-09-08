@@ -548,6 +548,21 @@ function openCrud(type, id = null) {
   prioGroup.style.display = type === "updates" ? "block" : "none";
   if (type === "updates") document.getElementById("crud-priority").value = item?.priority || "normal";
 
+  const linkGroup = document.getElementById("crud-link-group");
+  const linkFields = document.getElementById("crud-link-fields");
+  const addLinkBtn = document.getElementById("crud-add-link-btn");
+  const linkUrlInput = document.getElementById("crud-link-url");
+  const linkLabelInput = document.getElementById("crud-link-label");
+
+  linkGroup.style.display = type === "news" ? "block" : "none";
+  linkUrlInput.value = item?.linkUrl || "";
+  linkLabelInput.value = item?.linkLabel || "";
+  // If this item already has a link, skip straight to the expanded fields;
+  // otherwise start collapsed behind the "+ Add link" button.
+  const hasLink = !!item?.linkUrl;
+  linkFields.style.display = hasLink ? "block" : "none";
+  addLinkBtn.style.display = hasLink ? "none" : "inline-flex";
+
   crudImgUpload?.setImageId(item?.imageId || null);
 
   const cropEditorContainer = document.getElementById("crud-crop-editor");
@@ -571,10 +586,25 @@ function closeCrud() {
   crudForm.reset();
   crudImgUpload?.setImageId(null);
   cropEditor?.setImage(null);
+  document.getElementById("crud-link-fields").style.display = "none";
+  document.getElementById("crud-add-link-btn").style.display = "inline-flex";
 }
 
 document.getElementById("modal-close").addEventListener("click", closeCrud);
 document.getElementById("modal-cancel").addEventListener("click", closeCrud);
+
+document.getElementById("crud-add-link-btn").addEventListener("click", () => {
+  document.getElementById("crud-link-fields").style.display = "block";
+  document.getElementById("crud-add-link-btn").style.display = "none";
+  document.getElementById("crud-link-url").focus();
+});
+
+document.getElementById("crud-remove-link-btn").addEventListener("click", () => {
+  document.getElementById("crud-link-url").value = "";
+  document.getElementById("crud-link-label").value = "";
+  document.getElementById("crud-link-fields").style.display = "none";
+  document.getElementById("crud-add-link-btn").style.display = "inline-flex";
+});
 
 crudForm.addEventListener("submit", async e => {
   e.preventDefault();
@@ -588,6 +618,11 @@ crudForm.addEventListener("submit", async e => {
   };
   if (type === "updates") payload.priority = document.getElementById("crud-priority").value;
   if (type === "news" && payload.imageId) payload.crop = cropEditor?.getCrop() || DEFAULT_CROP;
+  if (type === "news") {
+    const linkUrl = document.getElementById("crud-link-url").value.trim();
+    payload.linkUrl = linkUrl || null;
+    payload.linkLabel = linkUrl ? document.getElementById("crud-link-label").value.trim() || null : null;
+  }
 
   try {
     if (type === "news") {
