@@ -48,6 +48,15 @@ jobs:
       - name: Verify generated file is valid JavaScript
         run: node --check js/firebase-config.js
 
+      - name: Stamp service worker with this deploy's commit SHA
+        run: |
+          sed -i "s/__BUILD_ID__/${GITHUB_SHA::8}/" service-worker.js
+          grep -q "__BUILD_ID__" service-worker.js && { echo "::error::Placeholder replacement failed"; exit 1; } || true
+          echo "Stamped CACHE_VERSION with build ${GITHUB_SHA::8}"
+
+      - name: Verify service worker is valid JavaScript
+        run: node --check service-worker.js
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 

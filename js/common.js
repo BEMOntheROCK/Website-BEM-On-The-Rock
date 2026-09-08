@@ -11,10 +11,45 @@ initInstallApp();
 // panel — admin should always load fresh, never an offline/cached version.
 if ("serviceWorker" in navigator && !window.location.pathname.endsWith("admin.html")) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/service-worker.js").catch((err) => {
-      console.error("Service worker registration failed:", err);
-    });
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .then((registration) => {
+        // Each deploy stamps the service worker file with a new commit SHA
+        // (see .github/workflows/deploy.yml), so its bytes always differ
+        // from whatever's currently installed after a real update — the
+        // browser detects that automatically on this register() call and
+        // on the checks below. The worker itself already calls
+        // skipWaiting() + clients.claim(), so a detected update installs
+        // and takes control without waiting for old tabs to close.
+
+        // Catch the case where a newer version was already installed and
+        // waiting from a previous visit, before this tab even loaded.
+        if (registration.waiting) reloadOnce();
+
+        // Proactively check for an update every time the app is opened or
+        // brought back to the foreground — installed PWAs are often just
+        // resumed rather than fully restarted, so this covers "closing
+        // and reopening didn't update it" as well as a fresh load.
+        registration.update().catch(() => {});
+        document.addEventListener("visibilitychange", () => {
+          if (!document.hidden) registration.update().catch(() => {});
+        });
+      })
+      .catch((err) => {
+        console.error("Service worker registration failed:", err);
+      });
   });
+
+  // Fires once the new worker actually takes control (after it finishes
+  // installing and activating) — this is the reliable moment to reload,
+  // rather than guessing based on timing.
+  let reloaded = false;
+  function reloadOnce() {
+    if (reloaded) return;
+    reloaded = true;
+    window.location.reload();
+  }
+  navigator.serviceWorker.addEventListener("controllerchange", reloadOnce);
 }
 
 // Themed scrollbars (see css/styles.css) are transparent until actively

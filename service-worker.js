@@ -2,8 +2,12 @@
  * Service worker for BEM On The ROCK.
  *
  * Scope: the whole site (this file must stay at the repo root to control
- * every page). Bump CACHE_VERSION whenever you want visitors' caches to
- * refresh after a deploy.
+ * every page). CACHE_VERSION below is auto-filled with the deploy commit
+ * SHA by .github/workflows/deploy.yml on every publish — so every deploy
+ * always counts as a real update, with nothing to remember to bump by
+ * hand. When editing this file locally, __BUILD_ID__ is a harmless
+ * placeholder; it only becomes a real value during the GitHub Actions
+ * deploy step.
  *
  * Deliberately excluded from any caching:
  *   - admin.html and anything under /js/admin*.js — the admin panel should
@@ -13,12 +17,13 @@
  *     and go straight to the network, untouched by this service worker.
  */
 
-const CACHE_VERSION = "bem-cache-v1";
+const CACHE_VERSION = "bem-cache-__BUILD_ID__";
 
 // Precached on install: the public page shells + the assets nearly every
-// page needs. Everything else (per-page JS, images) is picked up lazily via
-// the runtime stale-while-revalidate handler below, so this list doesn't
-// need to be kept in lockstep with every file the site adds over time.
+// page needs, so there's something to fall back to offline immediately.
+// Everything else (per-page JS, images) is picked up and cached lazily via
+// the runtime network-first handler below, so this list doesn't need to be
+// kept in lockstep with every file the site adds over time.
 const PRECACHE_URLS = [
   "index.html",
   "about.html",
@@ -93,23 +98,22 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Same-origin static assets (css, js, images, fonts): stale-while-revalidate
-  // — serve the cached copy instantly if we have one, and refresh it in the
-  // background, so new files are picked up automatically without needing to
-  // be listed in PRECACHE_URLS above.
+  // Same-origin static assets (css, js, images, fonts): network-first,
+  // same as page navigations above — every load gets the true latest
+  // file when online, falling back to the cached copy only when offline
+  // or the network request fails. (Previously this used stale-while-
+  // revalidate, which always served the *previous* cached copy instantly
+  // and only refreshed it in the background for the *next* load — meaning
+  // visitors were permanently one deploy behind until a second reload.)
   event.respondWith(
-    caches.open(CACHE_VERSION).then((cache) =>
-      cache.match(request).then((cached) => {
-        const networkFetch = fetch(request)
-          .then((response) => {
-            if (response && response.status === 200) {
-              cache.put(request, response.clone());
-            }
-            return response;
-          })
-          .catch(() => cached);
-        return cached || networkFetch;
+    fetch(request)
+      .then((response) => {
+        if (response && response.status === 200) {
+          const copy = response.clone();
+          caches.open(CACHE_VERSION).then((cache) => cache.put(request, copy));
+        }
+        return response;
       })
-    )
+      .catch(() => caches.match(request))
   );
 });
