@@ -505,15 +505,16 @@ button.settings-dropdown-link:disabled:hover i {
 }
 
 .hero--default-bg .hero-badge {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.35);
   border-color: rgba(255, 255, 255, 0.25);
   color: var(--marigold-light);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
 }
 
 .hero--default-bg h1,
 .hero--default-bg p {
   color: #fff;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.9);
 }
 
 .hero--default-bg h1 .church-title-bem,
@@ -522,7 +523,7 @@ button.settings-dropdown-link:disabled:hover i {
 }
 
 .hero--default-bg h1 em {
-  color: var(--marigold-light);
+  color: #fff;
 }
 
 .hero--default-bg .btn-outline {
