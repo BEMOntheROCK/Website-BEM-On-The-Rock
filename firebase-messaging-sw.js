@@ -34,11 +34,15 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Shown when a push arrives while the site/app isn't in focus.
+// Shown when a push arrives while the site/app isn't in focus. The Cloud
+// Function sends data-only messages deliberately (see functions/index.js)
+// so this handler is the *only* thing that ever displays a notification —
+// a payload with a top-level "notification" field would make the browser
+// also auto-display its own generic version of the same message.
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || "BEM On The ROCK";
+  const title = payload.data?.title || "BEM On The ROCK";
   const options = {
-    body: payload.notification?.body || "",
+    body: payload.data?.body || "",
     icon: "assets/icons/icon-192.png",
     badge: "assets/icons/icon-192.png",
     data: { url: payload.data?.url || "/index.html" },

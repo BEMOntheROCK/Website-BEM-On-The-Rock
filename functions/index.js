@@ -52,9 +52,18 @@ async function sendToAllSubscribers({ title, body, url }) {
     return;
   }
 
+  // Deliberately data-only, no top-level "notification" field. When a
+  // push payload includes "notification", browsers automatically display
+  // their own generic notification for it *in addition to* whatever our
+  // own onBackgroundMessage handler shows (see firebase-messaging-sw.js)
+  // — this is documented Firebase/browser behavior, not a bug in our
+  // code, but it means every message was showing up twice: once as the
+  // browser's automatic, uncustomizable version (hence the plain generic
+  // icon), and once as our own properly-formatted one. Data-only messages
+  // skip that automatic display entirely, leaving our handler as the only
+  // thing that ever shows a notification.
   const message = {
-    notification: { title, body },
-    data: { url: url || "/index.html" },
+    data: { title, body, url: url || "/index.html" },
   };
 
   const staleTokens = [];
