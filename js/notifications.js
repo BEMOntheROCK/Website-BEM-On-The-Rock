@@ -144,6 +144,21 @@ async function subscribePush(op) {
     await deleteNotificationToken(token).catch(() => {});
     return;
   }
+
+  // getToken() can return a *different* token than last time whenever the
+  // underlying push subscription gets regenerated (a browser update, the
+  // stale-service-worker cleanup above forcing a fresh subscribe, clearing
+  // site data, etc.) — this has been happening on essentially every recent
+  // deploy. Without this, the old token has nothing to still be running to
+  // notice it's stale (it was never disabled, just silently replaced), so
+  // it sits in Firestore forever, and the same device ends up receiving
+  // its own notification twice: once via the current token, once via the
+  // orphaned old one. If we still have a different previous token on
+  // record for this device, remove it now.
+  const previousToken = localStorage.getItem(TOKEN_KEY);
+  if (previousToken && previousToken !== token) {
+    await deleteNotificationToken(previousToken).catch(() => {});
+  }
   localStorage.setItem(TOKEN_KEY, token);
   setToggleState("on");
 }
