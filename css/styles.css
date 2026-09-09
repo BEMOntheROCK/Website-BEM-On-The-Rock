@@ -482,8 +482,7 @@ button.settings-dropdown-link:disabled:hover i {
 
 /* ── Hero ── */
 .hero--default-bg {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35)),
-    url("../assets/index-hero-background-image.png");
+  background-image: url("../assets/index-hero-background-image.png");
   background-size: cover;
   background-position: center;
   padding: 5rem 0 3.5rem;
@@ -497,8 +496,7 @@ button.settings-dropdown-link:disabled:hover i {
      behind the title. This dedicated portrait crop places the peak lower
      in frame on purpose, and is also a much smaller file for mobile data. */
   .hero--default-bg {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35)),
-      url("../assets/index-hero-background-image-mobile.jpg");
+    background-image: url("../assets/index-hero-background-image-mobile.jpg");
   }
 }
 
