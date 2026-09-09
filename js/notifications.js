@@ -56,15 +56,50 @@ function markPrompted() {
   localStorage.setItem(PROMPTED_KEY, "true");
 }
 
+/**
+ * Before caching and push were consolidated into one service worker (see
+ * the comments atop service-worker.js and firebase-messaging-sw.js),
+ * firebase-messaging-sw.js could end up registered on its own as a second,
+ * independent service worker. If that old registration is still sitting on
+ * a device, it keeps its own push subscription and its own stored FCM
+ * token — so every notification arrives twice, once per worker.
+ *
+ * This removes any registration that isn't the one we're actually using,
+ * so existing devices self-heal the next time they set up notifications,
+ * with nothing manual required. It's fire-and-forget: the old
+ * registration's push subscription simply stops working once unregistered,
+ * and the matching stale token gets pruned server-side automatically the
+ * next time a notification is sent (see sendToAllSubscribers in
+ * functions/index.js), the same as any other token that goes stale.
+ */
+export async function cleanupStaleServiceWorkers(keepRegistration) {
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(
+      registrations
+        .filter((reg) => reg !== keepRegistration)
+        .map((reg) => reg.unregister().catch(() => {}))
+    );
+  } catch {
+    // Best-effort cleanup only — never let this block notification setup.
+  }
+}
+
 async function getPushRegistration() {
   if (!("serviceWorker" in navigator)) return undefined;
-  const existing = await navigator.serviceWorker.getRegistration("/");
-  if (existing) return existing;
-  try {
-    return await navigator.serviceWorker.register("/service-worker.js");
-  } catch {
-    return undefined;
+
+  let registration = await navigator.serviceWorker.getRegistration("/");
+  if (!registration) {
+    try {
+      registration = await navigator.serviceWorker.register("/service-worker.js");
+    } catch {
+      return undefined;
+    }
   }
+
+  cleanupStaleServiceWorkers(registration);
+
+  return registration;
 }
 
 async function subscribePush(op) {

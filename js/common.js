@@ -1,5 +1,5 @@
 import { initTheme } from "./theme.js";
-import { initNotificationToggle, initAutoNotificationPrompt } from "./notifications.js";
+import { initNotificationToggle, initAutoNotificationPrompt, cleanupStaleServiceWorkers } from "./notifications.js";
 import { initInstallApp } from "./install-app.js";
 
 initTheme();
@@ -24,6 +24,15 @@ if ("serviceWorker" in navigator && !window.location.pathname.endsWith("admin.ht
         // Catch the case where a newer version was already installed and
         // waiting from a previous visit, before this tab even loaded.
         if (registration.waiting) reloadOnce();
+
+        // One-time self-heal for devices that still have the old, separate
+        // firebase-messaging-sw.js registration lingering from before
+        // caching and push were consolidated into this single worker —
+        // that leftover registration caused every push notification to
+        // arrive twice. Runs on every visit (not just when notifications
+        // are toggled) so it clears up automatically without anyone
+        // needing to know or do anything about it.
+        cleanupStaleServiceWorkers(registration);
 
         // Proactively check for an update every time the app is opened or
         // brought back to the foreground — installed PWAs are often just
