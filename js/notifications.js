@@ -66,11 +66,17 @@ function markPrompted() {
  *
  * This removes any registration that isn't the one we're actually using,
  * so existing devices self-heal the next time they set up notifications,
- * with nothing manual required. It's fire-and-forget: the old
- * registration's push subscription simply stops working once unregistered,
- * and the matching stale token gets pruned server-side automatically the
- * next time a notification is sent (see sendToAllSubscribers in
- * functions/index.js), the same as any other token that goes stale.
+ * with nothing manual required. Each stale registration's push
+ * subscription is explicitly unsubscribed *before* unregistering the
+ * worker — unregistering alone leaves the subscription itself active, so
+ * the push service keeps delivering to it. With no worker left to handle
+ * it, the browser falls back to showing its own generic notification for
+ * that delivery (Chrome's documented behavior for exactly this case)
+ * instead of the duplicate simply disappearing. Explicitly unsubscribing
+ * tells the push service to stop delivering to that endpoint entirely.
+ * The matching stale token then gets pruned server-side the next time a
+ * notification is sent (see sendToAllSubscribers in functions/index.js),
+ * same as any other token that goes stale.
  */
 export async function cleanupStaleServiceWorkers(keepRegistration) {
   try {
@@ -78,7 +84,16 @@ export async function cleanupStaleServiceWorkers(keepRegistration) {
     await Promise.all(
       registrations
         .filter((reg) => reg !== keepRegistration)
-        .map((reg) => reg.unregister().catch(() => {}))
+        .map(async (reg) => {
+          try {
+            const subscription = await reg.pushManager.getSubscription();
+            if (subscription) await subscription.unsubscribe();
+          } catch {
+            // Fall through to unregister regardless — worst case the
+            // subscription outlives the worker, same as before this fix.
+          }
+          await reg.unregister().catch(() => {});
+        })
     );
   } catch {
     // Best-effort cleanup only — never let this block notification setup.
