@@ -625,7 +625,7 @@ button.settings-dropdown-link:disabled:hover i {
 
 .hero h1 em {
   font-style: normal;
-  color: var(--marigold);
+  color: white;
 }
 
 .hero p {
