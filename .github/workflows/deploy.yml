@@ -1,5 +1,30 @@
 name: Deploy to GitHub Pages
 
+# NOTE: This workflow deploys two independent things on every push to main:
+#   1. The static site itself, to GitHub Pages (the "deploy" job below).
+#   2. Cloud Functions + Firestore rules, to Firebase (the "deploy-functions"
+#      job below) — these live on Firebase's servers, completely separately
+#      from GitHub Pages, and previously had NO automated deploy at all.
+#      Editing functions/index.js or firestore.rules and pushing to GitHub
+#      only ever updated the *site*; the actual Cloud Functions code
+#      running in production stayed whatever was last deployed by hand,
+#      silently drifting out of sync with the repo. This job closes that
+#      gap so a normal push deploys everything, the same way it already
+#      does for the site.
+#
+# One-time setup required for the "deploy-functions" job to work: it needs
+# a FIREBASE_TOKEN repository secret. To generate one (only needs doing
+# once, by whoever has admin/owner access on the Firebase project):
+#   1. On a computer with Node.js installed, run:
+#        npm install -g firebase-tools
+#        firebase login:ci
+#   2. That opens a browser to sign in, then prints a long token in the
+#      terminal — copy it.
+#   3. In this GitHub repo: Settings > Secrets and variables > Actions >
+#      "New repository secret" > name it FIREBASE_TOKEN > paste the token.
+# Until that secret is added, the deploy-functions job below will fail
+# loudly with a clear error message rather than silently doing nothing.
+
 on:
   push:
     branches: ["main"]
@@ -68,3 +93,28 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  deploy-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install functions dependencies
+        working-directory: functions
+        run: npm ci
+
+      - name: Deploy Cloud Functions and Firestore rules
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "::error::FIREBASE_TOKEN repository secret is not set — see the comment at the top of this file for how to generate one. Skipping this step means Cloud Functions and Firestore rules changes are NOT live, even though the site itself deployed fine."
+            exit 1
+          fi
+          npx firebase-tools@13 deploy --only functions,firestore:rules --project website-bem-on-the-rock --token "$FIREBASE_TOKEN" --non-interactive
