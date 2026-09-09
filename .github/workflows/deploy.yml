@@ -117,4 +117,4 @@ jobs:
             echo "::error::FIREBASE_TOKEN repository secret is not set — see the comment at the top of this file for how to generate one. Skipping this step means Cloud Functions and Firestore rules changes are NOT live, even though the site itself deployed fine."
             exit 1
           fi
-          npx firebase-tools@13 deploy --only functions,firestore:rules --project website-bem-on-the-rock --token "$FIREBASE_TOKEN" --non-interactive
+          npx firebase-tools@13 deploy --only functions,firestore:rules --project website-bem-on-the-rock --token "$FIREBASE_TOKEN" --non-interactive --force
