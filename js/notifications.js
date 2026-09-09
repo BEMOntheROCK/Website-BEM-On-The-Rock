@@ -5,9 +5,11 @@ import { saveNotificationToken, deleteNotificationToken } from "./firebase-servi
 
 const STORAGE_KEY = "bem-notifications-enabled";
 const TOKEN_KEY = "bem-notification-token";
-// v2: the previous flag was often set after a messaging timeout without
-// ever showing a permission dialog, so first-install users never got asked.
-const PROMPTED_KEY = "bem-notifications-prompted-v2";
+// Session-scoped (not localStorage): dismissing the banner should only
+// silence it for the rest of the current app session. Once the app is
+// closed and reopened, sessionStorage is cleared automatically and the
+// banner is free to reappear if notifications are still effectively off.
+const DISMISSED_THIS_SESSION_KEY = "bem-notifications-dismissed-session";
 
 let operationId = 0;
 
@@ -52,8 +54,8 @@ function setToggleState(state) {
   });
 }
 
-function markPrompted() {
-  localStorage.setItem(PROMPTED_KEY, "true");
+function markDismissedThisSession() {
+  sessionStorage.setItem(DISMISSED_THIS_SESSION_KEY, "true");
 }
 
 /**
@@ -173,7 +175,6 @@ async function enableNotifications() {
 
     if (Notification.permission === "denied") {
       setToggleState("denied");
-      markPrompted();
       return;
     }
 
@@ -185,7 +186,6 @@ async function enableNotifications() {
 
     if (Notification.permission !== "granted") {
       const permission = await Notification.requestPermission();
-      markPrompted();
       if (op !== operationId) return;
       if (permission !== "granted") {
         localStorage.removeItem(STORAGE_KEY);
@@ -193,8 +193,6 @@ async function enableNotifications() {
         setToggleState(permission === "denied" ? "denied" : "off");
         return;
       }
-    } else {
-      markPrompted();
     }
 
     await subscribePush(op);
@@ -291,36 +289,49 @@ function showPermissionPrompt() {
     enableNotifications();
   });
   banner.querySelector("[data-notif-prompt-dismiss]").addEventListener("click", () => {
-    markPrompted();
+    markDismissedThisSession();
     hidePermissionPrompt();
   });
 
   document.body.appendChild(banner);
 }
 
-function shouldOfferFirstRunPrompt() {
+/**
+ * Notifications count as "effectively off" (and so worth prompting about)
+ * whenever permission hasn't been decided yet, or permission was granted
+ * but the visitor's own in-app toggle is off (e.g. they flipped it off
+ * later, or enabling silently failed previously). "denied" is excluded on
+ * purpose: once the browser has blocked permission, no button in this
+ * banner can change that — only the visitor's browser/site settings can —
+ * so showing it would just be noise. setToggleState("denied") already
+ * covers explaining that state via the in-page toggle instead.
+ */
+function notificationsEffectivelyOff() {
+  if (Notification.permission === "default") return true;
+  if (Notification.permission === "granted" && localStorage.getItem(STORAGE_KEY) !== "true") return true;
+  return false;
+}
+
+function shouldShowNotificationBanner() {
   if (!("Notification" in window)) return false;
-  if (localStorage.getItem(PROMPTED_KEY) === "true") return false;
-  if (Notification.permission !== "default") return false;
+  if (sessionStorage.getItem(DISMISSED_THIS_SESSION_KEY) === "true") return false;
+  if (!notificationsEffectivelyOff()) return false;
   return isRunningAsInstalledApp();
 }
 
 /**
- * After the visitor installs the PWA, or the first time they open it from
- * the home screen, show an in-app prompt whose Enable button is a real
- * user gesture — browsers will not show the OS permission dialog from a
- * timer or from page load alone.
+ * Shows an in-app prompt whose Enable button is a real user gesture —
+ * browsers will not show the OS permission dialog from a timer or from
+ * page load alone. Checked every time the app is opened (not just the
+ * very first time): if notifications are still effectively off, the
+ * banner reappears, but dismissing it silences it for the rest of the
+ * current session only (see DISMISSED_THIS_SESSION_KEY).
  */
 export function initAutoNotificationPrompt() {
   if (!("Notification" in window)) return;
 
-  if (Notification.permission !== "default") {
-    markPrompted();
-    return;
-  }
-
   const offer = () => {
-    if (shouldOfferFirstRunPrompt()) showPermissionPrompt();
+    if (shouldShowNotificationBanner()) showPermissionPrompt();
   };
 
   offer();
