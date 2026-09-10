@@ -521,7 +521,7 @@ button.settings-dropdown-link:disabled:hover i {
 .hero--default-bg .hero-badge {
   border-color: rgba(255, 255, 255, 0.25);
   outline: 1px solid var(--marigold);
-  outline-offset: 2px;
+  outline-offset: 0;
 }
 
 [data-theme="dark"] .hero--default-bg .hero-badge {
