@@ -519,9 +519,17 @@ button.settings-dropdown-link:disabled:hover i {
 }
 
 .hero--default-bg .hero-badge {
-  background: rgba(0, 0, 0, 0.35);
   border-color: rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="dark"] .hero--default-bg .hero-badge {
+  background: #000;
   color: var(--marigold-light);
+}
+
+[data-theme="light"] .hero--default-bg .hero-badge {
+  background: #fff;
+  color: #000;
 }
 
 .hero--default-bg h1 {
@@ -674,7 +682,6 @@ button.settings-dropdown-link:disabled:hover i {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(18px) saturate(180%);
   -webkit-backdrop-filter: blur(18px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -685,6 +692,14 @@ button.settings-dropdown-link:disabled:hover i {
     0 8px 24px rgba(0, 0, 0, 0.35);
   z-index: 1;
   pointer-events: none;
+}
+
+[data-theme="dark"] .tagline-glass {
+  background: #000;
+}
+
+[data-theme="light"] .tagline-glass {
+  background: #fff;
 }
 
 .aurora-title {
