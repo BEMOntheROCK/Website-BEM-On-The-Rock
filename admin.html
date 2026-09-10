@@ -164,6 +164,15 @@
               </button>
             </li>
             <li>
+              <button type="button" data-panel="community">
+                <i class="fa-solid fa-people-group admin-nav-icon"></i>
+                <span class="admin-nav-text">
+                  <span class="admin-nav-label">Community</span>
+                  <span class="admin-nav-sub">Intro text &amp; photo collage on the Community page</span>
+                </span>
+              </button>
+            </li>
+            <li>
               <button type="button" data-panel="services">
                 <i class="fa-solid fa-arrow-up-right-from-square admin-nav-icon"></i>
                 <span class="admin-nav-text">
@@ -489,7 +498,7 @@
         <!-- Activities panel -->
         <section id="panel-activities" class="admin-panel">
           <h2>Ministries &amp; Activities</h2>
-          <p class="admin-panel-intro">This controls the Activities page, which has three fixed sections: Ministries, Activities, and Community Contributions.</p>
+          <p class="admin-panel-intro">This controls the Activities page, which has two fixed sections: Ministries and Activities.</p>
 
           <h3 class="admin-subheading" style="border-top: none; margin-top: 0; padding-top: 0;">Ministries &amp; Activities items</h3>
           <p class="admin-hint">Each item belongs to either the "Ministries" or "Activities" section. Drag the ⠿ handle to reorder items within the table.</p>
@@ -515,11 +524,12 @@
               </tbody>
             </table>
           </div>
+        </section>
 
-          <hr class="admin-divider" />
-
-          <h3 class="admin-subheading">Community Contributions</h3>
-          <p class="admin-hint">This section shows an intro paragraph followed by a photo collage. Each photo has a title, optional date, and a size (in grid columns × rows) that controls how much space it takes up in the grid. Hovering (or tapping, on touch devices) reveals the title and date.</p>
+        <!-- Community panel -->
+        <section id="panel-community" class="admin-panel">
+          <h2>Community</h2>
+          <p class="admin-panel-intro">This controls the Community page: an intro paragraph followed by a photo collage. Each photo has a title, optional date, and a size (in grid columns × rows) that controls how much space it takes up in the grid. Hovering (or tapping, on touch devices) reveals the title and date.</p>
 
           <form id="community-intro-form">
             <div class="form-group">

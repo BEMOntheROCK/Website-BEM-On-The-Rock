@@ -16,9 +16,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Activities and ministries at BEM On The ROCK Church."
+      content="Community contributions at BEM On The ROCK Church."
     />
-    <title>Activities &amp; Ministries — BEM On The ROCK</title>
+    <title>Community — BEM On The ROCK</title>
     <link rel="icon" type="image/png" href="assets/favicon.png" />
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#faa61a" />
@@ -49,8 +49,8 @@
             <li><a href="about.html"><i class="fa-solid fa-circle-info nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.about">About Us</span></a></li>
             <li><a href="history.html"><i class="fa-solid fa-clock-rotate-left nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.history">History</span></a></li>
             <li><a href="organisation-structure.html"><i class="fa-solid fa-sitemap nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.org">Organisation</span></a></li>
-            <li><a href="activities.html" class="active"><i class="fa-solid fa-hands-praying nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.activities">Activities</span></a></li>
-            <li><a href="community.html"><i class="fa-solid fa-people-group nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.community">Community</span></a></li>
+            <li><a href="activities.html"><i class="fa-solid fa-hands-praying nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.activities">Activities</span></a></li>
+            <li><a href="community.html" class="active"><i class="fa-solid fa-people-group nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.community">Community</span></a></li>
             <li><a href="services.html"><i class="fa-solid fa-arrow-up-right-from-square nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.services">Services</span></a></li>
             <li><a href="product.html"><i class="fa-solid fa-bag-shopping nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.product">Product</span></a></li>
             <li class="nav-more-toggle-item">
@@ -159,16 +159,16 @@
     </div>
 
     <main>
-      <section class="page-hero page-hero--has-bg notranslate" translate="no" id="activities-hero">
+      <section class="page-hero page-hero--has-bg notranslate" translate="no" id="community-hero">
         <div class="container">
-          <h1 data-i18n="activities.hero.title">Activities &amp; Ministries</h1>
-          <p data-i18n="activities.hero.subtitle">Discover the ministries and activities that make up our church family.</p>
+          <h1 data-i18n="community.hero.title">Community Contributions</h1>
+          <p data-i18n="community.hero.subtitle">A look at how our church family shows up for one another and the wider community.</p>
         </div>
       </section>
 
       <section class="container section">
-        <div id="activities-content">
-          <div class="loading">Loading activities &amp; ministries…</div>
+        <div id="community-content">
+          <div class="loading">Loading community contributions…</div>
         </div>
       </section>
     </main>
@@ -274,11 +274,19 @@
     </div>
 
 
+    <!-- Community photo lightbox -->
+    <div class="modal-overlay lightbox-overlay" data-lightbox-overlay>
+      <button type="button" class="lightbox-close" data-lightbox-close aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <img class="lightbox-image" data-lightbox-image src="" alt="" />
+    </div>
+
     <button id="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
     <div id="google_translate_element"></div>
     <script type="module" src="js/i18n.js"></script>
     <script type="module" src="js/loading-overlay.js"></script>
     <script type="module" src="js/scroll-effects.js"></script>
-    <script type="module" src="js/activities.js"></script>
+    <script type="module" src="js/community.js"></script>
   </body>
 </html>

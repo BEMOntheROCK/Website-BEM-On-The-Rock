@@ -33,6 +33,8 @@ const PRECACHE_URLS = [
   "index.html",
   "about.html",
   "activities.html",
+  "community.html",
+  "product.html",
   "history.html",
   "organisation-structure.html",
   "services.html",
