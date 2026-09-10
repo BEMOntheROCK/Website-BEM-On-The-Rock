@@ -520,6 +520,8 @@ button.settings-dropdown-link:disabled:hover i {
 
 .hero--default-bg .hero-badge {
   border-color: rgba(255, 255, 255, 0.25);
+  outline: 1px solid var(--marigold);
+  outline-offset: 2px;
 }
 
 [data-theme="dark"] .hero--default-bg .hero-badge {
@@ -529,7 +531,7 @@ button.settings-dropdown-link:disabled:hover i {
 
 [data-theme="light"] .hero--default-bg .hero-badge {
   background: #fff;
-  color: #000;
+  color: var(--marigold);
 }
 
 .hero--default-bg h1 {
