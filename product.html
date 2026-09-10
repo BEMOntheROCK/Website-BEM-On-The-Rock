@@ -16,9 +16,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Community contributions at BEM On The ROCK Church."
+      content="Product — BEM On The ROCK Church."
     />
-    <title>Community — BEM On The ROCK</title>
+    <title>Product — BEM On The ROCK</title>
     <link rel="icon" type="image/png" href="assets/favicon.png" />
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#faa61a" />
@@ -45,14 +45,14 @@
 
         <nav>
           <ul class="nav-links">
-            <li><a href="index.html"><i class="fa-solid fa-house nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.home">Home</span></a></li>
-            <li><a href="about.html"><i class="fa-solid fa-circle-info nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.about">About Us</span></a></li>
-            <li><a href="history.html"><i class="fa-solid fa-clock-rotate-left nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.history">History</span></a></li>
-            <li><a href="organisation-structure.html"><i class="fa-solid fa-sitemap nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.org">Organisation</span></a></li>
-            <li><a href="activities.html"><i class="fa-solid fa-hands-praying nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.activities">Activities</span></a></li>
-            <li><a href="community.html" class="active"><i class="fa-solid fa-people-group nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.community">Community</span></a></li>
-            <li><a href="services.html"><i class="fa-solid fa-arrow-up-right-from-square nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.services">Services</span></a></li>
-            <li><a href="product.html"><i class="fa-solid fa-bag-shopping nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.product">Product</span></a></li>
+            <li><a href="index.html" data-i18n-attr="aria-label:nav.home"><i class="fa-solid fa-house nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.home">Home</span></a></li>
+            <li><a href="about.html" data-i18n-attr="aria-label:nav.about"><i class="fa-solid fa-circle-info nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.about">About Us</span></a></li>
+            <li><a href="history.html" data-i18n-attr="aria-label:nav.history"><i class="fa-solid fa-clock-rotate-left nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.history">History</span></a></li>
+            <li><a href="organisation-structure.html" data-i18n-attr="aria-label:nav.org"><i class="fa-solid fa-sitemap nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.org">Organisation</span></a></li>
+            <li><a href="activities.html" data-i18n-attr="aria-label:nav.activities"><i class="fa-solid fa-hands-praying nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.activities">Activities</span></a></li>
+            <li><a href="community.html" data-i18n-attr="aria-label:nav.community"><i class="fa-solid fa-people-group nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.community">Community</span></a></li>
+            <li><a href="services.html" data-i18n-attr="aria-label:nav.services"><i class="fa-solid fa-arrow-up-right-from-square nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.services">Services</span></a></li>
+            <li><a href="product.html" class="active" data-i18n-attr="aria-label:nav.product"><i class="fa-solid fa-bag-shopping nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.product">Product</span></a></li>
             <li class="nav-more-toggle-item">
               <button type="button" class="nav-more-toggle" data-nav-more-toggle aria-expanded="false">
                 <span data-i18n="nav.more">More</span>
@@ -159,16 +159,19 @@
     </div>
 
     <main>
-      <section class="page-hero page-hero--has-bg notranslate" translate="no" id="community-hero">
+      <section class="page-hero page-hero--has-bg notranslate" translate="no" id="product-hero">
         <div class="container">
-          <h1 data-i18n="community.hero.title">Community Contributions</h1>
-          <p data-i18n="community.hero.subtitle">A look at how our church family shows up for one another and the wider community.</p>
+          <h1 data-i18n="product.hero.title">Product</h1>
+          <p data-i18n="product.hero.subtitle">More details coming soon.</p>
         </div>
       </section>
 
       <section class="container section">
-        <div id="community-content">
-          <div class="loading">Loading community contributions…</div>
+        <div id="product-content">
+          <div class="empty-state">
+            <div class="icon">🛠️</div>
+            <p data-i18n="product.comingSoon">This page is under construction. Check back soon!</p>
+          </div>
         </div>
       </section>
     </main>
@@ -274,19 +277,11 @@
     </div>
 
 
-    <!-- Community photo lightbox -->
-    <div class="modal-overlay lightbox-overlay" data-lightbox-overlay>
-      <button type="button" class="lightbox-close" data-lightbox-close aria-label="Close">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <img class="lightbox-image" data-lightbox-image src="" alt="" />
-    </div>
-
     <button id="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
     <div id="google_translate_element"></div>
     <script type="module" src="js/i18n.js"></script>
     <script type="module" src="js/loading-overlay.js"></script>
     <script type="module" src="js/scroll-effects.js"></script>
-    <script type="module" src="js/community.js"></script>
+    <script type="module" src="js/product.js"></script>
   </body>
 </html>

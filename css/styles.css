@@ -212,16 +212,53 @@ a:hover {
 }
 
 .nav-links a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
   color: var(--text);
   font-weight: 500;
   font-size: 0.9rem;
-  padding: 0.5rem 0.85rem;
+  padding: 0.6rem;
   border-radius: var(--radius-sm);
   transition: background var(--transition), color var(--transition);
 }
 
 .nav-links a .nav-link-icon {
-  display: none;
+  display: inline-block;
+  font-size: 1.05rem;
+}
+
+/* On desktop the visible label collapses into a tooltip (below), so this
+   just needs to stop it taking up horizontal space in the pill itself —
+   the max-width:768px block further down restores it to a normal visible
+   label for the mobile menu, where the tooltip treatment doesn't apply. */
+.nav-links a > span {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  white-space: nowrap;
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--transition), transform var(--transition);
+  z-index: 60;
+}
+
+.nav-links a:hover > span,
+.nav-links a:focus-visible > span {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(8px);
 }
 
 .nav-links a:hover,
@@ -2770,6 +2807,21 @@ button.settings-dropdown-link:disabled:hover i {
     width: 1.3rem;
     text-align: center;
     color: var(--marigold);
+  }
+
+  /* Undo the desktop tooltip treatment — the mobile menu shows icon +
+     label side by side, in normal flow, always visible. */
+  .nav-links a > span {
+    position: static;
+    transform: none;
+    white-space: normal;
+    background: none;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   /* Same visual treatment as .nav-links a above, but this one's a <button>
