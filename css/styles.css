@@ -482,23 +482,11 @@ button.settings-dropdown-link:disabled:hover i {
 
 /* ── Hero ── */
 .hero--default-bg {
-  padding: 5rem 0 3.5rem;
-  color: #fff;
-}
-
-/* The photo lives on its own layer (rather than directly as this section's
-   background-image) so a brightness/saturation trim can be applied to just
-   the image — filtering the section itself would also mute the buttons and
-   glass panel sitting on top of it. */
-.hero--default-bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
   background-image: url("../assets/index-hero-background-image.png");
   background-size: cover;
   background-position: center;
-  filter: brightness(0.9) saturate(0.88);
+  padding: 5rem 0 3.5rem;
+  color: #fff;
 }
 
 @media (max-width: 768px) {
@@ -507,7 +495,7 @@ button.settings-dropdown-link:disabled:hover i {
      leaves almost no vertical cropping room and makes the peak sit right
      behind the title. This dedicated portrait crop places the peak lower
      in frame on purpose, and is also a much smaller file for mobile data. */
-  .hero--default-bg::after {
+  .hero--default-bg {
     background-image: url("../assets/index-hero-background-image-mobile.jpg");
   }
 }
@@ -534,32 +522,6 @@ button.settings-dropdown-link:disabled:hover i {
   background: rgba(0, 0, 0, 0.35);
   border-color: rgba(255, 255, 255, 0.25);
   color: var(--marigold-light);
-}
-
-/* A frosted glass panel behind the badge + headline, matching the same
-   treatment already used for the "INTENSIFY" tagline pill below it — this
-   plus the lighter text-shadow below replaces the old heavy white glow,
-   which turned into a blown-out halo wherever it crossed the bright sky. */
-.hero-heading-glass {
-  display: inline-block;
-  margin-bottom: 1.75rem;
-  padding: 1.75rem 2.75rem;
-  border-radius: var(--radius-lg);
-  background: rgba(20, 14, 10, 0.32);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.15),
-    0 8px 28px rgba(0, 0, 0, 0.35);
-}
-
-.hero-heading-glass .hero-badge {
-  margin-bottom: 1.1rem;
-}
-
-.hero-heading-glass h1 {
-  margin-bottom: 0;
 }
 
 .hero--default-bg h1 {
