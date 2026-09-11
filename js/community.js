@@ -1,10 +1,11 @@
-import "./common.js";
+import { initHeroBanner } from "./common.js";
 import { hideLoadingOverlay } from "./loading-overlay.js";
 import { getCommunityContent, getCommunityPhotos } from "./firebase-service.js";
 import { getImageUrl } from "./image-service.js";
 import { mountCroppedImage, DEFAULT_CROP } from "./image-crop.js";
 
 document.getElementById("year").textContent = new Date().getFullYear();
+initHeroBanner("community", "community-hero");
 
 function escapeHtml(text) {
   const div = document.createElement("div");

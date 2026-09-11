@@ -1,12 +1,49 @@
 import { initTheme } from "./theme.js";
 import { initNotificationToggle, initAutoNotificationPrompt, initNotificationBell, cleanupStaleServiceWorkers } from "./notifications.js";
 import { initInstallApp } from "./install-app.js";
+import { getSiteSettings } from "./firebase-service.js";
+import { getImageUrl } from "./image-service.js";
 
 initTheme();
 initNotificationToggle();
 initNotificationBell();
 initAutoNotificationPrompt();
 initInstallApp();
+
+// A dark gradient laid over hero photos so the white title/subtitle text
+// stays readable regardless of how bright the photo is — matches the
+// gradient every .page-hero--has-bg section already used when the hero
+// images were hardcoded in CSS.
+const HERO_OVERLAY = "linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35))";
+
+/**
+ * Applies an admin-uploaded hero banner image (set in Settings →
+ * Hero Banners) to a page's hero section, if one has been uploaded.
+ * If none has been set yet, this does nothing and the section keeps
+ * whatever background is already defined in CSS (a hardcoded default
+ * image, or none at all) — so pages never break before an admin visits
+ * the admin panel.
+ *
+ * @param {string} pageKey - key under siteSettings.heroImages, e.g. "about"
+ * @param {string} sectionId - id of the <section> element to update
+ * @param {{overlay?: boolean}} [opts] - pass { overlay: false } for hero
+ *   sections that don't use the dark gradient scrim (currently just the
+ *   homepage hero, which has its own custom text-shadow treatment instead).
+ */
+export async function initHeroBanner(pageKey, sectionId, { overlay = true } = {}) {
+  try {
+    const settings = await getSiteSettings();
+    const imageId = settings.heroImages?.[pageKey];
+    if (!imageId) return;
+    const url = await getImageUrl(imageId);
+    if (!url) return;
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    section.style.backgroundImage = overlay ? `${HERO_OVERLAY}, url("${url}")` : `url("${url}")`;
+  } catch (err) {
+    console.error(`Failed to load hero banner for "${pageKey}":`, err);
+  }
+}
 
 // Register the service worker on every public page, but never on the admin
 // panel — admin should always load fresh, never an offline/cached version.

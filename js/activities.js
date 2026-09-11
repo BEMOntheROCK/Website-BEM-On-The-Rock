@@ -1,9 +1,10 @@
-import "./common.js";
+import { initHeroBanner } from "./common.js";
 import { hideLoadingOverlay } from "./loading-overlay.js";
 import { getActivities } from "./firebase-service.js";
 import { getImageUrl } from "./image-service.js";
 
 document.getElementById("year").textContent = new Date().getFullYear();
+initHeroBanner("activities", "activities-hero");
 
 const SECTIONS = [
   { key: "ministries", label: "Ministries" },

@@ -70,6 +70,22 @@ let serviceImgUpload = null;
 let communityPhotoImgUpload = null;
 let communityCropEditor = null;
 let aboutUploads     = {};
+let heroUploads      = {};
+
+// Pages whose hero banner is editable from Settings. `overlay: false` marks
+// the homepage, whose hero uses its own text-shadow treatment instead of
+// the dark gradient scrim the other page heroes use — see initHeroBanner()
+// in common.js, which this list's shape mirrors.
+const HERO_PAGES = [
+  { key: "index",        label: "Home Page",             title: "BEM On The ROCK",            overlay: false },
+  { key: "about",        label: "About",                 title: "About BEM On The ROCK" },
+  { key: "activities",   label: "Activities",             title: "Activities & Ministries" },
+  { key: "community",    label: "Community",              title: "Community Contributions" },
+  { key: "history",      label: "History",                title: "Our History" },
+  { key: "organisation", label: "Organisation Structure", title: "Organisation Structure" },
+  { key: "services",     label: "Services",               title: "Services" },
+  { key: "product",      label: "Product",                title: "Product" },
+];
 
 // ── Helpers ──
 function esc(text) {
@@ -93,6 +109,22 @@ function safeBind(id, opts) {
   const el = document.getElementById(id);
   if (!el) return null;
   return bindImageUpload(el, opts);
+}
+
+// Updates a hero banner's live preview box to show the uploaded photo
+// behind the sample title text, matching how it'll actually render on
+// the public page (see .hero-banner-preview in styles.css).
+function setHeroPreview(key, url) {
+  const el = document.getElementById(`hero-${key}-preview`);
+  if (!el) return;
+  const page = HERO_PAGES.find(p => p.key === key);
+  if (!url) {
+    el.style.backgroundImage = "";
+    return;
+  }
+  el.style.backgroundImage = page?.overlay === false
+    ? `url("${url}")`
+    : `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35)), url("${url}")`;
 }
 
 function authError(code) {
@@ -273,6 +305,18 @@ async function initAll() {
     vision:  safeBind("about-vision-image-upload",  { inputId: "ab-vision-in",  label: "Vision Image" }),
     values:  safeBind("about-values-image-upload",  { inputId: "ab-values-in",  label: "Values Image" }),
   };
+  heroUploads = {};
+  HERO_PAGES.forEach(page => {
+    heroUploads[page.key] = safeBind(`hero-${page.key}-upload`, {
+      inputId: `hero-${page.key}-in`,
+      label: `${page.label} Banner Image`,
+      hint: "Recommended: a wide landscape photo, at least 1600px wide.",
+      onImageIdChange: async (newId) => {
+        const url = newId ? await getImageUrl(newId) : null;
+        setHeroPreview(page.key, url);
+      },
+    });
+  });
 
   await Promise.all([
     loadNews(),
@@ -1053,14 +1097,28 @@ async function loadSettings() {
   const s   = await getSiteSettings();
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ""; };
   set("settings-tagline",          s.tagline);
+
+  const heroImages = s.heroImages || {};
+  await Promise.all(HERO_PAGES.map(async page => {
+    const upload  = heroUploads[page.key];
+    if (!upload) return;
+    const imageId = heroImages[page.key] || null;
+    upload.setImageId(imageId);
+    setHeroPreview(page.key, imageId ? await getImageUrl(imageId) : null);
+  }));
 }
 
 document.getElementById("settings-form").addEventListener("submit", async e => {
   e.preventDefault();
   const get = id => document.getElementById(id)?.value.trim() || "";
   try {
+    const heroImages = {};
+    HERO_PAGES.forEach(page => {
+      heroImages[page.key] = heroUploads[page.key]?.getImageId() || null;
+    });
     await saveSiteSettings({
       tagline:          get("settings-tagline"),
+      heroImages,
     });
     showAlert(adminAlert, "Settings saved.", "success");
   } catch (err) {

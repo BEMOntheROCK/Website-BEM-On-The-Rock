@@ -69,6 +69,7 @@ export async function getSiteSettings() {
     youtubeChannelUrl: defaultYouTube.channelUrl,
     youtubeLiveUrl: defaultYouTube.liveUrl,
     youtubeChannelId: "",
+    heroImages: {},
   };
 }
 

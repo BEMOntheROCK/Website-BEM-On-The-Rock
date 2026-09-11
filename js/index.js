@@ -1,4 +1,4 @@
-import "./common.js";
+import { initHeroBanner } from "./common.js";
 import { hideLoadingOverlay } from "./loading-overlay.js";
 import {
   getSiteSettings,
@@ -14,6 +14,9 @@ import { getImageUrl } from "./image-service.js";
 import { mountCroppedImage, DEFAULT_CROP } from "./image-crop.js";
 
 document.getElementById("year").textContent = new Date().getFullYear();
+// No overlay here — the homepage hero uses its own text-shadow treatment
+// rather than the dark gradient scrim the other page heroes use.
+initHeroBanner("index", "hero", { overlay: false });
 
 function escapeHtml(text) {
   const div = document.createElement("div");

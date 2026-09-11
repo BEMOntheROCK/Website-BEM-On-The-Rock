@@ -1,4 +1,4 @@
-import "./common.js";
+import { initHeroBanner } from "./common.js";
 import { hideLoadingOverlay } from "./loading-overlay.js";
 import {
   getAboutContent,
@@ -6,6 +6,7 @@ import {
 import { getImageUrl } from "./image-service.js";
 
 document.getElementById("year").textContent = new Date().getFullYear();
+initHeroBanner("about", "about-hero");
 
 function escapeHtml(text) {
   const div = document.createElement("div");
