@@ -1,10 +1,16 @@
 import { getToken, deleteToken } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-messaging.js";
 import { messaging, messagingReady } from "./firebase-init.js";
 import { vapidKey } from "./firebase-config.js";
-import { saveNotificationToken, deleteNotificationToken } from "./firebase-service.js";
+import { saveNotificationToken, deleteNotificationToken, getNotificationLog } from "./firebase-service.js";
 
 const STORAGE_KEY = "bem-notifications-enabled";
 const TOKEN_KEY = "bem-notification-token";
+// When the bell dropdown was last opened, so a newer notification in the
+// log can be detected as "unread" for this device. Deliberately
+// localStorage (not sessionStorage) — there's no account system, so this
+// per-device history is the only kind of "read" state that's possible
+// here, and it should persist across visits, not just the current tab.
+const LAST_VIEWED_KEY = "bem-notifications-last-viewed";
 // Session-scoped (not localStorage): dismissing the banner should only
 // silence it for the rest of the current app session. Once the app is
 // closed and reopened, sessionStorage is cleared automatically and the
@@ -352,5 +358,132 @@ export function initAutoNotificationPrompt() {
   // paint, or after the display-mode media query starts matching.
   window.matchMedia("(display-mode: standalone)").addEventListener("change", (event) => {
     if (event.matches) offer();
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text ?? "";
+  return div.innerHTML;
+}
+
+/**
+ * Short, human "time ago" label (e.g. "5m ago", "3d ago") — good enough
+ * for a notification list without pulling in a date-formatting library.
+ * Falls back to a plain date once it's more than a week old.
+ */
+function timeAgo(isoString) {
+  const then = new Date(isoString).getTime();
+  if (Number.isNaN(then)) return "";
+  const seconds = Math.max(0, Math.floor((Date.now() - then) / 1000));
+
+  if (seconds < 60) return "Just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+
+  return new Date(then).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+let cachedLog = null;
+
+async function fetchNotificationLog() {
+  if (cachedLog) return cachedLog;
+  try {
+    cachedLog = await getNotificationLog();
+  } catch (err) {
+    console.error("Failed to load notification log:", err);
+    cachedLog = [];
+  }
+  return cachedLog;
+}
+
+function renderNotificationList(entries) {
+  const list = document.querySelector("[data-notif-bell-list]");
+  if (!list) return;
+
+  if (!entries.length) {
+    list.innerHTML = `<div class="notif-bell-empty">No notifications yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = entries
+    .map(
+      (entry) => `
+      <a href="${escapeHtml(entry.url || "/index.html")}" class="notif-bell-item">
+        <span class="notif-bell-item-title">${escapeHtml(entry.title)}</span>
+        <span class="notif-bell-item-body">${escapeHtml(entry.body)}</span>
+        <span class="notif-bell-item-time">${escapeHtml(timeAgo(entry.sentAt))}</span>
+      </a>`
+    )
+    .join("");
+}
+
+function updateUnreadDot(entries) {
+  const dot = document.querySelector("[data-notif-bell-dot]");
+  if (!dot) return;
+  const lastViewed = localStorage.getItem(LAST_VIEWED_KEY);
+  const newest = entries[0]?.sentAt;
+  const hasUnread = !!newest && (!lastViewed || new Date(newest) > new Date(lastViewed));
+  dot.hidden = !hasUnread;
+}
+
+function markNotificationsViewed() {
+  localStorage.setItem(LAST_VIEWED_KEY, new Date().toISOString());
+  document.querySelectorAll("[data-notif-bell-dot]").forEach((dot) => {
+    dot.hidden = true;
+  });
+}
+
+/**
+ * Wires up the bell icon in the header: click to open/close the dropdown,
+ * load and render recent notifications into it (fetched once and reused
+ * across every instance of the panel on the page), show a static unread
+ * dot when there's something newer than this device last viewed, and
+ * close on an outside click or Escape.
+ */
+export function initNotificationBell() {
+  const bells = document.querySelectorAll("[data-notif-bell]");
+  if (bells.length === 0) return;
+
+  fetchNotificationLog().then((entries) => updateUnreadDot(entries));
+
+  bells.forEach((bell) => {
+    const trigger = bell.querySelector("[data-notif-bell-toggle]");
+    const panel = bell.querySelector("[data-notif-bell-panel]");
+    if (!trigger || !panel) return;
+
+    const closePanel = () => {
+      bell.classList.remove("open");
+      trigger.setAttribute("aria-expanded", "false");
+    };
+
+    const openPanel = async () => {
+      bell.classList.add("open");
+      trigger.setAttribute("aria-expanded", "true");
+      const entries = await fetchNotificationLog();
+      renderNotificationList(entries);
+      markNotificationsViewed();
+    };
+
+    trigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (bell.classList.contains("open")) {
+        closePanel();
+      } else {
+        openPanel();
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      if (bell.classList.contains("open") && !bell.contains(e.target)) closePanel();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && bell.classList.contains("open")) closePanel();
+    });
   });
 }

@@ -14,6 +14,12 @@
  *     notification the moment it detects the stream just started (not
  *     on every check while already live).
  *
+ * Every notification sent by any of the three also gets a record written
+ * to the "notificationLog" collection (see sendToAllSubscribers below) —
+ * this is what the bell dropdown in the header reads to show a visitor's
+ * recent notification history, since there's no per-visitor account to
+ * track that against otherwise. Only the most recent 20 are kept.
+ *
  * Deploy with:  firebase deploy --only functions
  * (requires the Firebase CLI: npm install -g firebase-tools, then
  * firebase login, run once from the repo root)
@@ -44,6 +50,11 @@ const DEFAULT_CHANNEL_ID = "UCokmjLYT92F1EDik5Gvx8Kw";
  * or cleared their browser data) so the list doesn't grow stale forever.
  */
 async function sendToAllSubscribers({ title, body, url }) {
+  // Logged unconditionally — the bell dropdown's history should reflect
+  // every announcement that went out, regardless of whether anyone had
+  // push enabled yet at the time.
+  await logNotification({ title, body, url: url || "/index.html" });
+
   const tokensSnap = await db.collection("pushTokens").get();
   const tokens = tokensSnap.docs.map((doc) => doc.id);
 
@@ -101,6 +112,36 @@ async function sendToAllSubscribers({ title, body, url }) {
   console.log(`Notification sent to ${tokens.length - staleTokens.length} device(s).`);
 }
 
+const NOTIFICATION_LOG_LIMIT = 20;
+
+/**
+ * Records what was actually sent, for the bell dropdown's "recent
+ * notifications" list. There's no per-visitor account here, so this is a
+ * single shared history for everyone, not a personal inbox — the client
+ * separately tracks a per-device "last viewed" timestamp (in
+ * localStorage) to know what counts as unread for that specific visitor.
+ * Trims down to the most recent NOTIFICATION_LOG_LIMIT on every write so
+ * this doesn't grow forever.
+ */
+async function logNotification({ title, body, url }) {
+  const logCollection = db.collection("notificationLog");
+
+  await logCollection.add({
+    title,
+    body,
+    url,
+    sentAt: new Date().toISOString(),
+  });
+
+  const snap = await logCollection.orderBy("sentAt", "desc").get();
+  const excess = snap.docs.slice(NOTIFICATION_LOG_LIMIT);
+  if (excess.length > 0) {
+    const pruneBatch = db.batch();
+    excess.forEach((doc) => pruneBatch.delete(doc.ref));
+    await pruneBatch.commit();
+  }
+}
+
 function excerpt(text, maxLength = 120) {
   if (!text) return "";
   const trimmed = text.trim();
@@ -114,7 +155,7 @@ exports.onNewsCreated = onDocumentCreated("news/{docId}", async (event) => {
   await sendToAllSubscribers({
     title: news.title || "New announcement",
     body: excerpt(news.content),
-    url: "/index.html",
+    url: "/index.html#news",
   });
 });
 
@@ -125,7 +166,7 @@ exports.onUpdateCreated = onDocumentCreated("updates/{docId}", async (event) => 
   await sendToAllSubscribers({
     title: update.title || "New update",
     body: excerpt(update.content),
-    url: "/index.html",
+    url: "/index.html#updates",
   });
 });
 
@@ -181,7 +222,7 @@ exports.checkLiveStatus = onSchedule(
       await sendToAllSubscribers({
         title: "We're live!",
         body: "Join the Sunday service livestream now.",
-        url: "/index.html",
+        url: "/index.html#livestream",
       });
     }
   }

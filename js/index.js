@@ -478,7 +478,23 @@ async function loadPage() {
     document.getElementById("tagline-wrap")?.classList.add("tagline-ready");
   } finally {
     hideLoadingOverlay();
+    scrollToHashSection();
   }
+}
+
+// If the page was opened with a hash (e.g. from a notification bell entry
+// linking to #news, #updates, or #livestream), the browser's own automatic
+// "scroll to this element" only fires once, at initial navigation — before
+// News/Updates have finished fetching and rendering, since they start out
+// as a near-empty "Loading…" placeholder. That means the native scroll
+// lands wherever the section happened to be *before* it grew to its real
+// height, not where it ends up. This re-does that scroll manually, once,
+// after everything above has actually finished rendering.
+function scrollToHashSection() {
+  const id = window.location.hash.replace("#", "");
+  if (!id) return;
+  const target = document.getElementById(id);
+  if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 loadPage();

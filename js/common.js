@@ -1,9 +1,10 @@
 import { initTheme } from "./theme.js";
-import { initNotificationToggle, initAutoNotificationPrompt, cleanupStaleServiceWorkers } from "./notifications.js";
+import { initNotificationToggle, initAutoNotificationPrompt, initNotificationBell, cleanupStaleServiceWorkers } from "./notifications.js";
 import { initInstallApp } from "./install-app.js";
 
 initTheme();
 initNotificationToggle();
+initNotificationBell();
 initAutoNotificationPrompt();
 initInstallApp();
 

@@ -60,16 +60,6 @@
               </button>
             </li>
             <li class="nav-item-admin nav-more-item"><a href="admin.html"><i class="fa-solid fa-user-shield nav-link-icon" aria-hidden="true"></i> <span data-i18n="nav.admin">Admin</span></a></li>
-            <li class="nav-item-notif nav-more-item">
-              <div class="lang-toggle notif-toggle notif-toggle--lg" role="group" aria-label="Notifications" data-notif-toggle-group>
-                <button type="button" data-notif-btn="off" aria-label="Turn off notifications" title="Turn off notifications">
-                  <i class="fa-solid fa-bell-slash" aria-hidden="true"></i>
-                </button>
-                <button type="button" data-notif-btn="on" aria-label="Turn on notifications" title="Turn on notifications">
-                  <i class="fa-solid fa-bell" aria-hidden="true"></i>
-                </button>
-              </div>
-            </li>
             <li class="nav-item-install nav-more-item" data-install-menu-item hidden>
               <button type="button" class="nav-action-btn" data-install-menu-trigger>
                 <i class="fa-solid fa-download nav-link-icon" aria-hidden="true"></i>
@@ -95,6 +85,37 @@
           >
             <i class="fa-solid fa-moon" data-theme-icon aria-hidden="true"></i>
           </button>
+          <div class="notif-bell" data-notif-bell>
+            <button
+              type="button"
+              class="btn btn-ghost btn-icon"
+              data-notif-bell-toggle
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-label="Notifications"
+              title="Notifications"
+              data-i18n-attr="aria-label:header.notifications,title:header.notifications"
+            >
+              <i class="fa-solid fa-bell" aria-hidden="true"></i>
+              <span class="notif-bell-dot" data-notif-bell-dot hidden></span>
+            </button>
+            <div class="notif-bell-panel" data-notif-bell-panel role="menu">
+              <div class="notif-bell-panel-header">
+                <span class="notif-bell-panel-title" data-i18n="header.notifications">Notifications</span>
+                <div class="lang-toggle notif-toggle notif-toggle--sm" role="group" aria-label="Notifications" data-notif-toggle-group>
+                  <button type="button" data-notif-btn="off" aria-label="Turn off notifications" title="Turn off notifications">
+                    <i class="fa-solid fa-bell-slash" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" data-notif-btn="on" aria-label="Turn on notifications" title="Turn on notifications">
+                    <i class="fa-solid fa-bell" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="notif-bell-list" data-notif-bell-list>
+                <div class="loading">Loading…</div>
+              </div>
+            </div>
+          </div>
           <div class="settings-dropdown" data-settings-dropdown>
             <button
               type="button"
@@ -113,17 +134,6 @@
                 <div class="lang-toggle" role="group" aria-label="Language">
                   <button type="button" data-lang-btn="en">EN</button>
                   <button type="button" data-lang-btn="ms">BM</button>
-                </div>
-              </div>
-              <hr class="settings-dropdown-divider" />
-              <div class="settings-dropdown-lang">
-                <div class="lang-toggle notif-toggle" role="group" aria-label="Notifications" data-notif-toggle-group>
-                  <button type="button" data-notif-btn="off" aria-label="Turn off notifications" title="Turn off notifications">
-                    <i class="fa-solid fa-bell-slash" aria-hidden="true"></i>
-                  </button>
-                  <button type="button" data-notif-btn="on" aria-label="Turn on notifications" title="Turn on notifications">
-                    <i class="fa-solid fa-bell" aria-hidden="true"></i>
-                  </button>
                 </div>
               </div>
               <hr class="settings-dropdown-divider" />

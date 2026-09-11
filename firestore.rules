@@ -83,5 +83,14 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
+    match /notificationLog/{doc} {
+      // Written only by sendToAllSubscribers via the Admin SDK (which
+      // bypasses these rules entirely) — never directly by a client.
+      // Publicly readable so the header's notification bell can show
+      // recent announcements to any visitor, not just ones who had push
+      // enabled at the time each one was sent.
+      allow read: if true;
+      allow write: if false;
+    }
   }
 }

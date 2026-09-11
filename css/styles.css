@@ -344,6 +344,128 @@ a:hover {
   width: 100%;
 }
 
+/* ── Notification bell (header, next to the theme toggle) ── */
+.notif-bell {
+  position: relative;
+}
+
+.notif-bell [data-notif-bell-toggle] {
+  position: relative;
+  background: transparent;
+  color: var(--text);
+}
+
+.notif-bell.open [data-notif-bell-toggle] {
+  border-color: var(--marigold);
+  color: var(--marigold);
+  background: var(--bg-muted);
+}
+
+.notif-bell-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e53935;
+  border: 2px solid var(--bg);
+}
+
+.notif-bell-panel {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  width: 320px;
+  max-width: calc(100vw - 2rem);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity var(--transition), transform var(--transition);
+  z-index: 110;
+  overflow: hidden;
+}
+
+.notif-bell.open .notif-bell-panel {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.notif-bell-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.notif-bell-panel-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.notif-toggle--sm {
+  transform: scale(0.85);
+  transform-origin: right center;
+}
+
+.notif-bell-list {
+  max-height: 360px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.notif-bell-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  transition: background var(--transition);
+}
+
+.notif-bell-item:last-child {
+  border-bottom: none;
+}
+
+.notif-bell-item:hover {
+  background: var(--bg-muted);
+}
+
+.notif-bell-item-title {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.notif-bell-item-body {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notif-bell-item-time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.notif-bell-empty {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 .settings-dropdown-link {
   display: flex;
   align-items: center;
