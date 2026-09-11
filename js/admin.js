@@ -79,10 +79,10 @@ let heroUploads      = {};
 const HERO_PAGES = [
   { key: "index",        label: "Home Page",             title: "BEM On The ROCK",            overlay: false },
   { key: "about",        label: "About",                 title: "About BEM On The ROCK" },
-  { key: "activities",   label: "Activities",             title: "Activities & Ministries" },
-  { key: "community",    label: "Community",              title: "Community Contributions" },
   { key: "history",      label: "History",                title: "Our History" },
   { key: "organisation", label: "Organisation Structure", title: "Organisation Structure" },
+  { key: "activities",   label: "Activities",             title: "Activities & Ministries" },
+  { key: "community",    label: "Community",              title: "Community Contributions" },
   { key: "services",     label: "Services",               title: "Services" },
   { key: "product",      label: "Product",                title: "Product" },
 ];
