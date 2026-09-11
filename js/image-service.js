@@ -71,7 +71,7 @@ export function bindImageUpload(container, options = {}) {
         <span class="image-upload-placeholder">No image selected</span>
       </div>
       <div class="image-upload-actions">
-        <input type="file" id="${inputId}" accept="image/*" class="sr-only" />
+        <input type="file" id="${inputId}" accept="image/*" class="image-upload-hidden-input" />
         <label for="${inputId}" class="btn btn-outline btn-sm">Choose Image</label>
         <button type="button" class="btn btn-ghost btn-sm" data-remove-image style="display:none;">Remove</button>
         <span class="image-upload-status" data-status></span>

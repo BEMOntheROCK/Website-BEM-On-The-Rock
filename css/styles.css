@@ -2947,6 +2947,28 @@ button.settings-dropdown-link:disabled:hover i {
   border: 0;
 }
 
+/* Hidden file input for image-upload widgets. Uses `position: fixed` (pinned
+   to the viewport, not the surrounding layout) instead of the .sr-only
+   technique above — when this input sits inside a CSS Grid container (like
+   the hero banner uploads in Settings), browsers can miscompute an
+   absolutely-positioned 1px element's location and violently scroll the
+   page when the input receives focus (clicking its label to open the file
+   picker). Fixed positioning sidesteps that entirely since it's always
+   already "in view" at the viewport's top-left corner. */
+.image-upload-hidden-input {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  opacity: 0;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .nav-links {
