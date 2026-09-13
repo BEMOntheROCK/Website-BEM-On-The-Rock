@@ -6,7 +6,6 @@
   "nav.activities": "Ministries & Activities",
   "nav.services": "Services",
   "nav.community": "Community",
-  "nav.product": "Product",
   "nav.admin": "Admin",
   "nav.more": "More",
 
@@ -50,8 +49,6 @@
   "home.hero.servicesBtnShort": "Our Services",
   "home.hero.communityBtn": "Our Community",
   "home.hero.communityBtnShort": "Community",
-  "home.hero.productBtn": "Our Product",
-  "home.hero.productBtnShort": "Product",
 
   "home.exploreMore.title": "Learn More About Our Church",
 
@@ -79,9 +76,6 @@
   "activities.hero.subtitle": "Discover the ministries and activities that make up our church family.",
   "community.hero.title": "Community Contributions",
   "community.hero.subtitle": "A look at how our church family shows up for one another and the wider community.",
-  "product.hero.title": "Product",
-  "product.hero.subtitle": "More details coming soon.",
-  "product.comingSoon": "This page is under construction. Check back soon!",
 
   "history.hero.title": "Our History",
   "history.hero.subtitle": "Milestones and stories that shaped BEM On The Rock.",

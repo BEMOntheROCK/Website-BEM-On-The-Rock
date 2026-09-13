@@ -84,7 +84,6 @@ const HERO_PAGES = [
   { key: "activities",   label: "Activities",             title: "Activities & Ministries" },
   { key: "community",    label: "Community",              title: "Community Contributions" },
   { key: "services",     label: "Services",               title: "Services" },
-  { key: "product",      label: "Product",                title: "Product" },
 ];
 
 // ── Helpers ──

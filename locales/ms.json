@@ -6,7 +6,6 @@
   "nav.activities": "Pelayanan & Aktiviti",
   "nav.services": "Perkhidmatan",
   "nav.community": "Komuniti",
-  "nav.product": "Produk",
   "nav.admin": "Admin",
   "nav.more": "Lagi",
 
@@ -50,8 +49,6 @@
   "home.hero.servicesBtnShort": "Perkhidmatan Kami",
   "home.hero.communityBtn": "Komuniti Kami",
   "home.hero.communityBtnShort": "Komuniti",
-  "home.hero.productBtn": "Produk Kami",
-  "home.hero.productBtnShort": "Produk",
 
   "home.exploreMore.title": "Ketahui Lebih Lanjut Tentang Gereja Kami",
 
@@ -79,9 +76,6 @@
   "activities.hero.subtitle": "Terokai pelayanan dan aktiviti yang membentuk keluarga gereja kami.",
   "community.hero.title": "Sumbangan Komuniti",
   "community.hero.subtitle": "Lihat bagaimana keluarga gereja kami saling menyokong dan menyumbang kepada komuniti yang lebih luas.",
-  "product.hero.title": "Produk",
-  "product.hero.subtitle": "Butiran lanjut akan datang.",
-  "product.comingSoon": "Halaman ini sedang dalam pembinaan. Sila semak semula tidak lama lagi!",
 
   "history.hero.title": "Sejarah Kami",
   "history.hero.subtitle": "Detik-detik penting dan kisah yang membentuk BEM On The Rock.",
