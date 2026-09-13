@@ -1,24 +1,28 @@
 /**
  * Cloud Functions for BEM On The ROCK.
  *
- * Three functions:
+ * Five functions:
  *   - onNewsCreated / onUpdateCreated — Firestore triggers that fire
  *     whenever the admin panel creates a new News or Update, sending a
  *     push notification to every device that has opted in (stored in the
  *     "pushTokens" collection by js/notifications.js).
+ *   - onNewsDeleted / onUpdateDeleted — companion triggers that remove the
+ *     matching entry from "notificationLog" when the News/Update it was
+ *     about gets deleted, so the bell dropdown doesn't keep pointing at
+ *     content that no longer exists.
  *   - checkLiveStatus — runs on a schedule (every 5 minutes), checks
  *     whether the church's YouTube channel is currently live via the
  *     YouTube Data API, caches the result (and the live video's ID) in
  *     Firestore at liveStatus/main — which the homepage reads directly
- *     to drive the "Live" badge and player — and sends a "We're live!"
- *     notification the moment it detects the stream just started (not
- *     on every check while already live).
- *
- * Every notification sent by any of the three also gets a record written
- * to the "notificationLog" collection (see sendToAllSubscribers below) —
- * this is what the bell dropdown in the header reads to show a visitor's
- * recent notification history, since there's no per-visitor account to
- * track that against otherwise. Only the most recent 20 are kept.
+ *     to drive the "Live" badge and player. Sends a "We're live!"
+ *     notification on the false → true transition (not on every check
+ *     while already live), and removes that same notification on the
+ *     true → false transition, once the stream actually ends.
+ *   - cleanupNotificationLog — runs once a day, deleting any
+ *     notificationLog entry older than 7 days. This is the only cap on
+ *     how much notification history accumulates — there's no longer a
+ *     fixed count limit, so the bell dropdown shows everything from the
+ *     last 7 days, however many that is.
  *
  * Deploy with:  firebase deploy --only functions
  * (requires the Firebase CLI: npm install -g firebase-tools, then
@@ -29,7 +33,7 @@
  * or run: firebase functions:secrets:set YOUTUBE_API_KEY
  */
 
-const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+const { onDocumentCreated, onDocumentDeleted } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret } = require("firebase-functions/params");
 const { initializeApp } = require("firebase-admin/app");
@@ -49,18 +53,18 @@ const DEFAULT_CHANNEL_ID = "UCokmjLYT92F1EDik5Gvx8Kw";
  * that have expired or been revoked (e.g. the visitor uninstalled the app
  * or cleared their browser data) so the list doesn't grow stale forever.
  */
-async function sendToAllSubscribers({ title, body, url }) {
+async function sendToAllSubscribers({ title, body, url, source }) {
   // Logged unconditionally — the bell dropdown's history should reflect
   // every announcement that went out, regardless of whether anyone had
   // push enabled yet at the time.
-  await logNotification({ title, body, url: url || "/index.html" });
+  const notificationId = await logNotification({ title, body, url: url || "/index.html", source });
 
   const tokensSnap = await db.collection("pushTokens").get();
   const tokens = tokensSnap.docs.map((doc) => doc.id);
 
   if (tokens.length === 0) {
     console.log("No subscribed devices — skipping notification send.");
-    return;
+    return notificationId;
   }
 
   // Deliberately data-only, no top-level "notification" field. When a
@@ -110,9 +114,9 @@ async function sendToAllSubscribers({ title, body, url }) {
   }
 
   console.log(`Notification sent to ${tokens.length - staleTokens.length} device(s).`);
-}
 
-const NOTIFICATION_LOG_LIMIT = 20;
+  return notificationId;
+}
 
 /**
  * Records what was actually sent, for the bell dropdown's "recent
@@ -120,26 +124,27 @@ const NOTIFICATION_LOG_LIMIT = 20;
  * single shared history for everyone, not a personal inbox — the client
  * separately tracks a per-device "last viewed" timestamp (in
  * localStorage) to know what counts as unread for that specific visitor.
- * Trims down to the most recent NOTIFICATION_LOG_LIMIT on every write so
- * this doesn't grow forever.
+ *
+ * `source`, when given, is `{ collection: "news" | "updates" | "live", id }`
+ * — a reference back to whatever triggered this notification, so it can
+ * be found and removed later if that content is deleted (see
+ * onNewsDeleted/onUpdateDeleted) or, for a livestream, once the stream
+ * ends (see checkLiveStatus). Returns the new doc's ID.
+ *
+ * There's no count-based cap here — cleanupNotificationLog handles
+ * pruning on a 7-day time basis instead, so an entry sticks around for a
+ * predictable length of time regardless of how many other notifications
+ * get sent around it.
  */
-async function logNotification({ title, body, url }) {
-  const logCollection = db.collection("notificationLog");
-
-  await logCollection.add({
+async function logNotification({ title, body, url, source }) {
+  const ref = await db.collection("notificationLog").add({
     title,
     body,
     url,
+    source: source || null,
     sentAt: new Date().toISOString(),
   });
-
-  const snap = await logCollection.orderBy("sentAt", "desc").get();
-  const excess = snap.docs.slice(NOTIFICATION_LOG_LIMIT);
-  if (excess.length > 0) {
-    const pruneBatch = db.batch();
-    excess.forEach((doc) => pruneBatch.delete(doc.ref));
-    await pruneBatch.commit();
-  }
+  return ref.id;
 }
 
 function excerpt(text, maxLength = 120) {
@@ -156,6 +161,7 @@ exports.onNewsCreated = onDocumentCreated("news/{docId}", async (event) => {
     title: news.title || "New announcement",
     body: excerpt(news.content),
     url: "/index.html#news",
+    source: { collection: "news", id: event.params.docId },
   });
 });
 
@@ -167,7 +173,35 @@ exports.onUpdateCreated = onDocumentCreated("updates/{docId}", async (event) => 
     title: update.title || "New update",
     body: excerpt(update.content),
     url: "/index.html#updates",
+    source: { collection: "updates", id: event.params.docId },
   });
+});
+
+/**
+ * Removes every notificationLog entry whose `source` points at the given
+ * collection/doc — normally just one, but a find-and-delete-all approach
+ * costs nothing extra and stays correct even if that were ever not true.
+ */
+async function deleteNotificationsForSource(collection, id) {
+  const snap = await db
+    .collection("notificationLog")
+    .where("source.collection", "==", collection)
+    .where("source.id", "==", id)
+    .get();
+
+  if (snap.empty) return;
+
+  const batch = db.batch();
+  snap.docs.forEach((doc) => batch.delete(doc.ref));
+  await batch.commit();
+}
+
+exports.onNewsDeleted = onDocumentDeleted("news/{docId}", async (event) => {
+  await deleteNotificationsForSource("news", event.params.docId);
+});
+
+exports.onUpdateDeleted = onDocumentDeleted("updates/{docId}", async (event) => {
+  await deleteNotificationsForSource("updates", event.params.docId);
 });
 
 /**
@@ -207,6 +241,7 @@ exports.checkLiveStatus = onSchedule(
     const statusRef = db.doc(LIVE_STATUS_DOC);
     const statusSnap = await statusRef.get();
     const wasLive = statusSnap.data()?.isLive === true;
+    const liveNotificationId = statusSnap.data()?.liveNotificationId || null;
 
     const { live: isLiveNow, videoId } = await checkChannelLive(channelId, youtubeApiKey.value());
 
@@ -217,13 +252,40 @@ exports.checkLiveStatus = onSchedule(
 
     // Only notify on the false → true transition, so we don't send a
     // fresh notification every 5 minutes for the whole duration of a
-    // single service.
+    // single service. The new notification's ID is stashed on this same
+    // doc so the true → false transition below can find and remove it
+    // once the stream actually ends.
     if (isLiveNow && !wasLive) {
-      await sendToAllSubscribers({
+      const newNotificationId = await sendToAllSubscribers({
         title: "We're live!",
         body: "Join the Sunday service livestream now.",
         url: "/index.html#livestream",
+        source: { collection: "live" },
       });
+      await statusRef.set({ liveNotificationId: newNotificationId }, { merge: true });
+    } else if (!isLiveNow && wasLive && liveNotificationId) {
+      await db.collection("notificationLog").doc(liveNotificationId).delete();
+      await statusRef.set({ liveNotificationId: null }, { merge: true });
     }
   }
 );
+
+const NOTIFICATION_LOG_MAX_AGE_DAYS = 7;
+
+/**
+ * Runs once a day, deleting any notificationLog entry older than
+ * NOTIFICATION_LOG_MAX_AGE_DAYS. This is the only cap on how much
+ * notification history accumulates — the bell dropdown shows everything
+ * within that window, however many that is.
+ */
+exports.cleanupNotificationLog = onSchedule("every 24 hours", async () => {
+  const cutoff = new Date(Date.now() - NOTIFICATION_LOG_MAX_AGE_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+  const snap = await db.collection("notificationLog").where("sentAt", "<", cutoff).get();
+  if (snap.empty) return;
+
+  const batch = db.batch();
+  snap.docs.forEach((doc) => batch.delete(doc.ref));
+  await batch.commit();
+  console.log(`Removed ${snap.size} notification(s) older than ${NOTIFICATION_LOG_MAX_AGE_DAYS} days.`);
+});

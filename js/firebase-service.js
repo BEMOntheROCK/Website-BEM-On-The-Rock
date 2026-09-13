@@ -9,7 +9,6 @@ import {
   deleteDoc,
   query,
   orderBy,
-  limit,
   serverTimestamp,
   writeBatch,
   onSnapshot,
@@ -48,13 +47,14 @@ export function subscribeLiveStatus(callback) {
 }
 
 /**
- * The 20 most recent notifications actually sent (see logNotification in
- * functions/index.js) — this is what the header bell dropdown shows as
- * "recent notifications" to any visitor, regardless of whether they had
- * push enabled at the time each one went out.
+ * Every notification sent within roughly the last 7 days (older entries
+ * are pruned server-side by the cleanupNotificationLog scheduled
+ * function — see functions/index.js) — this is what the header bell
+ * dropdown shows as "recent notifications" to any visitor, regardless of
+ * whether they had push enabled at the time each one went out.
  */
 export async function getNotificationLog() {
-  const q = query(collection(db, "notificationLog"), orderBy("sentAt", "desc"), limit(20));
+  const q = query(collection(db, "notificationLog"), orderBy("sentAt", "desc"));
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }

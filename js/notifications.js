@@ -410,7 +410,16 @@ function renderNotificationList(entries) {
     return;
   }
 
-  list.innerHTML = entries
+  // Livestream notifications always show first, regardless of how it
+  // compares by date to everything else — there's normally at most one
+  // active at a time anyway (it's removed once the stream ends), so this
+  // just pins it above whatever else is in the list rather than changing
+  // the relative order of anything else.
+  const ordered = [...entries].sort(
+    (a, b) => (b.source?.collection === "live" ? 1 : 0) - (a.source?.collection === "live" ? 1 : 0)
+  );
+
+  list.innerHTML = ordered
     .map(
       (entry) => `
       <a href="${escapeHtml(entry.url || "/index.html")}" class="notif-bell-item">
