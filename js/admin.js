@@ -24,7 +24,7 @@ import {
   formatDate, displayHistoryDate,
   extractDateYear, isAmbiguousGroup, computeBackfillOrder,
 } from "./firebase-service.js";
-import { bindImageUpload, deleteImage, getImageUrl } from "./image-service.js";
+import { bindImageUpload, bindRawMediaUpload, deleteImage, getImageUrl } from "./image-service.js";
 import { createCropEditor } from "./crop-editor.js";
 import { DEFAULT_CROP, mountCroppedImage } from "./image-crop.js";
 
@@ -71,6 +71,7 @@ let communityPhotoImgUpload = null;
 let communityCropEditor = null;
 let aboutUploads     = {};
 let heroUploads      = {};
+let taglineMediaUpload = null;
 
 // Pages whose hero banner is editable from Settings. `overlay: false` marks
 // the homepage, whose hero uses its own text-shadow treatment instead of
@@ -316,6 +317,13 @@ async function initAll() {
       },
     });
   });
+  const taglineMediaContainer = document.getElementById("tagline-media-upload");
+  if (taglineMediaContainer) {
+    taglineMediaUpload = bindRawMediaUpload(taglineMediaContainer, {
+      inputId: "tagline-media-in",
+      label: "Tagline Background",
+    });
+  }
 
   await Promise.all([
     loadNews(),
@@ -1096,6 +1104,7 @@ async function loadSettings() {
   const s   = await getSiteSettings();
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ""; };
   set("settings-tagline",          s.tagline);
+  taglineMediaUpload?.setValue(s.taglineMediaUrl || null, s.taglineMediaPath || null);
 
   const heroImages = s.heroImages || {};
   await Promise.all(HERO_PAGES.map(async page => {
@@ -1117,6 +1126,8 @@ document.getElementById("settings-form").addEventListener("submit", async e => {
     });
     await saveSiteSettings({
       tagline:          get("settings-tagline"),
+      taglineMediaUrl:  taglineMediaUpload?.getUrl() || null,
+      taglineMediaPath: taglineMediaUpload?.getPath() || null,
       heroImages,
     });
     showAlert(adminAlert, "Settings saved.", "success");

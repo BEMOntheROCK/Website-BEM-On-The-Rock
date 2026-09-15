@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
 import { isSupported, getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
 import {
   isSupported as isMessagingSupported,
@@ -11,6 +12,10 @@ import { firebaseConfig } from "./firebase-config.js";
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+// Used only for admin-uploaded media that needs to stay as the original
+// file (e.g. the tagline pill's GIF) — everything else on the site is
+// stored directly in Firestore documents instead (see image-service.js).
+export const storage = getStorage(app);
 
 // Analytics only works in browser environments that support it (e.g. not
 // in private/incognito mode in some browsers, or headless testing tools).

@@ -41,6 +41,15 @@ async function renderHero(settings) {
   if (tagline && settings.tagline) tagline.textContent = settings.tagline;
   if (footerTagline && settings.tagline) footerTagline.textContent = settings.tagline;
 
+  // Admin can replace the default aurora GIF behind the tagline pill with
+  // their own image or GIF (see js/image-service.js's bindRawMediaUpload —
+  // stored in Firebase Storage rather than Firestore, since it needs to
+  // stay as the original file rather than being compressed). Falls back
+  // to the bundled default (set directly in CSS) when nothing's uploaded.
+  if (tagline && settings.taglineMediaUrl) {
+    tagline.style.backgroundImage = `url("${settings.taglineMediaUrl}")`;
+  }
+
   const taglineWrap = document.getElementById("tagline-wrap");
   if (taglineWrap) taglineWrap.classList.add("tagline-ready");
 }

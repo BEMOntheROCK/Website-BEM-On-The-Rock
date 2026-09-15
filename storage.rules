@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Everything else on the site — activity photos, news images, hero
+// banners, etc. — is stored directly in Firestore documents instead (see
+// js/image-service.js), which predates this and isn't affected by these
+// rules at all. Storage is used only for admin-uploaded media that can't
+// go through that pipeline because it needs to stay as the original file
+// (an animated GIF, for instance — Firestore's 1MB document limit and the
+// existing pipeline's JPEG re-encoding would both break animation).
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /siteMedia/{fileName} {
+      // Publicly visible on the site (e.g. the tagline pill's background),
+      // so read access is open — but only an authenticated admin can
+      // upload or replace it.
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.resource.size < 25 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
