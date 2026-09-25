@@ -47,7 +47,7 @@ export async function initHeroBanner(pageKey, sectionId, { overlay = true } = {}
 
 // Register the service worker on every public page, but never on the admin
 // panel — admin should always load fresh, never an offline/cached version.
-if ("serviceWorker" in navigator && !window.location.pathname.endsWith("admin.html")) {
+if ("serviceWorker" in navigator && !window.location.pathname.endsWith("/admin/admin.html")) {
   navigator.serviceWorker
     .register("/service-worker.js")
     .then((registration) => {

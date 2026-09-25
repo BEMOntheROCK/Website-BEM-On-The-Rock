@@ -3,8 +3,7 @@ const SUPPORTED = ["en", "ms"];
 const cache = {};
 
 function getLangPath() {
-  // locales/ sits one level up from js/ at site root, same depth from any page
-  return "locales";
+  return window.location.pathname.includes("/public/") ? "../locales" : "locales";
 }
 
 async function loadLocale(lang) {

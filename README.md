@@ -7,9 +7,9 @@ A static church website for **BEM On The Rock** with Firebase-powered content ma
 | Page | URL | Description |
 |------|-----|-------------|
 | Home | `index.html` | Livestream, updates, and news |
-| About | `about.html` | Mission, vision, values (editable) |
-| History | `history.html` | Church history articles with images |
-| Admin | `admin.html` | Staff login and CRUD dashboard |
+| About | `public/about.html` | Mission, vision, values (editable) |
+| History | `public/history.html` | Church history articles with images |
+| Admin | `admin/admin.html` | Staff login and CRUD dashboard |
 
 ## File Structure
 
@@ -72,7 +72,7 @@ Logo and favicon are hard-coded in the site files and are not managed via admin.
 
 ## Admin Usage
 
-1. Go to `/admin.html` and sign in with your Firebase admin account.
+1. Go to `/admin/admin.html` and sign in with your Firebase admin account.
 2. Use the sidebar to manage:
    - **News** — Articles on the home page (with optional image)
    - **Updates** — Announcements (with optional image)

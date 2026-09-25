@@ -15,7 +15,7 @@ importScripts("/firebase-messaging-sw.js");
  * deploy step.
  *
  * Deliberately excluded from any caching:
- *   - admin.html and anything under /js/admin*.js — the admin panel should
+ *   - admin/admin.html and anything under /js/admin*.js — the admin panel should
  *     always hit the network fresh, never show a stale/offline version.
  *   - Any cross-origin request (Firebase, Google Fonts, Font Awesome CDN,
  *     Google Translate, YouTube, etc.) — these are left completely alone
@@ -31,13 +31,13 @@ const CACHE_VERSION = "bem-cache-__BUILD_ID__";
 // kept in lockstep with every file the site adds over time.
 const PRECACHE_URLS = [
   "index.html",
-  "about.html",
-  "activities.html",
-  "community.html",
-  "history.html",
-  "organisation-structure.html",
-  "services.html",
-  "privacy.html",
+  "public/about.html",
+  "public/activities.html",
+  "public/community.html",
+  "public/history.html",
+  "public/organisation-structure.html",
+  "public/services.html",
+  "public/privacy.html",
   "css/styles.css",
   "manifest.json",
   "assets/favicon.png",
@@ -45,7 +45,7 @@ const PRECACHE_URLS = [
   "assets/icons/icon-512.png",
 ];
 
-const EXCLUDED_PATH_PATTERNS = [/\/admin\.html$/, /\/js\/admin.*\.js$/];
+const EXCLUDED_PATH_PATTERNS = [/\/admin\/admin\.html$/, /\/js\/admin.*\.js$/];
 
 function isExcludedPath(pathname) {
   return EXCLUDED_PATH_PATTERNS.some((pattern) => pattern.test(pathname));
