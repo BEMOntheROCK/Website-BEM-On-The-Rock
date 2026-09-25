@@ -22,8 +22,9 @@ name: Deploy to GitHub Pages
 #      terminal — copy it.
 #   3. In this GitHub repo: Settings > Secrets and variables > Actions >
 #      "New repository secret" > name it FIREBASE_TOKEN > paste the token.
-# Until that secret is added, the deploy-functions job below will fail
-# loudly with a clear error message rather than silently doing nothing.
+# The Google Cloud project also needs billing enabled and the APIs listed in
+# README.md. Until those requirements are met, the Pages deployment still
+# succeeds independently, while this Firebase job reports the missing setup.
 
 on:
   push:
@@ -109,12 +110,44 @@ jobs:
         working-directory: functions
         run: npm ci
 
-      - name: Deploy Cloud Functions and Firestore rules
+      - name: Validate Firebase deployment credentials
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           if [ -z "$FIREBASE_TOKEN" ]; then
-            echo "::error::FIREBASE_TOKEN repository secret is not set — see the comment at the top of this file for how to generate one. Skipping this step means Cloud Functions and Firestore rules changes are NOT live, even though the site itself deployed fine."
+            echo "::error::FIREBASE_TOKEN repository secret is not set. Add it under Settings > Secrets and variables > Actions."
+            echo "::error::Generate it with 'firebase login:ci'. The GitHub Pages deployment is independent and may still succeed."
             exit 1
           fi
-          npx firebase-tools@13 deploy --only functions,firestore:rules,storage --project website-bem-on-the-rock --token "$FIREBASE_TOKEN" --non-interactive --force
+
+          echo "FIREBASE_TOKEN is present; validating Firebase CLI access without printing the token."
+          if ! npx firebase-tools@13 projects:list --token "$FIREBASE_TOKEN" --non-interactive >/dev/null; then
+            echo "::error::FIREBASE_TOKEN was provided, but Firebase CLI authentication or project access failed. Check that the token belongs to an account with access to website-bem-on-the-rock."
+            exit 1
+          fi
+
+      - name: Deploy Cloud Functions and Firestore rules
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          set -o pipefail
+          deploy_log="$(mktemp)"
+
+          if npx firebase-tools@13 deploy \
+            --only functions,firestore:rules,storage \
+            --project website-bem-on-the-rock \
+            --token "$FIREBASE_TOKEN" \
+            --non-interactive \
+            --force 2>&1 | tee "$deploy_log"; then
+            rm -f "$deploy_log"
+            exit 0
+          fi
+
+          if grep -Eiq 'requires billing|billing.*enabled|billing account|service disabled|serviceusage.googleapis.com|secret ?manager|secretmanager.googleapis.com|cloudfunctions.googleapis.com|cloudbuild.googleapis.com|artifactregistry.googleapis.com|run.googleapis.com|eventarc.googleapis.com|cloudscheduler.googleapis.com' "$deploy_log"; then
+            echo "::error::Firebase deployment reached the project but Google Cloud billing or a required API is unavailable. Link a billing account to website-bem-on-the-rock and enable the Firebase/Cloud Functions, Secret Manager, Cloud Build, Artifact Registry, Cloud Run, Eventarc, Cloud Scheduler, and Service Usage APIs. See README.md for the one-time setup steps."
+          else
+            echo "::error::Firebase deployment failed after credential validation. Review the Firebase CLI output above; this is not a missing FIREBASE_TOKEN error."
+          fi
+
+          rm -f "$deploy_log"
+          exit 1

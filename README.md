@@ -54,6 +54,47 @@ firebase deploy --only firestore:rules
 
 Or paste the contents of `firestore.rules` into the Firebase Console → Firestore → Rules.
 
+### Firebase deployment prerequisites
+
+The `deploy-functions` GitHub Actions job deploys Cloud Functions, Firestore rules, and Storage rules to the Google Cloud project `website-bem-on-the-rock`. Complete these one-time steps in the [Google Cloud Console](https://console.cloud.google.com/):
+
+1. Select `website-bem-on-the-rock` and link an active billing account under **Billing**. Cloud Functions deployments that use Secret Manager require billing to be enabled, even when the application itself has low usage.
+2. Under **APIs & Services → Library**, enable these APIs:
+  - Firebase Management API
+  - Service Usage API
+  - Cloud Functions API
+  - Cloud Build API
+  - Artifact Registry API
+  - Cloud Run Admin API
+  - Eventarc API
+  - Cloud Scheduler API
+  - Secret Manager API
+
+The same API step can be run with Google Cloud CLI after selecting the project:
+
+```bash
+gcloud services enable \
+  firebase.googleapis.com \
+  serviceusage.googleapis.com \
+  cloudfunctions.googleapis.com \
+  cloudbuild.googleapis.com \
+  artifactregistry.googleapis.com \
+  run.googleapis.com \
+  eventarc.googleapis.com \
+  cloudscheduler.googleapis.com \
+  secretmanager.googleapis.com \
+  --project=website-bem-on-the-rock
+```
+3. Create the YouTube API key as a Firebase-managed secret. This command prompts for the value locally; the value must never be committed or added to a workflow file:
+
+```bash
+firebase functions:secrets:set YOUTUBE_API_KEY --project website-bem-on-the-rock
+```
+
+4. Add `FIREBASE_TOKEN` under **GitHub repository Settings → Secrets and variables → Actions**. Generate it locally with `firebase login:ci`; do not place the token in the repository.
+
+The workflow validates `FIREBASE_TOKEN` separately from the Firebase deployment. If deployment reports that billing is required or an API is disabled, the Google Cloud project setup above must be completed manually; repository code cannot enable billing.
+
 ## Running Locally
 
 Serve the folder with any static file server (required for ES modules):
